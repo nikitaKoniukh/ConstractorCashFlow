@@ -19,27 +19,33 @@ struct RootTabView: View {
         )) {
             ProjectsListView()
                 .tabItem {
-                    Label(AppTab.projects.displayName, systemImage: AppTab.projects.iconName)
+                    Label(AppTab.projects.displayNameKey, systemImage: AppTab.projects.iconName)
                 }
                 .tag(AppTab.projects)
             
             ExpensesListView()
                 .tabItem {
-                    Label(AppTab.expenses.displayName, systemImage: AppTab.expenses.iconName)
+                    Label(AppTab.expenses.displayNameKey, systemImage: AppTab.expenses.iconName)
                 }
                 .tag(AppTab.expenses)
             
             InvoicesListView()
                 .tabItem {
-                    Label(AppTab.invoices.displayName, systemImage: AppTab.invoices.iconName)
+                    Label(AppTab.invoices.displayNameKey, systemImage: AppTab.invoices.iconName)
                 }
                 .tag(AppTab.invoices)
             
             ClientsListView()
                 .tabItem {
-                    Label(AppTab.clients.displayName, systemImage: AppTab.clients.iconName)
+                    Label(AppTab.clients.displayNameKey, systemImage: AppTab.clients.iconName)
                 }
                 .tag(AppTab.clients)
+
+            SettingsView()
+                .tabItem {
+                    Label(AppTab.settings.displayNameKey, systemImage: AppTab.settings.iconName)
+                }
+                .tag(AppTab.settings)
         }
     }
 }

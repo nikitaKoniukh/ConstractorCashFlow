@@ -21,7 +21,7 @@ struct ExpensesListView: View {
                 }
                 .onDelete(perform: deleteExpenses)
             }
-            .navigationTitle("Expenses")
+            .navigationTitle(LocalizationKey.Expense.title)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     EditButton()
@@ -30,7 +30,7 @@ struct ExpensesListView: View {
                     Button {
                         appState.isShowingNewExpense = true
                     } label: {
-                        Label("Add Expense", systemImage: "plus")
+                        Label(LocalizationKey.Expense.add, systemImage: "plus")
                     }
                 }
             }
@@ -43,9 +43,9 @@ struct ExpensesListView: View {
             .overlay {
                 if expenses.isEmpty {
                     ContentUnavailableView(
-                        "No Expenses",
+                        LocalizationKey.Expense.empty,
                         systemImage: "dollarsign.circle",
-                        description: Text("Tap + to record your first expense")
+                        description: Text(LocalizationKey.Expense.emptyDescription)
                     )
                 }
             }
@@ -121,40 +121,44 @@ struct NewExpenseView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("Expense Details") {
-                    Picker("Category", selection: $category) {
+                Section {
+                    Picker(LocalizationKey.Expense.category, selection: $category) {
                         ForEach(ExpenseCategory.allCases, id: \.self) { category in
-                            Text(category.displayName).tag(category)
+                            Text(category.localizedDisplayName).tag(category)
                         }
                     }
                     
-                    TextField("Amount", value: $amount, format: .currency(code: "USD"))
+                    TextField(LocalizationKey.Expense.amount, value: $amount, format: .currency(code: "USD"))
                         .keyboardType(.decimalPad)
                     
-                    TextField("Description", text: $descriptionText)
+                    TextField(LocalizationKey.Expense.description, text: $descriptionText)
                     
-                    DatePicker("Date", selection: $date, displayedComponents: .date)
+                    DatePicker(LocalizationKey.Expense.date, selection: $date, displayedComponents: .date)
+                } header: {
+                    Text(LocalizationKey.Expense.details)
                 }
                 
-                Section("Project") {
-                    Picker("Project (Optional)", selection: $selectedProject) {
-                        Text("None").tag(nil as Project?)
+                Section {
+                    Picker(LocalizationKey.Expense.projectOptional, selection: $selectedProject) {
+                        Text(LocalizationKey.Expense.none).tag(nil as Project?)
                         ForEach(projects.filter { $0.isActive }) { project in
                             Text(project.name).tag(project as Project?)
                         }
                     }
+                } header: {
+                    Text(LocalizationKey.Expense.project)
                 }
             }
-            .navigationTitle("New Expense")
+            .navigationTitle(LocalizationKey.Expense.newTitle)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") {
+                    Button(LocalizationKey.Action.cancel) {
                         dismiss()
                     }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Save") {
+                    Button(LocalizationKey.Action.save) {
                         saveExpense()
                     }
                     .disabled(!isValid)

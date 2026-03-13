@@ -21,7 +21,7 @@ struct InvoicesListView: View {
                 }
                 .onDelete(perform: deleteInvoices)
             }
-            .navigationTitle("Invoices")
+            .navigationTitle(LocalizationKey.Invoice.title)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     EditButton()
@@ -30,7 +30,7 @@ struct InvoicesListView: View {
                     Button {
                         appState.isShowingNewInvoice = true
                     } label: {
-                        Label("Add Invoice", systemImage: "plus")
+                        Label(LocalizationKey.Invoice.add, systemImage: "plus")
                     }
                 }
             }
@@ -43,9 +43,9 @@ struct InvoicesListView: View {
             .overlay {
                 if invoices.isEmpty {
                     ContentUnavailableView(
-                        "No Invoices",
+                        LocalizationKey.Invoice.empty,
                         systemImage: "doc.text",
-                        description: Text("Tap + to create your first invoice")
+                        description: Text(LocalizationKey.Invoice.emptyDescription)
                     )
                 }
             }
@@ -73,15 +73,15 @@ struct InvoiceRow: View {
                 
                 HStack {
                     if invoice.isPaid {
-                        Label("Paid", systemImage: "checkmark.circle.fill")
+                        Label(LocalizationKey.Invoice.paid, systemImage: "checkmark.circle.fill")
                             .font(.caption)
                             .foregroundStyle(.green)
                     } else if invoice.isOverdue {
-                        Label("Overdue", systemImage: "exclamationmark.triangle.fill")
+                        Label(LocalizationKey.Invoice.overdue, systemImage: "exclamationmark.triangle.fill")
                             .font(.caption)
                             .foregroundStyle(.red)
                     } else {
-                        Label("Pending", systemImage: "clock.fill")
+                        Label(LocalizationKey.Invoice.pending, systemImage: "clock.fill")
                             .font(.caption)
                             .foregroundStyle(.orange)
                     }
@@ -93,7 +93,7 @@ struct InvoiceRow: View {
                     }
                 }
                 
-                Text("Due: \(invoice.dueDate, format: .dateTime.month().day().year())")
+                Text("\(String(localized: "invoice.duePrefix.label")): \(invoice.dueDate, format: .dateTime.month().day().year())")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -127,36 +127,36 @@ struct NewInvoiceView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("Invoice Details") {
-                    TextField("Client Name", text: $clientName)
+                Section(String(localized: "invoice.details")) {
+                    TextField(LocalizationKey.Invoice.clientName, text: $clientName)
                     
-                    TextField("Amount", value: $amount, format: .currency(code: "USD"))
+                    TextField(LocalizationKey.Invoice.amount, value: $amount, format: .currency(code: "USD"))
                         .keyboardType(.decimalPad)
                     
-                    DatePicker("Due Date", selection: $dueDate, displayedComponents: .date)
+                    DatePicker(LocalizationKey.Invoice.dueDate, selection: $dueDate, displayedComponents: .date)
                     
-                    Toggle("Paid", isOn: $isPaid)
+                    Toggle(LocalizationKey.Invoice.paid, isOn: $isPaid)
                 }
                 
-                Section("Project") {
-                    Picker("Project (Optional)", selection: $selectedProject) {
-                        Text("None").tag(nil as Project?)
+                Section(String(localized: "invoice.project")) {
+                    Picker(LocalizationKey.Invoice.projectOptional, selection: $selectedProject) {
+                        Text(LocalizationKey.Invoice.none).tag(nil as Project?)
                         ForEach(projects.filter { $0.isActive }) { project in
                             Text(project.name).tag(project as Project?)
                         }
                     }
                 }
             }
-            .navigationTitle("New Invoice")
+            .navigationTitle(LocalizationKey.Invoice.newTitle)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") {
+                    Button(LocalizationKey.Action.cancel) {
                         dismiss()
                     }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Save") {
+                    Button(LocalizationKey.Action.save) {
                         saveInvoice()
                     }
                     .disabled(!isValid)

@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftUI
 import SwiftData
 
 enum ExpenseCategory: String, Codable, CaseIterable {
@@ -16,6 +17,19 @@ enum ExpenseCategory: String, Codable, CaseIterable {
     
     var displayName: String {
         rawValue
+    }
+
+    var localizedDisplayName: LocalizedStringKey {
+        switch self {
+        case .materials:
+            return LocalizationKey.Expense.materials
+        case .labor:
+            return LocalizationKey.Expense.labor
+        case .equipment:
+            return LocalizationKey.Expense.equipment
+        case .misc:
+            return LocalizationKey.Expense.miscellaneous
+        }
     }
 }
 
@@ -46,4 +60,3 @@ final class Expense {
         self.project = project
     }
 }
-

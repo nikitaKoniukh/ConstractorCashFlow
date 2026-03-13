@@ -23,7 +23,7 @@ struct ProjectsListView: View {
                 }
                 .onDelete(perform: deleteProjects)
             }
-            .navigationTitle("Projects")
+            .navigationTitle(LocalizationKey.Project.title)
             .navigationDestination(for: Project.self) { project in
                 ProjectDetailView(project: project)
             }
@@ -35,7 +35,7 @@ struct ProjectsListView: View {
                     Button {
                         appState.isShowingNewProject = true
                     } label: {
-                        Label("Add Project", systemImage: "plus")
+                        Label(LocalizationKey.Project.add, systemImage: "plus")
                     }
                 }
             }
@@ -48,9 +48,9 @@ struct ProjectsListView: View {
             .overlay {
                 if projects.isEmpty {
                     ContentUnavailableView(
-                        "No Projects",
+                        LocalizationKey.Project.empty,
                         systemImage: "folder.badge.plus",
-                        description: Text("Tap + to create your first project")
+                        description: Text(LocalizationKey.Project.emptyDescription)
                     )
                 }
             }
@@ -100,7 +100,7 @@ struct ProjectRow: View {
                 
                 Spacer()
                 
-                Text("Balance: \(project.balance, format: .currency(code: "USD"))")
+                Text("\(String(localized: "project.balance.label")): \(project.balance, format: .currency(code: "USD"))")
                     .font(.caption)
                     .foregroundStyle(project.balance >= 0 ? .green : .red)
             }
@@ -114,7 +114,7 @@ struct ProjectDetailView: View {
     let project: Project
     
     var body: some View {
-        Text("Project Detail: \(project.name)")
+        Text("\(String(localized: "project.detailTitle.label")): \(project.name)")
             .navigationTitle(project.name)
     }
 }
@@ -135,30 +135,30 @@ struct NewProjectView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("Project Information") {
-                    TextField("Project Name", text: $name)
-                    TextField("Client Name", text: $clientName)
+                Section(String(localized: "project.information")) {
+                    TextField(LocalizationKey.Project.name, text: $name)
+                    TextField(LocalizationKey.Project.clientName, text: $clientName)
                 }
                 
-                Section("Budget") {
-                    TextField("Budget", value: $budget, format: .currency(code: "USD"))
+                Section(String(localized: "project.budget")) {
+                    TextField(LocalizationKey.Project.budget, value: $budget, format: .currency(code: "USD"))
                         .keyboardType(.decimalPad)
                 }
                 
                 Section {
-                    Toggle("Active Project", isOn: $isActive)
+                    Toggle(LocalizationKey.Project.active, isOn: $isActive)
                 }
             }
-            .navigationTitle("New Project")
+            .navigationTitle(LocalizationKey.Project.newTitle)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") {
+                    Button(LocalizationKey.Action.cancel) {
                         dismiss()
                     }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Save") {
+                    Button(LocalizationKey.Action.save) {
                         saveProject()
                     }
                     .disabled(!isValid)

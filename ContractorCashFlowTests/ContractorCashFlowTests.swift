@@ -8,10 +8,14 @@
 import Testing
 @testable import ContractorCashFlow
 
+@MainActor
 struct ContractorCashFlowTests {
 
-    @Test func example() async throws {
-        // Write your test here and use APIs like `#expect(...)` to check expected conditions.
+    @Test func settingsTabUsesGearIcon() async throws {
+        #expect(AppTab.settings.iconName == "gearshape.fill")
     }
 
+    @Test func settingsTabExistsInMainTabs() async throws {
+        #expect(AppTab.allCases.contains(.settings))
+    }
 }

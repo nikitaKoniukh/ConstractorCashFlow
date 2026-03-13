@@ -40,6 +40,7 @@ enum AppTab: String, CaseIterable {
     case expenses = "Expenses"
     case invoices = "Invoices"
     case clients = "Clients"
+    case settings = "Settings"
     
     var iconName: String {
         switch self {
@@ -51,10 +52,23 @@ enum AppTab: String, CaseIterable {
             return "doc.text.fill"
         case .clients:
             return "person.2.fill"
+        case .settings:
+            return "gearshape.fill"
         }
     }
     
-    var displayName: String {
-        rawValue
+    var displayNameKey: LocalizedStringKey {
+        switch self {
+        case .projects:
+            return LocalizationKey.Tab.projects
+        case .expenses:
+            return LocalizationKey.Tab.expenses
+        case .invoices:
+            return LocalizationKey.Tab.invoices
+        case .clients:
+            return LocalizationKey.Tab.clients
+        case .settings:
+            return LocalizationKey.Tab.settings
+        }
     }
 }

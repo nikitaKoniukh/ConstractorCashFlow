@@ -11,6 +11,7 @@ import SwiftData
 @main
 struct ContractorCashFlowApp: App {
     @State private var appState = AppState()
+    @State private var languageManager = LanguageManager.shared
     
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
@@ -32,6 +33,10 @@ struct ContractorCashFlowApp: App {
         WindowGroup {
             RootTabView()
                 .environment(appState)
+                .environment(languageManager)
+                .environment(\.locale, languageManager.currentLocale)
+                .environment(\.layoutDirection, languageManager.layoutDirection)
+                .id(languageManager.currentLanguage.rawValue) // Force view recreation on language change
         }
         .modelContainer(sharedModelContainer)
     }
