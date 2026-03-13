@@ -31,6 +31,20 @@ final class AppState {
     /// Search query for filtering
     var searchQuery: String = ""
     
+    // MARK: - Error Handling
+    
+    /// Error message to display in alert
+    var errorMessage: String?
+    
+    /// Flag to show/hide error alert
+    var isShowingError: Bool = false
+    
+    /// Shows an error alert with the given message
+    func showError(_ message: String) {
+        errorMessage = message
+        isShowingError = true
+    }
+    
     init() {}
 }
 

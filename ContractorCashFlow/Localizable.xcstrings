@@ -17,6 +17,9 @@
     "• %@" : {
 
     },
+    "A client with this name already exists. Consider selecting from existing clients." : {
+
+    },
     "action.add" : {
 
     },
@@ -76,7 +79,28 @@
     "action.search" : {
 
     },
+    "Add Client" : {
+
+    },
+    "Add contact details for this new client. These details will be saved and can be edited later." : {
+
+    },
+    "Add Expense" : {
+
+    },
+    "Add Invoice" : {
+
+    },
     "Add Item" : {
+
+    },
+    "Add Project" : {
+
+    },
+    "Add your first client to manage contacts and projects" : {
+
+    },
+    "Add your first project to get started tracking expenses and invoices" : {
 
     },
     "All Categories" : {
@@ -137,6 +161,12 @@
 
     },
     "Clear All Filters" : {
+
+    },
+    "Client Information" : {
+
+    },
+    "Client Source" : {
 
     },
     "client.add" : {
@@ -412,6 +442,12 @@
 
     },
     "End Date" : {
+
+    },
+    "Enter Name" : {
+
+    },
+    "Error" : {
 
     },
     "expense.add" : {
@@ -1189,6 +1225,27 @@
     "Item at %@" : {
 
     },
+    "New Client Details (Optional)" : {
+
+    },
+    "No Clients" : {
+
+    },
+    "No Expenses" : {
+
+    },
+    "No expenses recorded yet. Start tracking your project costs" : {
+
+    },
+    "No Invoices" : {
+
+    },
+    "No invoices created yet. Start billing your clients" : {
+
+    },
+    "No Projects" : {
+
+    },
     "Notification Status" : {
 
     },
@@ -1196,6 +1253,9 @@
 
     },
     "Notifications" : {
+
+    },
+    "OK" : {
 
     },
     "Overdue Alerts" : {
@@ -1564,7 +1624,13 @@
     "Search invoices" : {
 
     },
+    "Select a client" : {
+
+    },
     "Select an item" : {
+
+    },
+    "Select Existing" : {
 
     },
     "settings.about" : {

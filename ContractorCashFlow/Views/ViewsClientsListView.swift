@@ -39,6 +39,14 @@ struct ClientsListView: View {
             )) {
                 NewClientView()
             }
+            .alert("Error", isPresented: Binding(
+                get: { appState.isShowingError },
+                set: { appState.isShowingError = $0 }
+            )) {
+                Button("OK", role: .cancel) { }
+            } message: {
+                Text(appState.errorMessage ?? "An error occurred")
+            }
         }
     }
 }
@@ -46,6 +54,7 @@ struct ClientsListView: View {
 // MARK: - Clients List Content (with filtering)
 private struct ClientsListContent: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(AppState.self) private var appState
     let searchText: String
     
     init(searchText: String) {
@@ -80,13 +89,21 @@ private struct ClientsListContent: View {
         .overlay {
             if clients.isEmpty {
                 if searchText.isEmpty {
-                    ContentUnavailableView(
-                        LocalizationKey.ClientS.empty,
-                        systemImage: "person.2",
-                        description: Text(LocalizationKey.ClientS.emptyDescription)
-                    )
+                    // Enhanced empty state with CTA button
+                    ContentUnavailableView {
+                        Label("No Clients", systemImage: "person.2")
+                    } description: {
+                        Text("Add your first client to manage contacts and projects")
+                    } actions: {
+                        Button {
+                            appState.isShowingNewClient = true
+                        } label: {
+                            Text("Add Client")
+                        }
+                        .buttonStyle(.borderedProminent)
+                    }
                 } else {
-                    ContentUnavailableView.search
+                    ContentUnavailableView.search(text: searchText)
                 }
             }
         }
@@ -95,7 +112,12 @@ private struct ClientsListContent: View {
     private func deleteClients(offsets: IndexSet) {
         withAnimation {
             for index in offsets {
-                modelContext.delete(clients[index])
+                do {
+                    modelContext.delete(clients[index])
+                    try modelContext.save()
+                } catch {
+                    appState.showError("Failed to delete client: \(error.localizedDescription)")
+                }
             }
         }
     }
@@ -164,12 +186,14 @@ struct ClientDetailView: View {
 struct NewClientView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
+    @Environment(AppState.self) private var appState
     
     @State private var name: String = ""
     @State private var email: String = ""
     @State private var phone: String = ""
     @State private var address: String = ""
     @State private var notes: String = ""
+    @State private var isSaving: Bool = false
     
     private var isValid: Bool {
         !name.isEmpty
@@ -206,18 +230,21 @@ struct NewClientView: View {
                     Button(LocalizationKey.Action.cancel) {
                         dismiss()
                     }
+                    .disabled(isSaving)
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button(LocalizationKey.Action.save) {
                         saveClient()
                     }
-                    .disabled(!isValid)
+                    .disabled(!isValid || isSaving)
                 }
             }
         }
     }
     
     private func saveClient() {
+        isSaving = true
+        
         let client = Client(
             name: name,
             email: email.isEmpty ? nil : email,
@@ -225,8 +252,15 @@ struct NewClientView: View {
             address: address.isEmpty ? nil : address,
             notes: notes.isEmpty ? nil : notes
         )
-        modelContext.insert(client)
-        dismiss()
+        
+        do {
+            modelContext.insert(client)
+            try modelContext.save()
+            dismiss()
+        } catch {
+            appState.showError("Failed to save client: \(error.localizedDescription)")
+            isSaving = false
+        }
     }
 }
 

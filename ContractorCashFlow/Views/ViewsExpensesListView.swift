@@ -61,6 +61,14 @@ struct ExpensesListView: View {
                     endDate: $endDate
                 )
             }
+            .alert("Error", isPresented: Binding(
+                get: { appState.isShowingError },
+                set: { appState.isShowingError = $0 }
+            )) {
+                Button("OK", role: .cancel) { }
+            } message: {
+                Text(appState.errorMessage ?? "An error occurred")
+            }
         }
     }
     
@@ -72,6 +80,7 @@ struct ExpensesListView: View {
 // MARK: - Expenses List Content (with filtering)
 private struct ExpensesListContent: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(AppState.self) private var appState
     let searchText: String
     let selectedCategory: ExpenseCategory?
     let startDate: Date?
@@ -119,11 +128,19 @@ private struct ExpensesListContent: View {
         .overlay {
             if expenses.isEmpty {
                 if searchText.isEmpty && selectedCategory == nil && startDate == nil && endDate == nil {
-                    ContentUnavailableView(
-                        LocalizationKey.Expense.empty,
-                        systemImage: "dollarsign.circle",
-                        description: Text(LocalizationKey.Expense.emptyDescription)
-                    )
+                    // Enhanced empty state with CTA button
+                    ContentUnavailableView {
+                        Label("No Expenses", systemImage: "dollarsign.circle")
+                    } description: {
+                        Text("No expenses recorded yet. Start tracking your project costs")
+                    } actions: {
+                        Button {
+                            appState.isShowingNewExpense = true
+                        } label: {
+                            Text("Add Expense")
+                        }
+                        .buttonStyle(.borderedProminent)
+                    }
                 } else {
                     ContentUnavailableView.search(text: searchText.isEmpty ? "No matching expenses" : searchText)
                 }
@@ -134,7 +151,12 @@ private struct ExpensesListContent: View {
     private func deleteExpenses(offsets: IndexSet) {
         withAnimation {
             for index in offsets {
-                modelContext.delete(expenses[index])
+                do {
+                    modelContext.delete(expenses[index])
+                    try modelContext.save()
+                } catch {
+                    appState.showError("Failed to delete expense: \(error.localizedDescription)")
+                }
             }
         }
     }
@@ -273,6 +295,7 @@ struct ExpenseRow: View {
 struct NewExpenseView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
+    @Environment(AppState.self) private var appState
     @Query private var projects: [Project]
     
     @State private var category: ExpenseCategory = .materials
@@ -280,6 +303,7 @@ struct NewExpenseView: View {
     @State private var descriptionText: String = ""
     @State private var date: Date = Date()
     @State private var selectedProject: Project?
+    @State private var isSaving: Bool = false
     
     private var isValid: Bool {
         !descriptionText.isEmpty && amount > 0
@@ -323,18 +347,21 @@ struct NewExpenseView: View {
                     Button(LocalizationKey.Action.cancel) {
                         dismiss()
                     }
+                    .disabled(isSaving)
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button(LocalizationKey.Action.save) {
                         saveExpense()
                     }
-                    .disabled(!isValid)
+                    .disabled(!isValid || isSaving)
                 }
             }
         }
     }
     
     private func saveExpense() {
+        isSaving = true
+        
         let expense = Expense(
             category: category,
             amount: amount,
@@ -342,8 +369,23 @@ struct NewExpenseView: View {
             date: date,
             project: selectedProject
         )
-        modelContext.insert(expense)
-        dismiss()
+        
+        do {
+            modelContext.insert(expense)
+            try modelContext.save()
+            
+            // Check budget notifications if associated with a project
+            if let project = selectedProject {
+                Task {
+                    await NotificationService.shared.checkBudgetAndScheduleNotifications(for: project)
+                }
+            }
+            
+            dismiss()
+        } catch {
+            appState.showError("Failed to save expense: \(error.localizedDescription)")
+            isSaving = false
+        }
     }
 }
 

@@ -82,6 +82,7 @@ enum InvoiceStatusFilter: String, CaseIterable {
 // MARK: - Invoices List Content (with filtering)
 private struct InvoicesListContent: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(AppState.self) private var appState
     let searchText: String
     let statusFilter: InvoiceStatusFilter
     
@@ -132,11 +133,19 @@ private struct InvoicesListContent: View {
         .overlay {
             if invoices.isEmpty {
                 if searchText.isEmpty && statusFilter == .all {
-                    ContentUnavailableView(
-                        LocalizationKey.Invoice.empty,
-                        systemImage: "doc.text",
-                        description: Text(LocalizationKey.Invoice.emptyDescription)
-                    )
+                    // Enhanced empty state with CTA button
+                    ContentUnavailableView {
+                        Label("No Invoices", systemImage: "doc.text")
+                    } description: {
+                        Text("No invoices created yet. Start billing your clients")
+                    } actions: {
+                        Button {
+                            appState.isShowingNewInvoice = true
+                        } label: {
+                            Text("Add Invoice")
+                        }
+                        .buttonStyle(.borderedProminent)
+                    }
                 } else {
                     ContentUnavailableView.search(text: searchText.isEmpty ? "No matching invoices" : searchText)
                 }
@@ -147,7 +156,17 @@ private struct InvoicesListContent: View {
     private func deleteInvoices(offsets: IndexSet) {
         withAnimation {
             for index in offsets {
-                modelContext.delete(invoices[index])
+                let invoice = invoices[index]
+                do {
+                    // Cancel notifications before deleting
+                    Task {
+                        await NotificationService.shared.cancelNotifications(for: invoice)
+                    }
+                    modelContext.delete(invoice)
+                    try modelContext.save()
+                } catch {
+                    appState.showError("Failed to delete invoice: \(error.localizedDescription)")
+                }
             }
         }
     }
@@ -204,6 +223,7 @@ struct InvoiceRow: View {
 struct NewInvoiceView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
+    @Environment(AppState.self) private var appState
     @Query private var projects: [Project]
     
     @State private var amount: Double = 0
@@ -211,6 +231,7 @@ struct NewInvoiceView: View {
     @State private var dueDate: Date = Calendar.current.date(byAdding: .day, value: 30, to: Date()) ?? Date()
     @State private var isPaid: Bool = false
     @State private var selectedProject: Project?
+    @State private var isSaving: Bool = false
     
     private var isValid: Bool {
         !clientName.isEmpty && amount > 0
@@ -246,18 +267,21 @@ struct NewInvoiceView: View {
                     Button(LocalizationKey.Action.cancel) {
                         dismiss()
                     }
+                    .disabled(isSaving)
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button(LocalizationKey.Action.save) {
                         saveInvoice()
                     }
-                    .disabled(!isValid)
+                    .disabled(!isValid || isSaving)
                 }
             }
         }
     }
     
     private func saveInvoice() {
+        isSaving = true
+        
         let invoice = Invoice(
             amount: amount,
             dueDate: dueDate,
@@ -265,8 +289,23 @@ struct NewInvoiceView: View {
             clientName: clientName,
             project: selectedProject
         )
-        modelContext.insert(invoice)
-        dismiss()
+        
+        do {
+            modelContext.insert(invoice)
+            try modelContext.save()
+            
+            // Schedule notifications if not paid
+            if !isPaid {
+                Task {
+                    await NotificationService.shared.scheduleNotifications(for: invoice)
+                }
+            }
+            
+            dismiss()
+        } catch {
+            appState.showError("Failed to save invoice: \(error.localizedDescription)")
+            isSaving = false
+        }
     }
 }
 
