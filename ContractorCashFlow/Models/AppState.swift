@@ -40,6 +40,7 @@ enum AppTab: String, CaseIterable {
     case expenses = "Expenses"
     case invoices = "Invoices"
     case clients = "Clients"
+    case analytics = "Analytics"
     case settings = "Settings"
     
     var iconName: String {
@@ -52,6 +53,8 @@ enum AppTab: String, CaseIterable {
             return "doc.text.fill"
         case .clients:
             return "person.2.fill"
+        case .analytics:
+            return "chart.bar.fill"
         case .settings:
             return "gearshape.fill"
         }
@@ -67,6 +70,8 @@ enum AppTab: String, CaseIterable {
             return LocalizationKey.Tab.invoices
         case .clients:
             return LocalizationKey.Tab.clients
+        case .analytics:
+            return LocalizationKey.Tab.analytics
         case .settings:
             return LocalizationKey.Tab.settings
         }

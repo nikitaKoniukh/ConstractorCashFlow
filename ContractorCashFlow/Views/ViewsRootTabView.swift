@@ -40,6 +40,12 @@ struct RootTabView: View {
                     Label(AppTab.clients.displayNameKey, systemImage: AppTab.clients.iconName)
                 }
                 .tag(AppTab.clients)
+            
+            AnalyticsView()
+                .tabItem {
+                    Label(AppTab.analytics.displayNameKey, systemImage: AppTab.analytics.iconName)
+                }
+                .tag(AppTab.analytics)
 
             SettingsView()
                 .tabItem {

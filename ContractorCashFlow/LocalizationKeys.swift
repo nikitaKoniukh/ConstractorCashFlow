@@ -83,7 +83,7 @@ enum LocalizationKey {
     }
     
     // MARK: - Clients
-    enum Client {
+    enum ClientS {
         static let title = LocalizedStringKey("client.title")
         static let add = LocalizedStringKey("client.add")
         static let name = LocalizedStringKey("client.name")
@@ -128,12 +128,28 @@ enum LocalizationKey {
         static let add = LocalizedStringKey("action.add")
     }
     
+    // MARK: - Analytics
+    enum Analytics {
+        static let title = LocalizedStringKey("analytics.title")
+        static let incomeVsExpenses = LocalizedStringKey("analytics.incomeVsExpenses")
+        static let expensesByCategory = LocalizedStringKey("analytics.expensesByCategory")
+        static let budgetUtilization = LocalizedStringKey("analytics.budgetUtilization")
+        static let netBalance = LocalizedStringKey("analytics.netBalance")
+        static let income = LocalizedStringKey("analytics.income")
+        static let expenses = LocalizedStringKey("analytics.expenses")
+        static let averageUtilization = LocalizedStringKey("analytics.averageUtilization")
+        static let noFinancialData = LocalizedStringKey("analytics.noFinancialData")
+        static let noExpenseData = LocalizedStringKey("analytics.noExpenseData")
+        static let noProjectData = LocalizedStringKey("analytics.noProjectData")
+    }
+    
     // MARK: - Tab Bar
     enum Tab {
         static let projects = LocalizedStringKey("tab.projects")
         static let expenses = LocalizedStringKey("tab.expenses")
         static let invoices = LocalizedStringKey("tab.invoices")
         static let clients = LocalizedStringKey("tab.clients")
+        static let analytics = LocalizedStringKey("tab.analytics")
         static let settings = LocalizedStringKey("tab.settings")
     }
 }

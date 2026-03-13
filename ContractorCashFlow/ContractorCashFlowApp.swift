@@ -37,6 +37,10 @@ struct ContractorCashFlowApp: App {
                 .environment(\.locale, languageManager.currentLocale)
                 .environment(\.layoutDirection, languageManager.layoutDirection)
                 .id(languageManager.currentLanguage.rawValue) // Force view recreation on language change
+                .task {
+                    // Request notification permission on first launch
+                    await NotificationService.shared.requestPermissionIfNeeded()
+                }
         }
         .modelContainer(sharedModelContainer)
     }

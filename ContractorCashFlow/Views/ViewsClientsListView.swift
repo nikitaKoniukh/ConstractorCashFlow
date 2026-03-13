@@ -23,7 +23,7 @@ struct ClientsListView: View {
                 }
                 .onDelete(perform: deleteClients)
             }
-            .navigationTitle(LocalizationKey.Client.title)
+            .navigationTitle(LocalizationKey.ClientS.title)
             .navigationDestination(for: Client.self) { client in
                 ClientDetailView(client: client)
             }
@@ -35,7 +35,7 @@ struct ClientsListView: View {
                     Button {
                         appState.isShowingNewClient = true
                     } label: {
-                        Label(LocalizationKey.Client.add, systemImage: "plus")
+                        Label(LocalizationKey.ClientS.add, systemImage: "plus")
                     }
                 }
             }
@@ -48,9 +48,9 @@ struct ClientsListView: View {
             .overlay {
                 if clients.isEmpty {
                     ContentUnavailableView(
-                        LocalizationKey.Client.empty,
+                        LocalizationKey.ClientS.empty,
                         systemImage: "person.2",
-                        description: Text(LocalizationKey.Client.emptyDescription)
+                        description: Text(LocalizationKey.ClientS.emptyDescription)
                     )
                 }
             }
@@ -98,18 +98,18 @@ struct ClientDetailView: View {
     var body: some View {
         List {
             Section(String(localized: "client.information")) {
-                LabeledContent(LocalizationKey.Client.name, value: client.name)
+                LabeledContent(LocalizationKey.ClientS.name, value: client.name)
                 
                 if let email = client.email {
-                    LabeledContent(LocalizationKey.Client.email, value: email)
+                    LabeledContent(LocalizationKey.ClientS.email, value: email)
                 }
                 
                 if let phone = client.phone {
-                    LabeledContent(LocalizationKey.Client.phone, value: phone)
+                    LabeledContent(LocalizationKey.ClientS.phone, value: phone)
                 }
                 
                 if let address = client.address {
-                    LabeledContent(LocalizationKey.Client.address) {
+                    LabeledContent(LocalizationKey.ClientS.address) {
                         Text(address)
                             .multilineTextAlignment(.trailing)
                     }
@@ -144,27 +144,27 @@ struct NewClientView: View {
         NavigationStack {
             Form {
                 Section(String(localized: "client.information")) {
-                    TextField(LocalizationKey.Client.name, text: $name)
-                    TextField(LocalizationKey.Client.email, text: $email)
+                    TextField(LocalizationKey.ClientS.name, text: $name)
+                    TextField(LocalizationKey.ClientS.email, text: $email)
                         .textContentType(.emailAddress)
                         .keyboardType(.emailAddress)
                         .autocapitalization(.none)
-                    TextField(LocalizationKey.Client.phone, text: $phone)
+                    TextField(LocalizationKey.ClientS.phone, text: $phone)
                         .textContentType(.telephoneNumber)
                         .keyboardType(.phonePad)
                 }
                 
                 Section(String(localized: "client.address")) {
-                    TextField(LocalizationKey.Client.address, text: $address, axis: .vertical)
+                    TextField(LocalizationKey.ClientS.address, text: $address, axis: .vertical)
                         .lineLimit(3...5)
                 }
                 
                 Section(String(localized: "client.notes")) {
-                    TextField(LocalizationKey.Client.notes, text: $notes, axis: .vertical)
+                    TextField(LocalizationKey.ClientS.notes, text: $notes, axis: .vertical)
                         .lineLimit(4...8)
                 }
             }
-            .navigationTitle(LocalizationKey.Client.newTitle)
+            .navigationTitle(LocalizationKey.ClientS.newTitle)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {

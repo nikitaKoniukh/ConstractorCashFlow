@@ -79,6 +79,54 @@
     "Add Item" : {
 
     },
+    "Amount" : {
+
+    },
+    "analytics.averageUtilization" : {
+
+    },
+    "analytics.budgetUtilization" : {
+
+    },
+    "analytics.expenses" : {
+
+    },
+    "analytics.expensesByCategory" : {
+
+    },
+    "analytics.income" : {
+
+    },
+    "analytics.incomeVsExpenses" : {
+
+    },
+    "analytics.netBalance" : {
+
+    },
+    "analytics.noExpenseData" : {
+
+    },
+    "analytics.noFinancialData" : {
+
+    },
+    "analytics.noProjectData" : {
+
+    },
+    "analytics.title" : {
+
+    },
+    "Budget Warnings" : {
+
+    },
+    "Cancel All" : {
+
+    },
+    "Category" : {
+
+    },
+    "Check Permission Status" : {
+
+    },
     "client.add" : {
       "localizations" : {
         "en" : {
@@ -320,6 +368,21 @@
           }
         }
       }
+    },
+    "Create Project at 85% Budget" : {
+
+    },
+    "Create Project at 105% Budget" : {
+
+    },
+    "Create Test Invoice (Due in 2 days)" : {
+
+    },
+    "Create Test Invoice (Due in 4 days - will trigger reminder)" : {
+
+    },
+    "Create Test Invoice (Overdue)" : {
+
     },
     "dashboard.expenses" : {
 
@@ -707,6 +770,12 @@
         }
       }
     },
+    "Invoice" : {
+
+    },
+    "Invoice Reminders" : {
+
+    },
     "invoice.add" : {
       "localizations" : {
         "en" : {
@@ -1087,6 +1156,33 @@
     "Item at %@" : {
 
     },
+    "Notification Status" : {
+
+    },
+    "Notification Tests" : {
+
+    },
+    "Notifications" : {
+
+    },
+    "Overdue Alerts" : {
+
+    },
+    "Paid" : {
+
+    },
+    "Pending Notifications: %lld" : {
+
+    },
+    "Print All Notifications" : {
+
+    },
+    "Print All Pending" : {
+
+    },
+    "Project" : {
+
+    },
     "project.active" : {
       "localizations" : {
         "en" : {
@@ -1416,6 +1512,12 @@
           }
         }
       }
+    },
+    "Refresh Count" : {
+
+    },
+    "Save" : {
+
     },
     "Select an item" : {
 
@@ -1753,6 +1855,9 @@
         }
       }
     },
+    "tab.analytics" : {
+
+    },
     "tab.clients" : {
       "localizations" : {
         "en" : {
@@ -1862,6 +1967,15 @@
           }
         }
       }
+    },
+    "Test Budget Notifications" : {
+
+    },
+    "Test Invoice Notifications" : {
+
+    },
+    "Type" : {
+
     }
   },
   "version" : "1.0"

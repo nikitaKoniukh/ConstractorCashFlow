@@ -40,13 +40,22 @@ struct SettingsView: View {
                     Toggle(isOn: $invoiceRemindersEnabled) {
                         Label(LocalizationKey.Settings.invoiceReminders, systemImage: "calendar.badge.clock")
                     }
+                    .onChange(of: invoiceRemindersEnabled) { _, _ in
+                        handleNotificationSettingsChange()
+                    }
 
                     Toggle(isOn: $overdueAlertsEnabled) {
                         Label(LocalizationKey.Settings.overdueAlerts, systemImage: "exclamationmark.bubble")
                     }
+                    .onChange(of: overdueAlertsEnabled) { _, _ in
+                        handleNotificationSettingsChange()
+                    }
 
                     Toggle(isOn: $budgetWarningsEnabled) {
                         Label(LocalizationKey.Settings.budgetWarnings, systemImage: "chart.bar.doc.horizontal")
+                    }
+                    .onChange(of: budgetWarningsEnabled) { _, _ in
+                        handleBudgetSettingsChange()
                     }
                 } header: {
                     Text(LocalizationKey.Settings.notifications)
@@ -134,6 +143,20 @@ struct SettingsView: View {
 
         exportDocument = JSONExportDocument(data: data)
         isExporting = true
+    }
+    
+    // MARK: - Notification Settings Handlers
+    
+    private func handleNotificationSettingsChange() {
+        Task {
+            await NotificationService.shared.rescheduleAllInvoiceNotifications(from: modelContext)
+        }
+    }
+    
+    private func handleBudgetSettingsChange() {
+        Task {
+            await NotificationService.shared.rescheduleAllBudgetNotifications(from: modelContext)
+        }
     }
 }
 
