@@ -11,18 +11,32 @@ import SwiftData
 struct ExpensesListView: View {
     @Environment(AppState.self) private var appState
     @Environment(\.modelContext) private var modelContext
-    @Query(sort: \Expense.date, order: .reverse) private var expenses: [Expense]
+    
+    @State private var searchText: String = ""
+    @State private var selectedCategory: ExpenseCategory?
+    @State private var startDate: Date?
+    @State private var endDate: Date?
+    @State private var isShowingFilters = false
     
     var body: some View {
         NavigationStack {
-            List {
-                ForEach(expenses) { expense in
-                    ExpenseRow(expense: expense)
-                }
-                .onDelete(perform: deleteExpenses)
-            }
+            ExpensesListContent(
+                searchText: searchText,
+                selectedCategory: selectedCategory,
+                startDate: startDate,
+                endDate: endDate
+            )
             .navigationTitle(LocalizationKey.Expense.title)
+            .searchable(text: $searchText, prompt: "Search expenses")
             .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button {
+                        isShowingFilters.toggle()
+                    } label: {
+                        Label("Filters", systemImage: hasActiveFilters ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease.circle")
+                    }
+                }
+                
                 ToolbarItem(placement: .navigationBarTrailing) {
                     EditButton()
                 }
@@ -40,13 +54,78 @@ struct ExpensesListView: View {
             )) {
                 NewExpenseView()
             }
-            .overlay {
-                if expenses.isEmpty {
+            .sheet(isPresented: $isShowingFilters) {
+                ExpenseFiltersView(
+                    selectedCategory: $selectedCategory,
+                    startDate: $startDate,
+                    endDate: $endDate
+                )
+            }
+        }
+    }
+    
+    private var hasActiveFilters: Bool {
+        selectedCategory != nil || startDate != nil || endDate != nil
+    }
+}
+
+// MARK: - Expenses List Content (with filtering)
+private struct ExpensesListContent: View {
+    @Environment(\.modelContext) private var modelContext
+    let searchText: String
+    let selectedCategory: ExpenseCategory?
+    let startDate: Date?
+    let endDate: Date?
+    
+    init(searchText: String, selectedCategory: ExpenseCategory?, startDate: Date?, endDate: Date?) {
+        self.searchText = searchText
+        self.selectedCategory = selectedCategory
+        self.startDate = startDate
+        self.endDate = endDate
+        
+        // Build complex predicate with all filters
+        let predicate: Predicate<Expense>
+        
+        // Capture values outside the predicate to simplify the expression
+        let hasStart = startDate != nil
+        let hasEnd = endDate != nil
+        let hasCategory = selectedCategory != nil
+        let searchEmpty = searchText.isEmpty
+        
+        predicate = #Predicate<Expense> { expense in
+            // All conditions combined into ONE single expression
+            (searchEmpty || expense.descriptionText.localizedStandardContains(searchText)) &&
+            (!hasCategory || expense.category == selectedCategory!) &&
+            (
+                (!hasStart && !hasEnd) ||
+                (hasStart && hasEnd && expense.date >= startDate! && expense.date <= endDate!) ||
+                (hasStart && !hasEnd && expense.date >= startDate!) ||
+                (!hasStart && hasEnd && expense.date <= endDate!)
+            )
+        }
+        
+        _expenses = Query(filter: predicate, sort: \Expense.date, order: .reverse)
+    }
+    
+    @Query private var expenses: [Expense]
+    
+    var body: some View {
+        List {
+            ForEach(expenses) { expense in
+                ExpenseRow(expense: expense)
+            }
+            .onDelete(perform: deleteExpenses)
+        }
+        .overlay {
+            if expenses.isEmpty {
+                if searchText.isEmpty && selectedCategory == nil && startDate == nil && endDate == nil {
                     ContentUnavailableView(
                         LocalizationKey.Expense.empty,
                         systemImage: "dollarsign.circle",
                         description: Text(LocalizationKey.Expense.emptyDescription)
                     )
+                } else {
+                    ContentUnavailableView.search(text: searchText.isEmpty ? "No matching expenses" : searchText)
                 }
             }
         }
@@ -58,6 +137,94 @@ struct ExpensesListView: View {
                 modelContext.delete(expenses[index])
             }
         }
+    }
+}
+
+// MARK: - Expense Filters View
+private struct ExpenseFiltersView: View {
+    @Environment(\.dismiss) private var dismiss
+    
+    @Binding var selectedCategory: ExpenseCategory?
+    @Binding var startDate: Date?
+    @Binding var endDate: Date?
+    
+    @State private var isUsingStartDate = false
+    @State private var isUsingEndDate = false
+    @State private var tempStartDate = Date()
+    @State private var tempEndDate = Date()
+    
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section("Category") {
+                    Picker("Filter by Category", selection: $selectedCategory) {
+                        Text("All Categories").tag(nil as ExpenseCategory?)
+                        ForEach(ExpenseCategory.allCases, id: \.self) { category in
+                            Text(category.displayName).tag(category as ExpenseCategory?)
+                        }
+                    }
+                    .pickerStyle(.inline)
+                    .labelsHidden()
+                }
+                
+                Section("Date Range") {
+                    Toggle("Start Date", isOn: $isUsingStartDate)
+                    if isUsingStartDate {
+                        DatePicker("From", selection: $tempStartDate, displayedComponents: .date)
+                    }
+                    
+                    Toggle("End Date", isOn: $isUsingEndDate)
+                    if isUsingEndDate {
+                        DatePicker("To", selection: $tempEndDate, displayedComponents: .date)
+                    }
+                }
+                
+                Section {
+                    Button("Clear All Filters", role: .destructive) {
+                        clearFilters()
+                    }
+                }
+            }
+            .navigationTitle("Filter Expenses")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") {
+                        dismiss()
+                    }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Apply") {
+                        applyFilters()
+                        dismiss()
+                    }
+                }
+            }
+            .onAppear {
+                isUsingStartDate = startDate != nil
+                isUsingEndDate = endDate != nil
+                if let start = startDate {
+                    tempStartDate = start
+                }
+                if let end = endDate {
+                    tempEndDate = end
+                }
+            }
+        }
+    }
+    
+    private func applyFilters() {
+        startDate = isUsingStartDate ? tempStartDate : nil
+        endDate = isUsingEndDate ? tempEndDate : nil
+    }
+    
+    private func clearFilters() {
+        selectedCategory = nil
+        startDate = nil
+        endDate = nil
+        isUsingStartDate = false
+        isUsingEndDate = false
+        dismiss()
     }
 }
 

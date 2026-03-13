@@ -79,6 +79,9 @@
     "Add Item" : {
 
     },
+    "All Categories" : {
+
+    },
     "Amount" : {
 
     },
@@ -115,7 +118,13 @@
     "analytics.title" : {
 
     },
+    "Apply" : {
+
+    },
     "Budget Warnings" : {
+
+    },
+    "Cancel" : {
 
     },
     "Cancel All" : {
@@ -125,6 +134,9 @@
 
     },
     "Check Permission Status" : {
+
+    },
+    "Clear All Filters" : {
 
     },
     "client.add" : {
@@ -394,6 +406,12 @@
 
     },
     "dashboard.totalBalance" : {
+
+    },
+    "Date Range" : {
+
+    },
+    "End Date" : {
 
     },
     "expense.add" : {
@@ -769,6 +787,21 @@
           }
         }
       }
+    },
+    "Filter" : {
+
+    },
+    "Filter by Category" : {
+
+    },
+    "Filter Expenses" : {
+
+    },
+    "Filters" : {
+
+    },
+    "From" : {
+
     },
     "Invoice" : {
 
@@ -1519,6 +1552,18 @@
     "Save" : {
 
     },
+    "Search by name or client" : {
+
+    },
+    "Search by name, email, or phone" : {
+
+    },
+    "Search expenses" : {
+
+    },
+    "Search invoices" : {
+
+    },
     "Select an item" : {
 
     },
@@ -1855,6 +1900,9 @@
         }
       }
     },
+    "Start Date" : {
+
+    },
     "tab.analytics" : {
 
     },
@@ -1972,6 +2020,9 @@
 
     },
     "Test Invoice Notifications" : {
+
+    },
+    "To" : {
 
     },
     "Type" : {

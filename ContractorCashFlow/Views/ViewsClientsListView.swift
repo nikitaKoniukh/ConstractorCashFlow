@@ -11,22 +11,16 @@ import SwiftData
 struct ClientsListView: View {
     @Environment(AppState.self) private var appState
     @Environment(\.modelContext) private var modelContext
-    @Query(sort: \Client.name) private var clients: [Client]
+    @State private var searchText: String = ""
     
     var body: some View {
         NavigationStack {
-            List {
-                ForEach(clients) { client in
-                    NavigationLink(value: client) {
-                        ClientRow(client: client)
-                    }
-                }
-                .onDelete(perform: deleteClients)
-            }
+            ClientsListContent(searchText: searchText)
             .navigationTitle(LocalizationKey.ClientS.title)
             .navigationDestination(for: Client.self) { client in
                 ClientDetailView(client: client)
             }
+            .searchable(text: $searchText, prompt: "Search by name, email, or phone")
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     EditButton()
@@ -45,13 +39,54 @@ struct ClientsListView: View {
             )) {
                 NewClientView()
             }
-            .overlay {
-                if clients.isEmpty {
+        }
+    }
+}
+
+// MARK: - Clients List Content (with filtering)
+private struct ClientsListContent: View {
+    @Environment(\.modelContext) private var modelContext
+    let searchText: String
+    
+    init(searchText: String) {
+        self.searchText = searchText
+        
+        // Build predicate based on search text
+        let predicate: Predicate<Client>
+        if searchText.isEmpty {
+            predicate = #Predicate<Client> { _ in true }
+        } else {
+            predicate = #Predicate<Client> { client in
+                client.name.localizedStandardContains(searchText) ||
+                (client.email != nil && client.email!.localizedStandardContains(searchText)) ||
+                (client.phone != nil && client.phone!.localizedStandardContains(searchText))
+            }
+        }
+        
+        _clients = Query(filter: predicate, sort: \Client.name)
+    }
+    
+    @Query private var clients: [Client]
+    
+    var body: some View {
+        List {
+            ForEach(clients) { client in
+                NavigationLink(value: client) {
+                    ClientRow(client: client)
+                }
+            }
+            .onDelete(perform: deleteClients)
+        }
+        .overlay {
+            if clients.isEmpty {
+                if searchText.isEmpty {
                     ContentUnavailableView(
                         LocalizationKey.ClientS.empty,
                         systemImage: "person.2",
                         description: Text(LocalizationKey.ClientS.emptyDescription)
                     )
+                } else {
+                    ContentUnavailableView.search
                 }
             }
         }

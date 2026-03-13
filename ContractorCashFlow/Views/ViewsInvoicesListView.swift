@@ -11,18 +11,32 @@ import SwiftData
 struct InvoicesListView: View {
     @Environment(AppState.self) private var appState
     @Environment(\.modelContext) private var modelContext
-    @Query(sort: \Invoice.createdDate, order: .reverse) private var invoices: [Invoice]
+    
+    @State private var searchText: String = ""
+    @State private var selectedStatusFilter: InvoiceStatusFilter = .all
     
     var body: some View {
         NavigationStack {
-            List {
-                ForEach(invoices) { invoice in
-                    InvoiceRow(invoice: invoice)
-                }
-                .onDelete(perform: deleteInvoices)
-            }
+            InvoicesListContent(
+                searchText: searchText,
+                statusFilter: selectedStatusFilter
+            )
             .navigationTitle(LocalizationKey.Invoice.title)
+            .searchable(text: $searchText, prompt: "Search invoices")
             .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Menu {
+                        Picker("Filter", selection: $selectedStatusFilter) {
+                            ForEach(InvoiceStatusFilter.allCases, id: \.self) { filter in
+                                Label(filter.displayName, systemImage: filter.iconName)
+                                    .tag(filter)
+                            }
+                        }
+                    } label: {
+                        Label("Filter", systemImage: selectedStatusFilter == .all ? "line.3.horizontal.decrease.circle" : "line.3.horizontal.decrease.circle.fill")
+                    }
+                }
+                
                 ToolbarItem(placement: .navigationBarTrailing) {
                     EditButton()
                 }
@@ -40,13 +54,91 @@ struct InvoicesListView: View {
             )) {
                 NewInvoiceView()
             }
-            .overlay {
-                if invoices.isEmpty {
+        }
+    }
+}
+
+// MARK: - Invoice Status Filter
+enum InvoiceStatusFilter: String, CaseIterable {
+    case all = "All"
+    case paid = "Paid"
+    case unpaid = "Unpaid"
+    case overdue = "Overdue"
+    
+    var displayName: String {
+        rawValue
+    }
+    
+    var iconName: String {
+        switch self {
+        case .all: return "doc.text"
+        case .paid: return "checkmark.circle.fill"
+        case .unpaid: return "clock.fill"
+        case .overdue: return "exclamationmark.triangle.fill"
+        }
+    }
+}
+
+// MARK: - Invoices List Content (with filtering)
+private struct InvoicesListContent: View {
+    @Environment(\.modelContext) private var modelContext
+    let searchText: String
+    let statusFilter: InvoiceStatusFilter
+    
+    init(searchText: String, statusFilter: InvoiceStatusFilter) {
+        self.searchText = searchText
+        self.statusFilter = statusFilter
+        
+        // Build predicate based on search text and status filter
+        let predicate: Predicate<Invoice>
+        let now = Date()
+        let searchEmpty = searchText.isEmpty
+        
+        // Build single-expression predicate based on status filter
+        switch statusFilter {
+        case .all:
+            predicate = #Predicate<Invoice> { invoice in
+                searchEmpty || invoice.clientName.localizedStandardContains(searchText)
+            }
+        case .paid:
+            predicate = #Predicate<Invoice> { invoice in
+                (searchEmpty || invoice.clientName.localizedStandardContains(searchText)) &&
+                invoice.isPaid
+            }
+        case .unpaid:
+            predicate = #Predicate<Invoice> { invoice in
+                (searchEmpty || invoice.clientName.localizedStandardContains(searchText)) &&
+                !invoice.isPaid && invoice.dueDate >= now
+            }
+        case .overdue:
+            predicate = #Predicate<Invoice> { invoice in
+                (searchEmpty || invoice.clientName.localizedStandardContains(searchText)) &&
+                !invoice.isPaid && invoice.dueDate < now
+            }
+        }
+        
+        _invoices = Query(filter: predicate, sort: \Invoice.createdDate, order: .reverse)
+    }
+    
+    @Query private var invoices: [Invoice]
+    
+    var body: some View {
+        List {
+            ForEach(invoices) { invoice in
+                InvoiceRow(invoice: invoice)
+            }
+            .onDelete(perform: deleteInvoices)
+        }
+        .overlay {
+            if invoices.isEmpty {
+                if searchText.isEmpty && statusFilter == .all {
                     ContentUnavailableView(
                         LocalizationKey.Invoice.empty,
                         systemImage: "doc.text",
                         description: Text(LocalizationKey.Invoice.emptyDescription)
                     )
+                } else {
+                    ContentUnavailableView.search(text: searchText.isEmpty ? "No matching invoices" : searchText)
                 }
             }
         }

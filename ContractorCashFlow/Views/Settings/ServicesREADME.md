@@ -1,6 +1,48 @@
-# NotificationService Implementation
+# ContractorCashFlow - Features Documentation
 
-## Overview
+## Table of Contents
+1. [Search Functionality](#search-functionality)
+2. [Notification Service](#notification-service)
+
+---
+
+## Search Functionality
+
+### Overview
+
+Comprehensive search and filtering capabilities across all major list views using SwiftUI's `.searchable()` and SwiftData's `#Predicate`.
+
+### Features by View
+
+#### Projects
+- **Search:** Filter by project name or client name
+- **Empty State:** Shows appropriate message when no results found
+
+#### Expenses
+- **Search:** Filter by expense description
+- **Filters:**
+  - Category (Materials, Labor, Equipment, Miscellaneous)
+  - Date Range (start date, end date, or both)
+- **UI:** Filter button with active state indicator
+
+#### Invoices
+- **Search:** Filter by client name
+- **Filters:** Payment status (All, Paid, Unpaid, Overdue)
+- **UI:** Quick status menu in toolbar
+
+#### Clients
+- **Search:** Filter by name, email, or phone number
+- **Handles:** Optional fields gracefully
+
+### Documentation
+- 📖 **Full Guide:** `SearchImplementationGuide.md`
+- 🚀 **Quick Reference:** `SearchQuickReference.md`
+
+---
+
+## Notification Service
+
+### Overview
 
 The `NotificationService` provides comprehensive local notification support for the ContractorCashFlow app. It handles invoice reminders, overdue alerts, and budget warnings automatically.
 

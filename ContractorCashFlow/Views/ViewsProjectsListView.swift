@@ -11,22 +11,16 @@ import SwiftData
 struct ProjectsListView: View {
     @Environment(AppState.self) private var appState
     @Environment(\.modelContext) private var modelContext
-    @Query(sort: \Project.createdDate, order: .reverse) private var projects: [Project]
+    @State private var searchText: String = ""
     
     var body: some View {
         NavigationStack {
-            List {
-                ForEach(projects) { project in
-                    NavigationLink(value: project) {
-                        ProjectRow(project: project)
-                    }
-                }
-                .onDelete(perform: deleteProjects)
-            }
+            ProjectsListContent(searchText: searchText)
             .navigationTitle(LocalizationKey.Project.title)
             .navigationDestination(for: Project.self) { project in
                 ProjectDetailView(project: project)
             }
+            .searchable(text: $searchText, prompt: "Search by name or client")
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     EditButton()
@@ -45,13 +39,53 @@ struct ProjectsListView: View {
             )) {
                 NewProjectView()
             }
-            .overlay {
-                if projects.isEmpty {
+        }
+    }
+}
+
+// MARK: - Projects List Content (with filtering)
+private struct ProjectsListContent: View {
+    @Environment(\.modelContext) private var modelContext
+    let searchText: String
+    
+    init(searchText: String) {
+        self.searchText = searchText
+        
+        // Build predicate based on search text
+        let predicate: Predicate<Project>
+        if searchText.isEmpty {
+            predicate = #Predicate<Project> { _ in true }
+        } else {
+            predicate = #Predicate<Project> { project in
+                project.name.localizedStandardContains(searchText) ||
+                project.clientName.localizedStandardContains(searchText)
+            }
+        }
+        
+        _projects = Query(filter: predicate, sort: \Project.createdDate, order: .reverse)
+    }
+    
+    @Query private var projects: [Project]
+    
+    var body: some View {
+        List {
+            ForEach(projects) { project in
+                NavigationLink(value: project) {
+                    ProjectRow(project: project)
+                }
+            }
+            .onDelete(perform: deleteProjects)
+        }
+        .overlay {
+            if projects.isEmpty {
+                if searchText.isEmpty {
                     ContentUnavailableView(
                         LocalizationKey.Project.empty,
                         systemImage: "folder.badge.plus",
                         description: Text(LocalizationKey.Project.emptyDescription)
                     )
+                } else {
+                    ContentUnavailableView.search
                 }
             }
         }
