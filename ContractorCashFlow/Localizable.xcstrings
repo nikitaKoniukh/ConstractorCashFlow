@@ -1,6 +1,12 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "(%lld%%)" : {
+
+    },
+    "%" : {
+
+    },
     "%@" : {
 
     },
@@ -13,6 +19,22 @@
           }
         }
       }
+    },
+    "%@%% of budget" : {
+
+    },
+    "%lld/%lld paid" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld/%2$lld paid"
+          }
+        }
+      }
+    },
+    "•" : {
+
     },
     "• %@" : {
 
@@ -79,6 +101,12 @@
     "action.search" : {
 
     },
+    "Active" : {
+
+    },
+    "Active Project" : {
+
+    },
     "Add Client" : {
 
     },
@@ -86,6 +114,12 @@
 
     },
     "Add Expense" : {
+
+    },
+    "Add First Expense" : {
+
+    },
+    "Add First Invoice" : {
 
     },
     "Add Invoice" : {
@@ -106,13 +140,22 @@
     "All Categories" : {
 
     },
-    "Amount" : {
-
-    },
     "analytics.averageUtilization" : {
 
     },
     "analytics.budgetUtilization" : {
+
+    },
+    "analytics.chart.amount" : {
+
+    },
+    "analytics.chart.category" : {
+
+    },
+    "analytics.chart.project" : {
+
+    },
+    "analytics.chart.type" : {
 
     },
     "analytics.expenses" : {
@@ -139,10 +182,22 @@
     "analytics.noProjectData" : {
 
     },
+    "analytics.remaining" : {
+
+    },
+    "analytics.spent" : {
+
+    },
     "analytics.title" : {
 
     },
     "Apply" : {
+
+    },
+    "Budget" : {
+
+    },
+    "Budget Utilization" : {
 
     },
     "Budget Warnings" : {
@@ -164,6 +219,9 @@
 
     },
     "Client Information" : {
+
+    },
+    "Client Name" : {
 
     },
     "Client Source" : {
@@ -426,6 +484,9 @@
     "Create Test Invoice (Overdue)" : {
 
     },
+    "Created" : {
+
+    },
     "dashboard.expenses" : {
 
     },
@@ -439,6 +500,12 @@
 
     },
     "Date Range" : {
+
+    },
+    "Due %@" : {
+
+    },
+    "Edit Project" : {
 
     },
     "End Date" : {
@@ -824,6 +891,21 @@
         }
       }
     },
+    "Expenses" : {
+
+    },
+    "Expenses by Category" : {
+
+    },
+    "Export & Share" : {
+
+    },
+    "Export Options" : {
+
+    },
+    "Export Project" : {
+
+    },
     "Filter" : {
 
     },
@@ -836,13 +918,34 @@
     "Filters" : {
 
     },
+    "Financial summary for %@" : {
+
+    },
     "From" : {
+
+    },
+    "Inactive" : {
+
+    },
+    "Inactive projects are hidden from some views but data is preserved" : {
+
+    },
+    "Include Expenses" : {
+
+    },
+    "Include Invoices" : {
+
+    },
+    "Income" : {
 
     },
     "Invoice" : {
 
     },
     "Invoice Reminders" : {
+
+    },
+    "Invoice to %@" : {
 
     },
     "invoice.add" : {
@@ -1222,7 +1325,175 @@
         }
       }
     },
+    "Invoices" : {
+
+    },
     "Item at %@" : {
+
+    },
+    "labor.add" : {
+
+    },
+    "labor.addTitle" : {
+
+    },
+    "labor.allProjects" : {
+
+    },
+    "labor.allTypes" : {
+
+    },
+    "labor.amount" : {
+
+    },
+    "labor.basicInfo" : {
+
+    },
+    "labor.calculatedTotal" : {
+
+    },
+    "labor.clearFilters" : {
+
+    },
+    "labor.completed" : {
+
+    },
+    "labor.completedJobs" : {
+
+    },
+    "labor.createExpenseHint" : {
+
+    },
+    "labor.createExpenseToggle" : {
+
+    },
+    "labor.dateRange" : {
+
+    },
+    "labor.delete" : {
+
+    },
+    "labor.editTitle" : {
+
+    },
+    "labor.endDate" : {
+
+    },
+    "labor.expenseLinked" : {
+
+    },
+    "labor.filters" : {
+
+    },
+    "labor.hourlyRate" : {
+
+    },
+    "labor.hoursWorked" : {
+
+    },
+    "labor.laborType" : {
+
+    },
+    "labor.linkedToExpense" : {
+
+    },
+    "labor.manualOverrideHint" : {
+
+    },
+    "labor.noLabor" : {
+
+    },
+    "labor.noLaborDescription" : {
+
+    },
+    "labor.noProject" : {
+
+    },
+    "labor.noResults" : {
+
+    },
+    "labor.notes" : {
+
+    },
+    "labor.notesPlaceholder" : {
+
+    },
+    "labor.project" : {
+
+    },
+    "labor.projectAssociation" : {
+
+    },
+    "labor.rateAndHours" : {
+
+    },
+    "labor.searchPrompt" : {
+
+    },
+    "labor.selectProject" : {
+
+    },
+    "labor.showCompletedOnly" : {
+
+    },
+    "labor.sortBy" : {
+
+    },
+    "labor.startDate" : {
+
+    },
+    "labor.status" : {
+
+    },
+    "labor.status.completed" : {
+
+    },
+    "labor.title" : {
+
+    },
+    "labor.totalAmount" : {
+
+    },
+    "labor.totalCost" : {
+
+    },
+    "labor.totalEntries" : {
+
+    },
+    "labor.totalHours" : {
+
+    },
+    "labor.type" : {
+
+    },
+    "labor.type.contract" : {
+
+    },
+    "labor.type.daily" : {
+
+    },
+    "labor.type.hourly" : {
+
+    },
+    "labor.type.subcontractor" : {
+
+    },
+    "labor.useEndDate" : {
+
+    },
+    "labor.useStartDate" : {
+
+    },
+    "labor.workDate" : {
+
+    },
+    "labor.workerName" : {
+
+    },
+    "Net Balance" : {
+
+    },
+    "New budget is less than current expenses (%@)" : {
 
     },
     "New Client Details (Optional)" : {
@@ -1234,10 +1505,16 @@
     "No Expenses" : {
 
     },
+    "No expenses recorded" : {
+
+    },
     "No expenses recorded yet. Start tracking your project costs" : {
 
     },
     "No Invoices" : {
+
+    },
+    "No invoices created" : {
 
     },
     "No invoices created yet. Start billing your clients" : {
@@ -1267,13 +1544,25 @@
     "Pending Notifications: %lld" : {
 
     },
+    "Preview" : {
+
+    },
     "Print All Notifications" : {
 
     },
     "Print All Pending" : {
 
     },
-    "Project" : {
+    "Profit Margin" : {
+
+    },
+    "Project Information" : {
+
+    },
+    "Project Name" : {
+
+    },
+    "Project: %@" : {
 
     },
     "project.active" : {
@@ -1453,6 +1742,7 @@
       }
     },
     "project.detailTitle.label" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1607,6 +1897,9 @@
       }
     },
     "Refresh Count" : {
+
+    },
+    "Remaining" : {
 
     },
     "Save" : {
@@ -1966,7 +2259,16 @@
         }
       }
     },
+    "Share" : {
+
+    },
+    "Spent" : {
+
+    },
     "Start Date" : {
+
+    },
+    "Status" : {
 
     },
     "tab.analytics" : {
@@ -2091,7 +2393,10 @@
     "To" : {
 
     },
-    "Type" : {
+    "Total Expenses" : {
+
+    },
+    "Total Income" : {
 
     }
   },

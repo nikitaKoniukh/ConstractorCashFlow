@@ -4,4 +4,10 @@
    <FileRef
       location = "self:">
    </FileRef>
+   <FileRef
+      location = "group:ContractorCashFlowTests.swift">
+   </FileRef>
+   <FileRef
+      location = "group:UNIT_TESTS_DOCUMENTATION.md">
+   </FileRef>
 </Workspace>

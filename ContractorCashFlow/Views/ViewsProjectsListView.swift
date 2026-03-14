@@ -165,13 +165,727 @@ struct ProjectRow: View {
     }
 }
 
-// MARK: - Placeholder Views
+// MARK: - Project Detail View
 struct ProjectDetailView: View {
+    let project: Project
+    @Environment(\.modelContext) private var modelContext
+    @Environment(AppState.self) private var appState
+    
+    @State private var isShowingEditSheet = false
+    @State private var isShowingAddExpense = false
+    @State private var isShowingAddInvoice = false
+    @State private var isShowingShareSheet = false
+    
+    var body: some View {
+        List {
+            // Financial Summary Section
+            Section {
+                FinancialSummaryCard(project: project)
+            }
+            
+            // Project Information Section
+            Section(String(localized: "project.information")) {
+                LabeledContent(LocalizationKey.Project.name, value: project.name)
+                
+                // Clickable client name
+                LabeledContent(LocalizationKey.Project.clientName) {
+                    if let client = findClient(named: project.clientName) {
+                        NavigationLink(value: client) {
+                            Text(project.clientName)
+                                .foregroundStyle(.blue)
+                        }
+                    } else {
+                        Text(project.clientName)
+                    }
+                }
+                
+                LabeledContent(LocalizationKey.Project.budget) {
+                    Text(project.budget, format: .currency(code: "USD"))
+                }
+                LabeledContent("Status") {
+                    HStack {
+                        Circle()
+                            .fill(project.isActive ? Color.green : Color.gray)
+                            .frame(width: 8, height: 8)
+                        Text(project.isActive ? "Active" : "Inactive")
+                            .foregroundStyle(project.isActive ? .primary : .secondary)
+                    }
+                }
+                LabeledContent("Created") {
+                    Text(project.createdDate, style: .date)
+                }
+            }
+            
+            // Budget Utilization Section
+            Section("Budget Utilization") {
+                VStack(alignment: .leading, spacing: 12) {
+                    HStack {
+                        Text("Spent")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                        Spacer()
+                        Text(project.totalExpenses, format: .currency(code: "USD"))
+                            .font(.subheadline)
+                            .fontWeight(.semibold)
+                    }
+                    
+                    ProgressView(value: min(project.budgetUtilization, 100), total: 100) {
+                        Text("\(project.budgetUtilization, format: .number.precision(.fractionLength(1)))% of budget")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                    .tint(budgetColor(for: project.budgetUtilization))
+                    
+                    HStack {
+                        Text("Remaining")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                        Spacer()
+                        Text(max(0, project.budget - project.totalExpenses), format: .currency(code: "USD"))
+                            .font(.subheadline)
+                            .fontWeight(.semibold)
+                            .foregroundStyle(project.totalExpenses > project.budget ? .red : .green)
+                    }
+                }
+                .padding(.vertical, 4)
+            }
+            
+            // Expenses by Category Chart
+            if !project.expenses.isEmpty {
+                Section("Expenses by Category") {
+                    ExpenseCategoryChart(expenses: project.expenses)
+                        .frame(height: 200)
+                }
+            }
+            
+            // Expenses Section
+            Section {
+                if project.expenses.isEmpty {
+                    VStack(spacing: 12) {
+                        Text("No expenses recorded")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                        
+                        Button {
+                            isShowingAddExpense = true
+                        } label: {
+                            Label("Add First Expense", systemImage: "plus.circle.fill")
+                        }
+                        .buttonStyle(.bordered)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .padding(.vertical, 8)
+                } else {
+                    ForEach(project.expenses.sorted(by: { $0.date > $1.date })) { expense in
+                        ExpenseRowView(expense: expense)
+                    }
+                    .onDelete(perform: deleteExpenses)
+                }
+            } header: {
+                HStack {
+                    Text("Expenses")
+                    Spacer()
+                    if !project.expenses.isEmpty {
+                        Button {
+                            isShowingAddExpense = true
+                        } label: {
+                            Image(systemName: "plus.circle.fill")
+                                .foregroundStyle(.blue)
+                        }
+                    }
+                    Text(project.totalExpenses, format: .currency(code: "USD"))
+                        .font(.subheadline)
+                        .foregroundStyle(.red)
+                }
+            }
+            
+            // Invoices Section
+            Section {
+                if project.invoices.isEmpty {
+                    VStack(spacing: 12) {
+                        Text("No invoices created")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                        
+                        Button {
+                            isShowingAddInvoice = true
+                        } label: {
+                            Label("Add First Invoice", systemImage: "plus.circle.fill")
+                        }
+                        .buttonStyle(.bordered)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .padding(.vertical, 8)
+                } else {
+                    ForEach(project.invoices.sorted(by: { $0.createdDate > $1.createdDate })) { invoice in
+                        InvoiceRowView(invoice: invoice)
+                    }
+                    .onDelete(perform: deleteInvoices)
+                }
+            } header: {
+                HStack {
+                    Text("Invoices")
+                    Spacer()
+                    if !project.invoices.isEmpty {
+                        Button {
+                            isShowingAddInvoice = true
+                        } label: {
+                            Image(systemName: "plus.circle.fill")
+                                .foregroundStyle(.blue)
+                        }
+                    }
+                    VStack(alignment: .trailing, spacing: 2) {
+                        Text(project.totalIncome, format: .currency(code: "USD"))
+                            .font(.subheadline)
+                            .foregroundStyle(.green)
+                        if project.invoices.count > 0 {
+                            let paidCount = project.invoices.filter { $0.isPaid }.count
+                            Text("\(paidCount)/\(project.invoices.count) paid")
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                }
+            }
+        }
+        .navigationTitle(project.name)
+        .navigationBarTitleDisplayMode(.large)
+        .navigationDestination(for: Client.self) { client in
+            ClientDetailView(client: client)
+        }
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                Menu {
+                    Button {
+                        isShowingEditSheet = true
+                    } label: {
+                        Label("Edit Project", systemImage: "pencil")
+                    }
+                    
+                    Button {
+                        isShowingShareSheet = true
+                    } label: {
+                        Label("Export & Share", systemImage: "square.and.arrow.up")
+                    }
+                    
+                    Divider()
+                    
+                    Button {
+                        isShowingAddExpense = true
+                    } label: {
+                        Label("Add Expense", systemImage: "arrow.down.circle")
+                    }
+                    
+                    Button {
+                        isShowingAddInvoice = true
+                    } label: {
+                        Label("Add Invoice", systemImage: "arrow.up.circle")
+                    }
+                } label: {
+                    Image(systemName: "ellipsis.circle")
+                }
+            }
+        }
+        .sheet(isPresented: $isShowingEditSheet) {
+            EditProjectView(project: project)
+        }
+        .sheet(isPresented: $isShowingAddExpense) {
+            NewExpenseView()
+        }
+        .sheet(isPresented: $isShowingAddInvoice) {
+            NewInvoiceView()
+        }
+        .sheet(isPresented: $isShowingShareSheet) {
+            ProjectExportView(project: project)
+        }
+    }
+    
+    private func budgetColor(for utilization: Double) -> Color {
+        if utilization < 50 { return .green }
+        if utilization < 80 { return .orange }
+        return .red
+    }
+    
+    private func findClient(named name: String) -> Client? {
+        let descriptor = FetchDescriptor<Client>(
+            predicate: #Predicate { $0.name == name }
+        )
+        return try? modelContext.fetch(descriptor).first
+    }
+    
+    private func deleteExpenses(at offsets: IndexSet) {
+        let sortedExpenses = project.expenses.sorted(by: { $0.date > $1.date })
+        
+        for index in offsets {
+            let expense = sortedExpenses[index]
+            do {
+                modelContext.delete(expense)
+                try modelContext.save()
+            } catch {
+                appState.showError("Failed to delete expense: \(error.localizedDescription)")
+            }
+        }
+    }
+    
+    private func deleteInvoices(at offsets: IndexSet) {
+        let sortedInvoices = project.invoices.sorted(by: { $0.createdDate > $1.createdDate })
+        
+        for index in offsets {
+            let invoice = sortedInvoices[index]
+            
+            // Cancel notifications for this invoice
+            Task {
+                await NotificationService.shared.cancelNotifications(for: invoice)
+            }
+            
+            do {
+                modelContext.delete(invoice)
+                try modelContext.save()
+            } catch {
+                appState.showError("Failed to delete invoice: \(error.localizedDescription)")
+            }
+        }
+    }
+}
+
+// MARK: - Financial Summary Card
+struct FinancialSummaryCard: View {
     let project: Project
     
     var body: some View {
-        Text("\(String(localized: "project.detailTitle.label")): \(project.name)")
-            .navigationTitle(project.name)
+        VStack(spacing: 16) {
+            // Balance
+            VStack(spacing: 4) {
+                Text("Net Balance")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                Text(project.balance, format: .currency(code: "USD"))
+                    .font(.system(size: 34, weight: .bold, design: .rounded))
+                    .foregroundStyle(project.balance >= 0 ? .green : .red)
+            }
+            
+            Divider()
+            
+            // Income and Expenses
+            HStack(spacing: 32) {
+                VStack(spacing: 8) {
+                    Label {
+                        Text("Income")
+                            .font(.subheadline)
+                    } icon: {
+                        Image(systemName: "arrow.up.circle.fill")
+                            .foregroundStyle(.green)
+                    }
+                    Text(project.totalIncome, format: .currency(code: "USD"))
+                        .font(.title3)
+                        .fontWeight(.semibold)
+                }
+                .frame(maxWidth: .infinity)
+                
+                VStack(spacing: 8) {
+                    Label {
+                        Text("Expenses")
+                            .font(.subheadline)
+                    } icon: {
+                        Image(systemName: "arrow.down.circle.fill")
+                            .foregroundStyle(.red)
+                    }
+                    Text(project.totalExpenses, format: .currency(code: "USD"))
+                        .font(.title3)
+                        .fontWeight(.semibold)
+                }
+                .frame(maxWidth: .infinity)
+            }
+            
+            // Profit Margin (if has income)
+            if project.totalIncome > 0 {
+                Divider()
+                
+                HStack {
+                    Text("Profit Margin")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                    Spacer()
+                    Text(project.profitMargin, format: .number.precision(.fractionLength(1)))
+                        .font(.headline)
+                        + Text("%")
+                        .font(.headline)
+                }
+                .foregroundStyle(project.profitMargin >= 0 ? .green : .red)
+            }
+        }
+        .padding(.vertical, 8)
+    }
+}
+
+// MARK: - Expense Row View
+struct ExpenseRowView: View {
+    let expense: Expense
+    
+    var body: some View {
+        HStack(spacing: 12) {
+            // Category icon
+            Image(systemName: expense.category.iconName)
+                .font(.title3)
+                .foregroundStyle(expense.category.chartColor)
+                .frame(width: 32)
+            
+            VStack(alignment: .leading, spacing: 4) {
+                Text(expense.descriptionText)
+                    .font(.subheadline)
+                    .fontWeight(.medium)
+                HStack(spacing: 8) {
+                    Text(expense.category.displayName)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    Text("•")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    Text(expense.date, style: .date)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            
+            Spacer()
+            
+            Text(expense.amount, format: .currency(code: "USD"))
+                .font(.subheadline)
+                .fontWeight(.semibold)
+                .foregroundStyle(.red)
+        }
+        .padding(.vertical, 2)
+    }
+}
+
+// MARK: - Invoice Row View
+struct InvoiceRowView: View {
+    let invoice: Invoice
+    
+    private var statusColor: Color {
+        if invoice.isPaid { return .green }
+        if invoice.isOverdue { return .red }
+        return .orange
+    }
+    
+    private var statusText: String {
+        if invoice.isPaid { return "Paid" }
+        if invoice.isOverdue { return "Overdue" }
+        return "Pending"
+    }
+    
+    var body: some View {
+        HStack(spacing: 12) {
+            // Status indicator
+            VStack {
+                Circle()
+                    .fill(statusColor)
+                    .frame(width: 10, height: 10)
+            }
+            .frame(width: 32)
+            
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Invoice to \(invoice.clientName)")
+                    .font(.subheadline)
+                    .fontWeight(.medium)
+                HStack(spacing: 8) {
+                    Text(statusText)
+                        .font(.caption)
+                        .foregroundStyle(statusColor)
+                    Text("•")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    Text("Due \(invoice.dueDate, style: .date)")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            
+            Spacer()
+            
+            Text(invoice.amount, format: .currency(code: "USD"))
+                .font(.subheadline)
+                .fontWeight(.semibold)
+                .foregroundStyle(invoice.isPaid ? .green : .primary)
+        }
+        .padding(.vertical, 2)
+    }
+}
+
+// MARK: - ExpenseCategory Extension
+extension ExpenseCategory {
+    var iconName: String {
+        switch self {
+        case .materials: return "hammer.fill"
+        case .labor: return "person.fill"
+        case .equipment: return "wrench.and.screwdriver.fill"
+        case .misc: return "ellipsis.circle.fill"
+        }
+    }
+}
+
+// MARK: - Edit Project View
+struct EditProjectView: View {
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var modelContext
+    @Environment(AppState.self) private var appState
+    
+    let project: Project
+    
+    @State private var name: String
+    @State private var clientName: String
+    @State private var budget: Double
+    @State private var isActive: Bool
+    @State private var isSaving: Bool = false
+    
+    init(project: Project) {
+        self.project = project
+        _name = State(initialValue: project.name)
+        _clientName = State(initialValue: project.clientName)
+        _budget = State(initialValue: project.budget)
+        _isActive = State(initialValue: project.isActive)
+    }
+    
+    private var isValid: Bool {
+        !name.isEmpty && !clientName.isEmpty && budget > 0
+    }
+    
+    private var hasChanges: Bool {
+        name != project.name ||
+        clientName != project.clientName ||
+        budget != project.budget ||
+        isActive != project.isActive
+    }
+    
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section("Project Information") {
+                    TextField("Project Name", text: $name)
+                    TextField("Client Name", text: $clientName)
+                }
+                
+                Section("Budget") {
+                    TextField("Budget", value: $budget, format: .currency(code: "USD"))
+                        .keyboardType(.decimalPad)
+                    
+                    if budget < project.totalExpenses {
+                        Label {
+                            Text("New budget is less than current expenses (\(project.totalExpenses, format: .currency(code: "USD")))")
+                        } icon: {
+                            Image(systemName: "exclamationmark.triangle.fill")
+                                .foregroundStyle(.orange)
+                        }
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    }
+                }
+                
+                Section {
+                    Toggle("Active Project", isOn: $isActive)
+                } footer: {
+                    Text("Inactive projects are hidden from some views but data is preserved")
+                        .font(.caption)
+                }
+                
+                Section {
+                    LabeledContent("Created", value: project.createdDate, format: .dateTime)
+                    LabeledContent("Total Expenses") {
+                        Text(project.totalExpenses, format: .currency(code: "USD"))
+                    }
+                    LabeledContent("Total Income") {
+                        Text(project.totalIncome, format: .currency(code: "USD"))
+                    }
+                }
+            }
+            .navigationTitle("Edit Project")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") {
+                        dismiss()
+                    }
+                    .disabled(isSaving)
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Save") {
+                        saveChanges()
+                    }
+                    .disabled(!isValid || !hasChanges || isSaving)
+                }
+            }
+        }
+    }
+    
+    private func saveChanges() {
+        isSaving = true
+        
+        project.name = name
+        project.clientName = clientName
+        project.budget = budget
+        project.isActive = isActive
+        
+        do {
+            try modelContext.save()
+            dismiss()
+        } catch {
+            appState.showError("Failed to update project: \(error.localizedDescription)")
+            isSaving = false
+        }
+    }
+}
+
+// MARK: - Expense Category Chart
+struct ExpenseCategoryChart: View {
+    let expenses: [Expense]
+    
+    private var categoryData: [(category: ExpenseCategory, amount: Double)] {
+        let grouped = Dictionary(grouping: expenses) { $0.category }
+        return ExpenseCategory.allCases.compactMap { category in
+            let amount = grouped[category]?.reduce(0) { $0 + $1.amount } ?? 0
+            return amount > 0 ? (category, amount) : nil
+        }
+        .sorted { $0.amount > $1.amount }
+    }
+    
+    private var total: Double {
+        categoryData.reduce(0) { $0 + $1.amount }
+    }
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            ForEach(categoryData, id: \.category) { item in
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack {
+                        Image(systemName: item.category.iconName)
+                            .foregroundStyle(item.category.chartColor)
+                            .frame(width: 20)
+                        
+                        Text(item.category.displayName)
+                            .font(.subheadline)
+                        
+                        Spacer()
+                        
+                        Text(item.amount, format: .currency(code: "USD"))
+                            .font(.subheadline)
+                            .fontWeight(.semibold)
+                        
+                        Text("(\(Int((item.amount / total) * 100))%)")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                    
+                    GeometryReader { geometry in
+                        RoundedRectangle(cornerRadius: 4)
+                            .fill(item.category.chartColor.opacity(0.3))
+                            .frame(width: geometry.size.width)
+                            .overlay(alignment: .leading) {
+                                RoundedRectangle(cornerRadius: 4)
+                                    .fill(item.category.chartColor)
+                                    .frame(width: geometry.size.width * (item.amount / total))
+                            }
+                    }
+                    .frame(height: 8)
+                }
+            }
+        }
+        .padding(.vertical, 4)
+    }
+}
+
+// MARK: - Project Export View
+struct ProjectExportView: View {
+    @Environment(\.dismiss) private var dismiss
+    let project: Project
+    
+    @State private var includeExpenses = true
+    @State private var includeInvoices = true
+    @State private var shareText = ""
+    @State private var isShowingShareSheet = false
+    
+    var body: some View {
+        NavigationStack {
+            List {
+                Section("Export Options") {
+                    Toggle("Include Expenses", isOn: $includeExpenses)
+                    Toggle("Include Invoices", isOn: $includeInvoices)
+                }
+                
+                Section("Preview") {
+                    Text(generateExportText())
+                        .font(.system(.caption, design: .monospaced))
+                        .textSelection(.enabled)
+                }
+            }
+            .navigationTitle("Export Project")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") {
+                        dismiss()
+                    }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    ShareLink(
+                        item: generateExportText(),
+                        subject: Text("Project: \(project.name)"),
+                        message: Text("Financial summary for \(project.name)")
+                    ) {
+                        Label("Share", systemImage: "square.and.arrow.up")
+                    }
+                }
+            }
+        }
+        .presentationDetents([.medium, .large])
+    }
+    
+    private func generateExportText() -> String {
+        var text = """
+        PROJECT: \(project.name)
+        Client: \(project.clientName)
+        Status: \(project.isActive ? "Active" : "Inactive")
+        Created: \(project.createdDate.formatted(date: .abbreviated, time: .omitted))
+        
+        FINANCIAL SUMMARY
+        Budget: \(project.budget.formatted(.currency(code: "USD")))
+        Total Expenses: \(project.totalExpenses.formatted(.currency(code: "USD")))
+        Total Income: \(project.totalIncome.formatted(.currency(code: "USD")))
+        Net Balance: \(project.balance.formatted(.currency(code: "USD")))
+        Profit Margin: \(String(format: "%.1f%%", project.profitMargin))
+        Budget Utilization: \(String(format: "%.1f%%", project.budgetUtilization))
+        """
+        
+        if includeExpenses && !project.expenses.isEmpty {
+            text += "\n\nEXPENSES (\(project.expenses.count))"
+            text += "\n" + String(repeating: "-", count: 50)
+            
+            for expense in project.expenses.sorted(by: { $0.date > $1.date }) {
+                text += """
+                \n\(expense.date.formatted(date: .abbreviated, time: .omitted)) - \(expense.category.displayName)
+                  \(expense.descriptionText)
+                  \(expense.amount.formatted(.currency(code: "USD")))
+                """
+            }
+        }
+        
+        if includeInvoices && !project.invoices.isEmpty {
+            text += "\n\nINVOICES (\(project.invoices.count))"
+            text += "\n" + String(repeating: "-", count: 50)
+            
+            for invoice in project.invoices.sorted(by: { $0.createdDate > $1.createdDate }) {
+                let status = invoice.isPaid ? "PAID" : (invoice.isOverdue ? "OVERDUE" : "PENDING")
+                text += """
+                \n\(invoice.createdDate.formatted(date: .abbreviated, time: .omitted)) - \(status)
+                  Due: \(invoice.dueDate.formatted(date: .abbreviated, time: .omitted))
+                  \(invoice.amount.formatted(.currency(code: "USD")))
+                """
+            }
+        }
+        
+        text += "\n\n" + String(repeating: "=", count: 50)
+        text += "\nExported: \(Date().formatted(date: .long, time: .shortened))"
+        
+        return text
     }
 }
 

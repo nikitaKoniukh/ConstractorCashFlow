@@ -4,12 +4,12 @@ import UniformTypeIdentifiers
 
 struct SettingsView: View {
     @Environment(\.modelContext) private var modelContext
-    @Environment(LanguageManager.self) private var languageManager
     @Query(sort: \Project.createdDate, order: .reverse) private var projects: [Project]
     @Query(sort: \Expense.date, order: .reverse) private var expenses: [Expense]
     @Query(sort: \Invoice.createdDate, order: .reverse) private var invoices: [Invoice]
     @Query(sort: \Client.name) private var clients: [Client]
 
+    @AppStorage("AppLanguage") private var appLanguageCode = AppLanguageOption.defaultCode
     @AppStorage("settings.notifications.invoiceReminders") private var invoiceRemindersEnabled = true
     @AppStorage("settings.notifications.overdueAlerts") private var overdueAlertsEnabled = true
     @AppStorage("settings.notifications.budgetWarnings") private var budgetWarningsEnabled = true
@@ -22,7 +22,7 @@ struct SettingsView: View {
             Form {
                 Section {
                     Picker(selection: languageSelectionBinding) {
-                        ForEach(LanguageManager.SupportedLanguage.allCases) { language in
+                        ForEach(AppLanguageOption.allCases) { language in
                             Text(language.displayName)
                                 .tag(language)
                         }
@@ -94,13 +94,15 @@ struct SettingsView: View {
         }
     }
 
-    private var languageSelectionBinding: Binding<LanguageManager.SupportedLanguage> {
+    private var languageSelectionBinding: Binding<AppLanguageOption> {
         Binding(
-            get: { languageManager.currentLanguage },
-            set: { newValue in
-                languageManager.switchLanguage(to: newValue)
-            }
+            get: { selectedLanguage },
+            set: { appLanguageCode = $0.rawValue }
         )
+    }
+
+    private var selectedLanguage: AppLanguageOption {
+        AppLanguageOption(rawValue: appLanguageCode) ?? .english
     }
 
     private var appDisplayName: String {
@@ -126,7 +128,7 @@ struct SettingsView: View {
         let snapshot = ExportSnapshot(
             exportedAt: Date(),
             preferences: ExportPreferences(
-                languageCode: languageManager.currentLanguage.rawValue,
+                languageCode: selectedLanguage.rawValue,
                 invoiceRemindersEnabled: invoiceRemindersEnabled,
                 overdueAlertsEnabled: overdueAlertsEnabled,
                 budgetWarningsEnabled: budgetWarningsEnabled
@@ -156,6 +158,27 @@ struct SettingsView: View {
     private func handleBudgetSettingsChange() {
         Task {
             await NotificationService.shared.rescheduleAllBudgetNotifications(from: modelContext)
+        }
+    }
+}
+
+private enum AppLanguageOption: String, CaseIterable, Identifiable {
+    case english = "en"
+    case hebrew = "he"
+    case russian = "ru"
+
+    static let defaultCode = "en"
+
+    var id: String { rawValue }
+
+    var displayName: String {
+        switch self {
+        case .english:
+            return "English"
+        case .hebrew:
+            return "עברית"
+        case .russian:
+            return "Русский"
         }
     }
 }
@@ -295,6 +318,5 @@ private struct ExportClient: Encodable {
 
 #Preview {
     SettingsView()
-        .environment(LanguageManager.shared)
         .modelContainer(for: [Project.self, Expense.self, Invoice.self, Client.self], inMemory: true)
 }

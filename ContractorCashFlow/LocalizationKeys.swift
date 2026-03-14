@@ -117,6 +117,81 @@ enum LocalizationKey {
         static let appVersion = LocalizedStringKey("settings.appVersion")
     }
     
+    // MARK: - Labor
+    enum Labor {
+        static let title = LocalizedStringKey("labor.title")
+        static let add = LocalizedStringKey("labor.add")
+        static let addTitle = LocalizedStringKey("labor.addTitle")
+        static let editTitle = LocalizedStringKey("labor.editTitle")
+        static let deleteLabel = LocalizedStringKey("labor.delete")
+        
+        // Basic Information
+        static let basicInfo = LocalizedStringKey("labor.basicInfo")
+        static let workerNamePlaceholder = LocalizedStringKey("labor.workerName")
+        static let typeLabel = LocalizedStringKey("labor.type")
+        static let workDateLabel = LocalizedStringKey("labor.workDate")
+        static let completedLabel = LocalizedStringKey("labor.completed")
+        
+        // Labor Types
+        static let hourly = LocalizedStringKey("labor.type.hourly")
+        static let daily = LocalizedStringKey("labor.type.daily")
+        static let contract = LocalizedStringKey("labor.type.contract")
+        static let subcontractor = LocalizedStringKey("labor.type.subcontractor")
+        
+        // Rate and Hours
+        static let rateAndHours = LocalizedStringKey("labor.rateAndHours")
+        static let hourlyRateLabel = LocalizedStringKey("labor.hourlyRate")
+        static let hoursWorkedLabel = LocalizedStringKey("labor.hoursWorked")
+        static let calculatedTotal = LocalizedStringKey("labor.calculatedTotal")
+        
+        // Amount
+        static let totalAmount = LocalizedStringKey("labor.totalAmount")
+        static let amountLabel = LocalizedStringKey("labor.amount")
+        static let manualOverrideHint = LocalizedStringKey("labor.manualOverrideHint")
+        
+        // Project Association
+        static let projectAssociation = LocalizedStringKey("labor.projectAssociation")
+        static let selectProject = LocalizedStringKey("labor.selectProject")
+        static let noProject = LocalizedStringKey("labor.noProject")
+        static let allProjects = LocalizedStringKey("labor.allProjects")
+        static let createExpenseToggle = LocalizedStringKey("labor.createExpenseToggle")
+        static let createExpenseHint = LocalizedStringKey("labor.createExpenseHint")
+        static let linkedToExpense = LocalizedStringKey("labor.linkedToExpense")
+        static let expenseLinked = LocalizedStringKey("labor.expenseLinked")
+        
+        // Notes
+        static let notesLabel = LocalizedStringKey("labor.notes")
+        static let notesPlaceholder = LocalizedStringKey("labor.notesPlaceholder")
+        
+        // List View
+        static let searchPrompt = LocalizedStringKey("labor.searchPrompt")
+        static let sortBy = LocalizedStringKey("labor.sortBy")
+        static let noLabor = LocalizedStringKey("labor.noLabor")
+        static let noLaborDescription = LocalizedStringKey("labor.noLaborDescription")
+        static let noResults = LocalizedStringKey("labor.noResults")
+        
+        // Summary
+        static let totalCost = LocalizedStringKey("labor.totalCost")
+        static let totalHours = LocalizedStringKey("labor.totalHours")
+        static let totalEntries = LocalizedStringKey("labor.totalEntries")
+        static let completedJobs = LocalizedStringKey("labor.completedJobs")
+        static let completed = LocalizedStringKey("labor.status.completed")
+        
+        // Filters
+        static let filters = LocalizedStringKey("labor.filters")
+        static let laborType = LocalizedStringKey("labor.laborType")
+        static let allTypes = LocalizedStringKey("labor.allTypes")
+        static let project = LocalizedStringKey("labor.project")
+        static let status = LocalizedStringKey("labor.status")
+        static let showCompletedOnly = LocalizedStringKey("labor.showCompletedOnly")
+        static let dateRange = LocalizedStringKey("labor.dateRange")
+        static let useStartDate = LocalizedStringKey("labor.useStartDate")
+        static let startDate = LocalizedStringKey("labor.startDate")
+        static let useEndDate = LocalizedStringKey("labor.useEndDate")
+        static let endDate = LocalizedStringKey("labor.endDate")
+        static let clearFilters = LocalizedStringKey("labor.clearFilters")
+    }
+    
     // MARK: - Common Actions
     enum Action {
         static let save = LocalizedStringKey("action.save")
@@ -124,6 +199,16 @@ enum LocalizationKey {
         static let delete = LocalizedStringKey("action.delete")
         static let edit = LocalizedStringKey("action.edit")
         static let search = LocalizedStringKey("action.search")
+        static let done = LocalizedStringKey("action.done")
+        static let add = LocalizedStringKey("action.add")
+    }
+    
+    // MARK: - General
+    enum General {
+        static let save = LocalizedStringKey("action.save")
+        static let cancel = LocalizedStringKey("action.cancel")
+        static let delete = LocalizedStringKey("action.delete")
+        static let edit = LocalizedStringKey("action.edit")
         static let done = LocalizedStringKey("action.done")
         static let add = LocalizedStringKey("action.add")
     }
@@ -141,6 +226,16 @@ enum LocalizationKey {
         static let noFinancialData = LocalizedStringKey("analytics.noFinancialData")
         static let noExpenseData = LocalizedStringKey("analytics.noExpenseData")
         static let noProjectData = LocalizedStringKey("analytics.noProjectData")
+        
+        // Chart legend labels
+        static let spent = LocalizedStringKey("analytics.spent")
+        static let remaining = LocalizedStringKey("analytics.remaining")
+        
+        // Chart dimension labels (for accessibility)
+        static let chartAmount = LocalizedStringKey("analytics.chart.amount")
+        static let chartCategory = LocalizedStringKey("analytics.chart.category")
+        static let chartProject = LocalizedStringKey("analytics.chart.project")
+        static let chartType = LocalizedStringKey("analytics.chart.type")
     }
     
     // MARK: - Tab Bar

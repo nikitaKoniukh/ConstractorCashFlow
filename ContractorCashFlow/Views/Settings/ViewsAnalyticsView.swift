@@ -77,7 +77,7 @@ struct IncomeExpensesChartCard: View {
                     // Donut Chart
                     Chart(chartData) { item in
                         SectorMark(
-                            angle: .value("Amount", item.amount),
+                            angle: .value(String(localized: "analytics.chart.amount"), item.amount),
                             innerRadius: .ratio(0.618),
                             angularInset: 1.5
                         )
@@ -163,8 +163,8 @@ struct ExpenseByCategoryChartCard: View {
                 // Horizontal Bar Chart
                 Chart(categoryData) { item in
                     BarMark(
-                        x: .value("Amount", item.amount),
-                        y: .value("Category", item.category.displayName)
+                        x: .value(String(localized: "analytics.chart.amount"), item.amount),
+                        y: .value(String(localized: "analytics.chart.category"), item.category.displayName)
                     )
                     .foregroundStyle(item.category.chartColor)
                     .cornerRadius(6)
@@ -243,18 +243,24 @@ struct BudgetUtilizationChartCard: View {
                 Chart {
                     ForEach(projectData) { data in
                         BarMark(
-                            x: .value("Amount", data.spent),
-                            y: .value("Project", data.projectName)
+                            x: .value(String(localized: "analytics.chart.amount"), data.spent),
+                            y: .value(String(localized: "analytics.chart.project"), data.projectName)
                         )
                         .foregroundStyle(.orange)
-                        .position(by: .value("Type", "Spent"))
+                        .position(by: .value(
+                            String(localized: "analytics.chart.type"),
+                            String(localized: "analytics.spent")
+                        ))
                         
                         BarMark(
-                            x: .value("Amount", data.remaining),
-                            y: .value("Project", data.projectName)
+                            x: .value(String(localized: "analytics.chart.amount"), data.remaining),
+                            y: .value(String(localized: "analytics.chart.project"), data.projectName)
                         )
                         .foregroundStyle(.blue.opacity(0.3))
-                        .position(by: .value("Type", "Remaining"))
+                        .position(by: .value(
+                            String(localized: "analytics.chart.type"),
+                            String(localized: "analytics.remaining")
+                        ))
                     }
                 }
                 .frame(height: CGFloat(projectData.count * 44 + 60))
@@ -280,8 +286,8 @@ struct BudgetUtilizationChartCard: View {
                     }
                 }
                 .chartForegroundStyleScale([
-                    "Spent": .orange,
-                    "Remaining": .blue.opacity(0.3)
+                    String(localized: "analytics.spent"): .orange,
+                    String(localized: "analytics.remaining"): .blue.opacity(0.3)
                 ])
                 .chartLegend(position: .bottom, spacing: 16)
                 
