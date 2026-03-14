@@ -16,7 +16,16 @@ enum LaborType: String, Codable, CaseIterable {
     case subcontractor = "Subcontractor"
     
     var displayName: String {
-        rawValue
+        switch self {
+        case .hourly:
+            return String(localized: "labor.type.hourly")
+        case .daily:
+            return String(localized: "labor.type.daily")
+        case .contract:
+            return String(localized: "labor.type.contract")
+        case .subcontractor:
+            return String(localized: "labor.type.subcontractor")
+        }
     }
     
     var localizedDisplayName: LocalizedStringKey {
@@ -94,27 +103,9 @@ final class LaborDetails {
     
     /// Formatted work duration
     var formattedDuration: String {
-        guard let hours = hoursWorked else { return "N/A" }
-        if hours == 1 {
-            return "1 hour"
-        } else {
-            return "\(String(format: "%.1f", hours)) hours"
-        }
+        guard let hours = hoursWorked else { return String(localized: "labor.duration.unavailable") }
+        return String(format: "%@ %@", String(format: "%.1f", hours), String(localized: "labor.duration.hours"))
     }
 }
 
-// MARK: - Extension for Expense to support Labor
-extension Expense {
-    @Relationship(deleteRule: .cascade, inverse: \LaborDetails.expense)
-    var laborDetails: [LaborDetails]? { get { nil } set { } }
-    
-    /// Check if this expense has associated labor details
-    var hasLaborDetails: Bool {
-        laborDetails?.isEmpty == false
-    }
-    
-    /// Get total labor hours if applicable
-    var totalLaborHours: Double {
-        laborDetails?.compactMap { $0.hoursWorked }.reduce(0, +) ?? 0
-    }
-}
+// Reverse lookup helpers can be added later with a real stored relationship on Expense if needed.

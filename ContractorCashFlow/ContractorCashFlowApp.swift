@@ -18,7 +18,8 @@ struct ContractorCashFlowApp: App {
             Project.self,
             Expense.self,
             Invoice.self,
-            Client.self
+            Client.self,
+            LaborDetails.self
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 

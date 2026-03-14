@@ -124,6 +124,10 @@ enum LocalizationKey {
         static let addTitle = LocalizedStringKey("labor.addTitle")
         static let editTitle = LocalizedStringKey("labor.editTitle")
         static let deleteLabel = LocalizedStringKey("labor.delete")
+        static let filtersButton = LocalizedStringKey("labor.filtersButton")
+        static let sortButton = LocalizedStringKey("labor.sortButton")
+        static let hourUnitShort = LocalizedStringKey("labor.hourUnitShort")
+        static let hourlyRateSuffix = LocalizedStringKey("labor.hourlyRateSuffix")
         
         // Basic Information
         static let basicInfo = LocalizedStringKey("labor.basicInfo")
@@ -169,6 +173,11 @@ enum LocalizationKey {
         static let noLabor = LocalizedStringKey("labor.noLabor")
         static let noLaborDescription = LocalizedStringKey("labor.noLaborDescription")
         static let noResults = LocalizedStringKey("labor.noResults")
+        static let sortDateNewest = LocalizedStringKey("labor.sort.dateNewest")
+        static let sortDateOldest = LocalizedStringKey("labor.sort.dateOldest")
+        static let sortAmountHighToLow = LocalizedStringKey("labor.sort.amountHighToLow")
+        static let sortAmountLowToHigh = LocalizedStringKey("labor.sort.amountLowToHigh")
+        static let sortWorkerName = LocalizedStringKey("labor.sort.workerName")
         
         // Summary
         static let totalCost = LocalizedStringKey("labor.totalCost")
@@ -211,6 +220,9 @@ enum LocalizationKey {
         static let edit = LocalizedStringKey("action.edit")
         static let done = LocalizedStringKey("action.done")
         static let add = LocalizedStringKey("action.add")
+        static let error = LocalizedStringKey("general.error")
+        static let ok = LocalizedStringKey("general.ok")
+        static let genericError = LocalizedStringKey("general.genericError")
     }
     
     // MARK: - Analytics
@@ -244,6 +256,7 @@ enum LocalizationKey {
         static let expenses = LocalizedStringKey("tab.expenses")
         static let invoices = LocalizedStringKey("tab.invoices")
         static let clients = LocalizedStringKey("tab.clients")
+        static let labor = LocalizedStringKey("tab.labor")
         static let analytics = LocalizedStringKey("tab.analytics")
         static let settings = LocalizedStringKey("tab.settings")
     }

@@ -40,6 +40,12 @@ struct RootTabView: View {
                     Label(AppTab.clients.displayNameKey, systemImage: AppTab.clients.iconName)
                 }
                 .tag(AppTab.clients)
+
+            LaborListView()
+                .tabItem {
+                    Label(AppTab.labor.displayNameKey, systemImage: AppTab.labor.iconName)
+                }
+                .tag(AppTab.labor)
             
             AnalyticsView()
                 .tabItem {
@@ -59,5 +65,5 @@ struct RootTabView: View {
 #Preview {
     RootTabView()
         .environment(AppState())
-        .modelContainer(for: [Project.self, Expense.self, Invoice.self, Client.self], inMemory: true)
+        .modelContainer(for: [Project.self, Expense.self, Invoice.self, Client.self, LaborDetails.self], inMemory: true)
 }

@@ -27,6 +27,9 @@ final class AppState {
     
     /// Flag to show/hide client creation sheet
     var isShowingNewClient: Bool = false
+
+    /// Flag to show/hide labor creation sheet
+    var isShowingNewLabor: Bool = false
     
     /// Search query for filtering
     var searchQuery: String = ""
@@ -54,6 +57,7 @@ enum AppTab: String, CaseIterable {
     case expenses = "Expenses"
     case invoices = "Invoices"
     case clients = "Clients"
+    case labor = "Labor"
     case analytics = "Analytics"
     case settings = "Settings"
     
@@ -67,6 +71,8 @@ enum AppTab: String, CaseIterable {
             return "doc.text.fill"
         case .clients:
             return "person.2.fill"
+        case .labor:
+            return "person.3.fill"
         case .analytics:
             return "chart.bar.fill"
         case .settings:
@@ -84,6 +90,8 @@ enum AppTab: String, CaseIterable {
             return LocalizationKey.Tab.invoices
         case .clients:
             return LocalizationKey.Tab.clients
+        case .labor:
+            return LocalizationKey.Tab.labor
         case .analytics:
             return LocalizationKey.Tab.analytics
         case .settings:

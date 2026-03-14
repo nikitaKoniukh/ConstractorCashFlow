@@ -45,10 +45,6 @@
             isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
             membershipExceptions = (
                 Info.plist,
-                Views/ModelsLaborDetails.swift,
-                Views/ViewsAddLaborView.swift,
-                Views/ViewsEditLaborView.swift,
-                Views/ViewsLaborListView.swift,
             );
             target = CAA767012F64899D0015883C /* ContractorCashFlow */;
         };
