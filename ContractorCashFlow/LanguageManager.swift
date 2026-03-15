@@ -67,7 +67,7 @@ final class LanguageManager {
     
     private init() {
         // Load saved locale from UserDefaults or use system default
-        if let savedLanguageCode = UserDefaults.standard.string(forKey: "AppLanguage"),
+        if let savedLanguageCode = UserDefaults.standard.string(forKey: StorageKey.appLanguage),
            let language = SupportedLanguage(rawValue: savedLanguageCode) {
             self.currentLocale = language.locale
         } else {
@@ -83,7 +83,7 @@ final class LanguageManager {
     
     /// Save current locale to UserDefaults
     private func saveLocale() {
-        UserDefaults.standard.set(currentLanguage.rawValue, forKey: "AppLanguage")
+        UserDefaults.standard.set(currentLanguage.rawValue, forKey: StorageKey.appLanguage)
     }
     
     /// Switch to a specific language

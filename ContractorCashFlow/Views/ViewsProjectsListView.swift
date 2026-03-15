@@ -125,7 +125,7 @@ private struct ProjectsListContent: View {
 // MARK: - Project Row Component
 struct ProjectRow: View {
     let project: Project
-    @AppStorage("selectedCurrencyCode") private var currencyCode = "USD"
+    @AppStorage(StorageKey.selectedCurrencyCode) private var currencyCode = "USD"
     
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
@@ -171,7 +171,7 @@ struct ProjectDetailView: View {
     let project: Project
     @Environment(\.modelContext) private var modelContext
     @Environment(AppState.self) private var appState
-    @AppStorage("selectedCurrencyCode") private var currencyCode = "USD"
+    @AppStorage(StorageKey.selectedCurrencyCode) private var currencyCode = "USD"
     
     @State private var isShowingEditSheet = false
     @State private var isShowingAddExpense = false
@@ -453,7 +453,7 @@ struct ProjectDetailView: View {
 // MARK: - Financial Summary Card
 struct FinancialSummaryCard: View {
     let project: Project
-    @AppStorage("selectedCurrencyCode") private var currencyCode = "USD"
+    @AppStorage(StorageKey.selectedCurrencyCode) private var currencyCode = "USD"
     
     var body: some View {
         VStack(spacing: 16) {
@@ -524,7 +524,7 @@ struct FinancialSummaryCard: View {
 // MARK: - Expense Row View
 struct ExpenseRowView: View {
     let expense: Expense
-    @AppStorage("selectedCurrencyCode") private var currencyCode = "USD"
+    @AppStorage(StorageKey.selectedCurrencyCode) private var currencyCode = "USD"
     
     var body: some View {
         HStack(spacing: 12) {
@@ -565,7 +565,7 @@ struct ExpenseRowView: View {
 // MARK: - Invoice Row View
 struct InvoiceRowView: View {
     let invoice: Invoice
-    @AppStorage("selectedCurrencyCode") private var currencyCode = "USD"
+    @AppStorage(StorageKey.selectedCurrencyCode) private var currencyCode = "USD"
     
     private var statusColor: Color {
         if invoice.isPaid { return .green }
@@ -634,7 +634,7 @@ struct EditProjectView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
     @Environment(AppState.self) private var appState
-    @AppStorage("selectedCurrencyCode") private var currencyCode = "USD"
+    @AppStorage(StorageKey.selectedCurrencyCode) private var currencyCode = "USD"
     
     let project: Project
     
@@ -744,7 +744,7 @@ struct EditProjectView: View {
 // MARK: - Expense Category Chart
 struct ExpenseCategoryChart: View {
     let expenses: [Expense]
-    @AppStorage("selectedCurrencyCode") private var currencyCode = "USD"
+    @AppStorage(StorageKey.selectedCurrencyCode) private var currencyCode = "USD"
     
     private var categoryData: [(category: ExpenseCategory, amount: Double)] {
         let grouped = Dictionary(grouping: expenses) { $0.category }
@@ -803,7 +803,7 @@ struct ExpenseCategoryChart: View {
 // MARK: - Project Export View
 struct ProjectExportView: View {
     @Environment(\.dismiss) private var dismiss
-    @AppStorage("selectedCurrencyCode") private var currencyCode = "USD"
+    @AppStorage(StorageKey.selectedCurrencyCode) private var currencyCode = "USD"
     let project: Project
     
     @State private var includeExpenses = true
@@ -901,7 +901,7 @@ struct NewProjectView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
     @Environment(AppState.self) private var appState
-    @AppStorage("selectedCurrencyCode") private var currencyCode = "USD"
+    @AppStorage(StorageKey.selectedCurrencyCode) private var currencyCode = "USD"
     
     @Query(sort: \Client.name) private var clients: [Client]
     

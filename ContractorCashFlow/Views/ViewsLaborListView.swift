@@ -183,7 +183,7 @@ private struct LaborListContent: View {
 // MARK: - Worker Card Row
 private struct WorkerCardRow: View {
     let worker: LaborDetails
-    @AppStorage("selectedCurrencyCode") private var currencyCode = "USD"
+    @AppStorage(StorageKey.selectedCurrencyCode) private var currencyCode = "USD"
     
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -266,7 +266,7 @@ private struct WorkerCardRow: View {
 // MARK: - Worker Summary Card
 private struct WorkerSummaryCard: View {
     let workers: [LaborDetails]
-    @AppStorage("selectedCurrencyCode") private var currencyCode = "USD"
+    @AppStorage(StorageKey.selectedCurrencyCode) private var currencyCode = "USD"
     
     var totalEarned: Double {
         workers.reduce(0) { $0 + $1.totalAmountEarned }

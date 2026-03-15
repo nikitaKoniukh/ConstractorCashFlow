@@ -12,7 +12,7 @@ struct EditLaborView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
     @Environment(AppState.self) private var appState
-    @AppStorage("selectedCurrencyCode") private var currencyCode = "USD"
+    @AppStorage(StorageKey.selectedCurrencyCode) private var currencyCode = "USD"
     
     @Bindable var labor: LaborDetails
     

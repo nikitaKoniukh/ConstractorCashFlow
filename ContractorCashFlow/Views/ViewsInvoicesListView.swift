@@ -179,7 +179,7 @@ private struct InvoicesListContent: View {
 // MARK: - Invoice Row Component
 struct InvoiceRow: View {
     let invoice: Invoice
-    @AppStorage("selectedCurrencyCode") private var currencyCode = "USD"
+    @AppStorage(StorageKey.selectedCurrencyCode) private var currencyCode = "USD"
     
     var body: some View {
         HStack {
@@ -437,7 +437,7 @@ struct NewInvoiceView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
     @Environment(AppState.self) private var appState
-    @AppStorage("selectedCurrencyCode") private var currencyCode = "USD"
+    @AppStorage(StorageKey.selectedCurrencyCode) private var currencyCode = "USD"
     @Query private var projects: [Project]
     @Query(sort: \Client.name) private var clients: [Client]
     

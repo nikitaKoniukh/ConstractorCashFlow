@@ -253,3 +253,16 @@ enum LocalizationKey {
         static let settings = LocalizedStringKey("tab.settings")
     }
 }
+// MARK: - AppStorage Keys
+/// Centralized keys for @AppStorage to avoid hardcoded strings
+enum StorageKey {
+    static let appLanguage = "AppLanguage"
+    static let selectedCurrencyCode = "selectedCurrencyCode"
+    
+    enum Notifications {
+        static let invoiceReminders = "settings.notifications.invoiceReminders"
+        static let overdueAlerts = "settings.notifications.overdueAlerts"
+        static let budgetWarnings = "settings.notifications.budgetWarnings"
+    }
+}
+

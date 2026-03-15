@@ -53,7 +53,7 @@ struct AnalyticsView: View {
 struct IncomeExpensesChartCard: View {
     let totalIncome: Double
     let totalExpenses: Double
-    @AppStorage("selectedCurrencyCode") private var currencyCode = "USD"
+    @AppStorage(StorageKey.selectedCurrencyCode) private var currencyCode = "USD"
     
     private var netBalance: Double {
         totalIncome - totalExpenses
@@ -224,7 +224,7 @@ struct ExpenseByCategoryChartCard: View {
 
 struct BudgetUtilizationChartCard: View {
     let projects: [Project]
-    @AppStorage("selectedCurrencyCode") private var currencyCode = "USD"
+    @AppStorage(StorageKey.selectedCurrencyCode) private var currencyCode = "USD"
     
     private var projectData: [ProjectBudgetData] {
         projects
@@ -347,7 +347,7 @@ struct LegendItem: View {
     let color: Color
     let label: LocalizedStringKey
     let value: Double
-    @AppStorage("selectedCurrencyCode") private var currencyCode = "USD"
+    @AppStorage(StorageKey.selectedCurrencyCode) private var currencyCode = "USD"
     
     var body: some View {
         HStack(spacing: 8) {

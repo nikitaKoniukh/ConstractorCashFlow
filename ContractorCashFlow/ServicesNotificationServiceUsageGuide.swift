@@ -130,9 +130,9 @@ struct ExampleExpenseFormView: View {
 
 struct ExampleSettingsView: View {
     @Environment(\.modelContext) private var modelContext
-    @AppStorage("settings.notifications.invoiceReminders") private var invoiceRemindersEnabled = true
-    @AppStorage("settings.notifications.overdueAlerts") private var overdueAlertsEnabled = true
-    @AppStorage("settings.notifications.budgetWarnings") private var budgetWarningsEnabled = true
+    @AppStorage(StorageKey.Notifications.invoiceReminders) private var invoiceRemindersEnabled = true
+    @AppStorage(StorageKey.Notifications.overdueAlerts) private var overdueAlertsEnabled = true
+    @AppStorage(StorageKey.Notifications.budgetWarnings) private var budgetWarningsEnabled = true
     
     var body: some View {
         Form {

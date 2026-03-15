@@ -9,11 +9,11 @@ struct SettingsView: View {
     @Query(sort: \Invoice.createdDate, order: .reverse) private var invoices: [Invoice]
     @Query(sort: \Client.name) private var clients: [Client]
 
-    @AppStorage("AppLanguage") private var appLanguageCode = AppLanguageOption.defaultCode
-    @AppStorage("selectedCurrencyCode") private var selectedCurrencyCode = "USD"
-    @AppStorage("settings.notifications.invoiceReminders") private var invoiceRemindersEnabled = true
-    @AppStorage("settings.notifications.overdueAlerts") private var overdueAlertsEnabled = true
-    @AppStorage("settings.notifications.budgetWarnings") private var budgetWarningsEnabled = true
+    @AppStorage(StorageKey.appLanguage) private var appLanguageCode = AppLanguageOption.defaultCode
+    @AppStorage(StorageKey.selectedCurrencyCode) private var selectedCurrencyCode = "USD"
+    @AppStorage(StorageKey.Notifications.invoiceReminders) private var invoiceRemindersEnabled = true
+    @AppStorage(StorageKey.Notifications.overdueAlerts) private var overdueAlertsEnabled = true
+    @AppStorage(StorageKey.Notifications.budgetWarnings) private var budgetWarningsEnabled = true
 
     @State private var exportDocument: JSONExportDocument?
     @State private var isExporting = false
