@@ -183,6 +183,7 @@ private struct LaborListContent: View {
 // MARK: - Worker Card Row
 private struct WorkerCardRow: View {
     let worker: LaborDetails
+    @AppStorage("selectedCurrencyCode") private var currencyCode = "USD"
     
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -200,12 +201,12 @@ private struct WorkerCardRow: View {
                 Spacer()
                 
                 VStack(alignment: .trailing, spacing: 4) {
-                    Text(worker.totalAmountEarned.formatted(.currency(code: "USD")))
+                    Text(worker.totalAmountEarned.formatted(.currency(code: currencyCode)))
                         .font(.headline)
                         .foregroundStyle(worker.totalAmountEarned > 0 ? .primary : .secondary)
                     
                     if let rate = worker.rate {
-                        Text(rate.formatted(.currency(code: "USD")) + worker.laborType.rateSuffix)
+                        Text(rate.formatted(.currency(code: currencyCode)) + worker.laborType.rateSuffix)
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
@@ -265,6 +266,7 @@ private struct WorkerCardRow: View {
 // MARK: - Worker Summary Card
 private struct WorkerSummaryCard: View {
     let workers: [LaborDetails]
+    @AppStorage("selectedCurrencyCode") private var currencyCode = "USD"
     
     var totalEarned: Double {
         workers.reduce(0) { $0 + $1.totalAmountEarned }
@@ -285,7 +287,7 @@ private struct WorkerSummaryCard: View {
             HStack {
                 StatCard(
                     title: LocalizationKey.Labor.totalEarned,
-                    value: totalEarned.formatted(.currency(code: "USD")),
+                    value: totalEarned.formatted(.currency(code: currencyCode)),
                     systemImage: "dollarsign.circle.fill",
                     color: .blue
                 )

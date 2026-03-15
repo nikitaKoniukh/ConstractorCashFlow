@@ -12,6 +12,7 @@ struct EditLaborView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
     @Environment(AppState.self) private var appState
+    @AppStorage("selectedCurrencyCode") private var currencyCode = "USD"
     
     @Bindable var labor: LaborDetails
     
@@ -76,7 +77,7 @@ struct EditLaborView: View {
                         HStack {
                             Text(LocalizationKey.Labor.totalEarned)
                             Spacer()
-                            Text(labor.totalAmountEarned.formatted(.currency(code: "USD")))
+                            Text(labor.totalAmountEarned.formatted(.currency(code: currencyCode)))
                                 .fontWeight(.semibold)
                         }
                         

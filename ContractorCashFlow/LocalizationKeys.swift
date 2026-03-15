@@ -105,6 +105,8 @@ enum LocalizationKey {
         static let languageSection = LocalizedStringKey("settings.languageSection")
         static let languageFooter = LocalizedStringKey("settings.languageFooter")
         static let currency = LocalizedStringKey("settings.currency")
+        static let currencySection = LocalizedStringKey("settings.currencySection")
+        static let currencyFooter = LocalizedStringKey("settings.currencyFooter")
         static let notifications = LocalizedStringKey("settings.notifications")
         static let notificationsFooter = LocalizedStringKey("settings.notificationsFooter")
         static let invoiceReminders = LocalizedStringKey("settings.notifications.invoiceReminders")

@@ -179,6 +179,7 @@ private struct InvoicesListContent: View {
 // MARK: - Invoice Row Component
 struct InvoiceRow: View {
     let invoice: Invoice
+    @AppStorage("selectedCurrencyCode") private var currencyCode = "USD"
     
     var body: some View {
         HStack {
@@ -215,7 +216,7 @@ struct InvoiceRow: View {
             
             Spacer()
             
-            Text(invoice.amount, format: .currency(code: "USD"))
+            Text(invoice.amount, format: .currency(code: currencyCode))
                 .font(.headline)
                 .foregroundStyle(invoice.isPaid ? .green : .primary)
         }
@@ -436,10 +437,11 @@ struct NewInvoiceView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
     @Environment(AppState.self) private var appState
+    @AppStorage("selectedCurrencyCode") private var currencyCode = "USD"
     @Query private var projects: [Project]
     @Query(sort: \Client.name) private var clients: [Client]
     
-    @State private var amount: Double = 0
+    @State private var amount: Double?
     @State private var clientName: String = ""
     @State private var selectedClient: Client?
     @State private var useExistingClient: Bool = false
@@ -457,7 +459,7 @@ struct NewInvoiceView: View {
     }
     
     private var isValid: Bool {
-        !finalClientName.isEmpty && amount > 0
+        !finalClientName.isEmpty && (amount ?? 0) > 0
     }
     
     private func clientExists(name: String) -> Bool {
@@ -518,7 +520,7 @@ struct NewInvoiceView: View {
                         TextField(LocalizationKey.Invoice.clientName, text: $clientName)
                     }
                     
-                    TextField(LocalizationKey.Invoice.amount, value: $amount, format: .currency(code: "USD"))
+                    TextField(LocalizationKey.Invoice.amount, value: $amount, format: .currency(code: currencyCode))
                         .keyboardType(.decimalPad)
                     
                     DatePicker(LocalizationKey.Invoice.dueDate, selection: $dueDate, displayedComponents: .date)
@@ -566,7 +568,7 @@ struct NewInvoiceView: View {
         }
         
         let invoice = Invoice(
-            amount: amount,
+            amount: amount ?? 0,
             dueDate: dueDate,
             isPaid: isPaid,
             clientName: invoiceClientName,

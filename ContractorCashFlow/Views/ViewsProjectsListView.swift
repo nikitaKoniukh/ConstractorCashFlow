@@ -125,6 +125,7 @@ private struct ProjectsListContent: View {
 // MARK: - Project Row Component
 struct ProjectRow: View {
     let project: Project
+    @AppStorage("selectedCurrencyCode") private var currencyCode = "USD"
     
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
@@ -144,19 +145,19 @@ struct ProjectRow: View {
                 .foregroundStyle(.secondary)
             
             HStack {
-                Label("\(project.totalExpenses, format: .currency(code: "USD"))", systemImage: "arrow.down")
+                Label("\(project.totalExpenses, format: .currency(code: currencyCode))", systemImage: "arrow.down")
                     .font(.caption)
                     .foregroundStyle(.red)
                 
                 Spacer()
                 
-                Label("\(project.totalIncome, format: .currency(code: "USD"))", systemImage: "arrow.up")
+                Label("\(project.totalIncome, format: .currency(code: currencyCode))", systemImage: "arrow.up")
                     .font(.caption)
                     .foregroundStyle(.green)
                 
                 Spacer()
                 
-                Text("\(String(localized: "project.balance.label")): \(project.balance, format: .currency(code: "USD"))")
+                Text("\(String(localized: "project.balance.label")): \(project.balance, format: .currency(code: currencyCode))")
                     .font(.caption)
                     .foregroundStyle(project.balance >= 0 ? .green : .red)
             }
@@ -170,6 +171,7 @@ struct ProjectDetailView: View {
     let project: Project
     @Environment(\.modelContext) private var modelContext
     @Environment(AppState.self) private var appState
+    @AppStorage("selectedCurrencyCode") private var currencyCode = "USD"
     
     @State private var isShowingEditSheet = false
     @State private var isShowingAddExpense = false
@@ -200,7 +202,7 @@ struct ProjectDetailView: View {
                 }
                 
                 LabeledContent(LocalizationKey.Project.budget) {
-                    Text(project.budget, format: .currency(code: "USD"))
+                    Text(project.budget, format: .currency(code: currencyCode))
                 }
                 LabeledContent("Status") {
                     HStack {
@@ -224,7 +226,7 @@ struct ProjectDetailView: View {
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                         Spacer()
-                        Text(project.totalExpenses, format: .currency(code: "USD"))
+                        Text(project.totalExpenses, format: .currency(code: currencyCode))
                             .font(.subheadline)
                             .fontWeight(.semibold)
                     }
@@ -241,7 +243,7 @@ struct ProjectDetailView: View {
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                         Spacer()
-                        Text(max(0, project.budget - project.totalExpenses), format: .currency(code: "USD"))
+                        Text(max(0, project.budget - project.totalExpenses), format: .currency(code: currencyCode))
                             .font(.subheadline)
                             .fontWeight(.semibold)
                             .foregroundStyle(project.totalExpenses > project.budget ? .red : .green)
@@ -293,7 +295,7 @@ struct ProjectDetailView: View {
                                 .foregroundStyle(.blue)
                         }
                     }
-                    Text(project.totalExpenses, format: .currency(code: "USD"))
+                    Text(project.totalExpenses, format: .currency(code: currencyCode))
                         .font(.subheadline)
                         .foregroundStyle(.red)
                 }
@@ -335,7 +337,7 @@ struct ProjectDetailView: View {
                         }
                     }
                     VStack(alignment: .trailing, spacing: 2) {
-                        Text(project.totalIncome, format: .currency(code: "USD"))
+                        Text(project.totalIncome, format: .currency(code: currencyCode))
                             .font(.subheadline)
                             .foregroundStyle(.green)
                         if project.invoices.count > 0 {
@@ -451,6 +453,7 @@ struct ProjectDetailView: View {
 // MARK: - Financial Summary Card
 struct FinancialSummaryCard: View {
     let project: Project
+    @AppStorage("selectedCurrencyCode") private var currencyCode = "USD"
     
     var body: some View {
         VStack(spacing: 16) {
@@ -459,7 +462,7 @@ struct FinancialSummaryCard: View {
                 Text("Net Balance")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
-                Text(project.balance, format: .currency(code: "USD"))
+                Text(project.balance, format: .currency(code: currencyCode))
                     .font(.system(size: 34, weight: .bold, design: .rounded))
                     .foregroundStyle(project.balance >= 0 ? .green : .red)
             }
@@ -476,7 +479,7 @@ struct FinancialSummaryCard: View {
                         Image(systemName: "arrow.up.circle.fill")
                             .foregroundStyle(.green)
                     }
-                    Text(project.totalIncome, format: .currency(code: "USD"))
+                    Text(project.totalIncome, format: .currency(code: currencyCode))
                         .font(.title3)
                         .fontWeight(.semibold)
                 }
@@ -490,7 +493,7 @@ struct FinancialSummaryCard: View {
                         Image(systemName: "arrow.down.circle.fill")
                             .foregroundStyle(.red)
                     }
-                    Text(project.totalExpenses, format: .currency(code: "USD"))
+                    Text(project.totalExpenses, format: .currency(code: currencyCode))
                         .font(.title3)
                         .fontWeight(.semibold)
                 }
@@ -521,6 +524,7 @@ struct FinancialSummaryCard: View {
 // MARK: - Expense Row View
 struct ExpenseRowView: View {
     let expense: Expense
+    @AppStorage("selectedCurrencyCode") private var currencyCode = "USD"
     
     var body: some View {
         HStack(spacing: 12) {
@@ -549,7 +553,7 @@ struct ExpenseRowView: View {
             
             Spacer()
             
-            Text(expense.amount, format: .currency(code: "USD"))
+            Text(expense.amount, format: .currency(code: currencyCode))
                 .font(.subheadline)
                 .fontWeight(.semibold)
                 .foregroundStyle(.red)
@@ -561,6 +565,7 @@ struct ExpenseRowView: View {
 // MARK: - Invoice Row View
 struct InvoiceRowView: View {
     let invoice: Invoice
+    @AppStorage("selectedCurrencyCode") private var currencyCode = "USD"
     
     private var statusColor: Color {
         if invoice.isPaid { return .green }
@@ -603,7 +608,7 @@ struct InvoiceRowView: View {
             
             Spacer()
             
-            Text(invoice.amount, format: .currency(code: "USD"))
+            Text(invoice.amount, format: .currency(code: currencyCode))
                 .font(.subheadline)
                 .fontWeight(.semibold)
                 .foregroundStyle(invoice.isPaid ? .green : .primary)
@@ -629,12 +634,13 @@ struct EditProjectView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
     @Environment(AppState.self) private var appState
+    @AppStorage("selectedCurrencyCode") private var currencyCode = "USD"
     
     let project: Project
     
     @State private var name: String
     @State private var clientName: String
-    @State private var budget: Double
+    @State private var budget: Double?
     @State private var isActive: Bool
     @State private var isSaving: Bool = false
     
@@ -642,18 +648,18 @@ struct EditProjectView: View {
         self.project = project
         _name = State(initialValue: project.name)
         _clientName = State(initialValue: project.clientName)
-        _budget = State(initialValue: project.budget)
+        _budget = State(initialValue: project.budget > 0 ? project.budget : nil)
         _isActive = State(initialValue: project.isActive)
     }
     
     private var isValid: Bool {
-        !name.isEmpty && !clientName.isEmpty && budget > 0
+        !name.isEmpty && !clientName.isEmpty && (budget ?? 0) > 0
     }
     
     private var hasChanges: Bool {
         name != project.name ||
         clientName != project.clientName ||
-        budget != project.budget ||
+        (budget ?? 0) != project.budget ||
         isActive != project.isActive
     }
     
@@ -666,12 +672,12 @@ struct EditProjectView: View {
                 }
                 
                 Section("Budget") {
-                    TextField("Budget", value: $budget, format: .currency(code: "USD"))
+                    TextField("Budget", value: $budget, format: .currency(code: currencyCode))
                         .keyboardType(.decimalPad)
                     
-                    if budget < project.totalExpenses {
+                    if (budget ?? 0) < project.totalExpenses {
                         Label {
-                            Text("New budget is less than current expenses (\(project.totalExpenses, format: .currency(code: "USD")))")
+                            Text("New budget is less than current expenses (\(project.totalExpenses, format: .currency(code: currencyCode)))")
                         } icon: {
                             Image(systemName: "exclamationmark.triangle.fill")
                                 .foregroundStyle(.orange)
@@ -691,10 +697,10 @@ struct EditProjectView: View {
                 Section {
                     LabeledContent("Created", value: project.createdDate, format: .dateTime)
                     LabeledContent("Total Expenses") {
-                        Text(project.totalExpenses, format: .currency(code: "USD"))
+                        Text(project.totalExpenses, format: .currency(code: currencyCode))
                     }
                     LabeledContent("Total Income") {
-                        Text(project.totalIncome, format: .currency(code: "USD"))
+                        Text(project.totalIncome, format: .currency(code: currencyCode))
                     }
                 }
             }
@@ -722,7 +728,7 @@ struct EditProjectView: View {
         
         project.name = name
         project.clientName = clientName
-        project.budget = budget
+        project.budget = budget ?? 0
         project.isActive = isActive
         
         do {
@@ -738,6 +744,7 @@ struct EditProjectView: View {
 // MARK: - Expense Category Chart
 struct ExpenseCategoryChart: View {
     let expenses: [Expense]
+    @AppStorage("selectedCurrencyCode") private var currencyCode = "USD"
     
     private var categoryData: [(category: ExpenseCategory, amount: Double)] {
         let grouped = Dictionary(grouping: expenses) { $0.category }
@@ -766,7 +773,7 @@ struct ExpenseCategoryChart: View {
                         
                         Spacer()
                         
-                        Text(item.amount, format: .currency(code: "USD"))
+                        Text(item.amount, format: .currency(code: currencyCode))
                             .font(.subheadline)
                             .fontWeight(.semibold)
                         
@@ -796,6 +803,7 @@ struct ExpenseCategoryChart: View {
 // MARK: - Project Export View
 struct ProjectExportView: View {
     @Environment(\.dismiss) private var dismiss
+    @AppStorage("selectedCurrencyCode") private var currencyCode = "USD"
     let project: Project
     
     @State private var includeExpenses = true
@@ -847,10 +855,10 @@ struct ProjectExportView: View {
         Created: \(project.createdDate.formatted(date: .abbreviated, time: .omitted))
         
         FINANCIAL SUMMARY
-        Budget: \(project.budget.formatted(.currency(code: "USD")))
-        Total Expenses: \(project.totalExpenses.formatted(.currency(code: "USD")))
-        Total Income: \(project.totalIncome.formatted(.currency(code: "USD")))
-        Net Balance: \(project.balance.formatted(.currency(code: "USD")))
+        Budget: \(project.budget.formatted(.currency(code: currencyCode)))
+        Total Expenses: \(project.totalExpenses.formatted(.currency(code: currencyCode)))
+        Total Income: \(project.totalIncome.formatted(.currency(code: currencyCode)))
+        Net Balance: \(project.balance.formatted(.currency(code: currencyCode)))
         Profit Margin: \(String(format: "%.1f%%", project.profitMargin))
         Budget Utilization: \(String(format: "%.1f%%", project.budgetUtilization))
         """
@@ -863,7 +871,7 @@ struct ProjectExportView: View {
                 text += """
                 \n\(expense.date.formatted(date: .abbreviated, time: .omitted)) - \(expense.category.displayName)
                   \(expense.descriptionText)
-                  \(expense.amount.formatted(.currency(code: "USD")))
+                  \(expense.amount.formatted(.currency(code: currencyCode)))
                 """
             }
         }
@@ -877,7 +885,7 @@ struct ProjectExportView: View {
                 text += """
                 \n\(invoice.createdDate.formatted(date: .abbreviated, time: .omitted)) - \(status)
                   Due: \(invoice.dueDate.formatted(date: .abbreviated, time: .omitted))
-                  \(invoice.amount.formatted(.currency(code: "USD")))
+                  \(invoice.amount.formatted(.currency(code: currencyCode)))
                 """
             }
         }
@@ -893,6 +901,7 @@ struct NewProjectView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
     @Environment(AppState.self) private var appState
+    @AppStorage("selectedCurrencyCode") private var currencyCode = "USD"
     
     @Query(sort: \Client.name) private var clients: [Client]
     
@@ -900,7 +909,7 @@ struct NewProjectView: View {
     @State private var clientName: String = ""
     @State private var selectedClient: Client?
     @State private var useExistingClient: Bool = false
-    @State private var budget: Double = 0
+    @State private var budget: Double?
     @State private var isActive: Bool = true
     @State private var isSaving: Bool = false
     
@@ -912,7 +921,7 @@ struct NewProjectView: View {
     @State private var newClientNotes: String = ""
     
     private var isValid: Bool {
-        !name.isEmpty && !finalClientName.isEmpty && budget > 0
+        !name.isEmpty && !finalClientName.isEmpty && (budget ?? 0) > 0
     }
     
     /// Returns the final client name based on selection mode
@@ -1028,7 +1037,7 @@ struct NewProjectView: View {
                 }
                 
                 Section(String(localized: "project.budget")) {
-                    TextField(LocalizationKey.Project.budget, value: $budget, format: .currency(code: "USD"))
+                    TextField(LocalizationKey.Project.budget, value: $budget, format: .currency(code: currencyCode))
                         .keyboardType(.decimalPad)
                 }
                 
@@ -1085,7 +1094,7 @@ struct NewProjectView: View {
         let project = Project(
             name: name,
             clientName: projectClientName,
-            budget: budget,
+            budget: budget ?? 0,
             isActive: isActive
         )
         

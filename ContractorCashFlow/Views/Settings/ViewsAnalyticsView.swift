@@ -53,6 +53,7 @@ struct AnalyticsView: View {
 struct IncomeExpensesChartCard: View {
     let totalIncome: Double
     let totalExpenses: Double
+    @AppStorage("selectedCurrencyCode") private var currencyCode = "USD"
     
     private var netBalance: Double {
         totalIncome - totalExpenses
@@ -87,7 +88,7 @@ struct IncomeExpensesChartCard: View {
                     .frame(height: 180)
                     .chartBackground { _ in
                         VStack(spacing: 4) {
-                            Text(netBalance, format: .currency(code: "USD"))
+                            Text(netBalance, format: .currency(code: currencyCode))
                                 .font(.title2)
                                 .fontWeight(.bold)
                                 .foregroundStyle(netBalance >= 0 ? .green : .red)
@@ -223,6 +224,7 @@ struct ExpenseByCategoryChartCard: View {
 
 struct BudgetUtilizationChartCard: View {
     let projects: [Project]
+    @AppStorage("selectedCurrencyCode") private var currencyCode = "USD"
     
     private var projectData: [ProjectBudgetData] {
         projects
@@ -268,7 +270,7 @@ struct BudgetUtilizationChartCard: View {
                     AxisMarks(position: .bottom) { value in
                         AxisValueLabel {
                             if let amount = value.as(Double.self) {
-                                Text(amount, format: .currency(code: "USD").precision(.fractionLength(0)))
+                                Text(amount, format: .currency(code: currencyCode).precision(.fractionLength(0)))
                                     .font(.caption2)
                             }
                         }
@@ -345,6 +347,7 @@ struct LegendItem: View {
     let color: Color
     let label: LocalizedStringKey
     let value: Double
+    @AppStorage("selectedCurrencyCode") private var currencyCode = "USD"
     
     var body: some View {
         HStack(spacing: 8) {
@@ -356,7 +359,7 @@ struct LegendItem: View {
                 Text(label)
                     .font(.caption)
                     .foregroundStyle(.secondary)
-                Text(value, format: .currency(code: "USD"))
+                Text(value, format: .currency(code: currencyCode))
                     .font(.subheadline)
                     .fontWeight(.semibold)
             }

@@ -246,6 +246,7 @@ private struct ExpenseFiltersView: View {
 // MARK: - Expense Row Component
 struct ExpenseRow: View {
     let expense: Expense
+    @AppStorage("selectedCurrencyCode") private var currencyCode = "USD"
     
     var body: some View {
         HStack {
@@ -276,7 +277,7 @@ struct ExpenseRow: View {
             
             Spacer()
             
-            Text(expense.amount, format: .currency(code: "USD"))
+            Text(expense.amount, format: .currency(code: currencyCode))
                 .font(.headline)
                 .foregroundStyle(.red)
         }
@@ -289,11 +290,12 @@ struct NewExpenseView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
     @Environment(AppState.self) private var appState
+    @AppStorage("selectedCurrencyCode") private var currencyCode = "USD"
     @Query private var projects: [Project]
     @Query(sort: \LaborDetails.workerName) private var allWorkers: [LaborDetails]
     
     @State private var category: ExpenseCategory = .materials
-    @State private var amount: Double = 0
+    @State private var amount: Double?
     @State private var descriptionText: String = ""
     @State private var date: Date = Date()
     @State private var selectedProject: Project?
@@ -304,7 +306,7 @@ struct NewExpenseView: View {
     @State private var unitsWorked: String = ""
     
     private var isValid: Bool {
-        !descriptionText.isEmpty && amount > 0
+        !descriptionText.isEmpty && (amount ?? 0) > 0
     }
     
     /// Auto-calculated amount from worker rate * units (hours or days)
@@ -341,7 +343,7 @@ struct NewExpenseView: View {
                                 HStack {
                                     Text(worker.workerName)
                                     if let rate = worker.rate {
-                                        Text("(\(rate.formatted(.currency(code: "USD")))\(worker.laborType.rateSuffix))")
+                                        Text("(\(rate.formatted(.currency(code: currencyCode)))\(worker.laborType.rateSuffix))")
                                             .foregroundStyle(.secondary)
                                     }
                                 }
@@ -373,7 +375,7 @@ struct NewExpenseView: View {
                                         Text(LocalizationKey.Labor.calculatedTotal)
                                             .foregroundStyle(.secondary)
                                         Spacer()
-                                        Text(calc.formatted(.currency(code: "USD")))
+                                        Text(calc.formatted(.currency(code: currencyCode)))
                                             .fontWeight(.semibold)
                                             .foregroundStyle(.secondary)
                                     }
@@ -386,7 +388,7 @@ struct NewExpenseView: View {
                                         Text(LocalizationKey.Labor.contractPrice)
                                             .foregroundStyle(.secondary)
                                         Spacer()
-                                        Text(rate.formatted(.currency(code: "USD")))
+                                        Text(rate.formatted(.currency(code: currencyCode)))
                                             .fontWeight(.semibold)
                                             .foregroundStyle(.secondary)
                                     }
@@ -396,7 +398,7 @@ struct NewExpenseView: View {
                         }
                     }
                     
-                    TextField(LocalizationKey.Expense.amount, value: $amount, format: .currency(code: "USD"))
+                    TextField(LocalizationKey.Expense.amount, value: $amount, format: .currency(code: currencyCode))
                         .keyboardType(.decimalPad)
                     
                     TextField(LocalizationKey.Expense.description, text: $descriptionText)
@@ -462,7 +464,7 @@ struct NewExpenseView: View {
         
         let expense = Expense(
             category: category,
-            amount: amount,
+            amount: amount ?? 0,
             descriptionText: descriptionText,
             date: date,
             project: selectedProject,

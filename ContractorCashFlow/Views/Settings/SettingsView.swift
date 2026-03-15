@@ -10,6 +10,7 @@ struct SettingsView: View {
     @Query(sort: \Client.name) private var clients: [Client]
 
     @AppStorage("AppLanguage") private var appLanguageCode = AppLanguageOption.defaultCode
+    @AppStorage("selectedCurrencyCode") private var selectedCurrencyCode = "USD"
     @AppStorage("settings.notifications.invoiceReminders") private var invoiceRemindersEnabled = true
     @AppStorage("settings.notifications.overdueAlerts") private var overdueAlertsEnabled = true
     @AppStorage("settings.notifications.budgetWarnings") private var budgetWarningsEnabled = true
@@ -34,6 +35,22 @@ struct SettingsView: View {
                     Text(LocalizationKey.Settings.languageSection)
                 } footer: {
                     Text(LocalizationKey.Settings.languageFooter)
+                }
+
+                Section {
+                    Picker(selection: $selectedCurrencyCode) {
+                        ForEach(CurrencyOption.allCases) { currency in
+                            Text(currency.displayName)
+                                .tag(currency.code)
+                        }
+                    } label: {
+                        Label(LocalizationKey.Settings.currency, systemImage: "dollarsign.circle")
+                    }
+                    .pickerStyle(.navigationLink)
+                } header: {
+                    Text(LocalizationKey.Settings.currencySection)
+                } footer: {
+                    Text(LocalizationKey.Settings.currencyFooter)
                 }
 
                 Section {
@@ -129,6 +146,7 @@ struct SettingsView: View {
             exportedAt: Date(),
             preferences: ExportPreferences(
                 languageCode: selectedLanguage.rawValue,
+                currencyCode: selectedCurrencyCode,
                 invoiceRemindersEnabled: invoiceRemindersEnabled,
                 overdueAlertsEnabled: overdueAlertsEnabled,
                 budgetWarningsEnabled: budgetWarningsEnabled
@@ -158,6 +176,33 @@ struct SettingsView: View {
     private func handleBudgetSettingsChange() {
         Task {
             await NotificationService.shared.rescheduleAllBudgetNotifications(from: modelContext)
+        }
+    }
+}
+
+private enum CurrencyOption: String, CaseIterable, Identifiable {
+    case usd = "USD"
+    case eur = "EUR"
+    case gbp = "GBP"
+    case ils = "ILS"
+    case rub = "RUB"
+    case jpy = "JPY"
+    case cad = "CAD"
+    case aud = "AUD"
+
+    var id: String { rawValue }
+    var code: String { rawValue }
+
+    var displayName: String {
+        switch self {
+        case .usd: return "$ USD"
+        case .eur: return "€ EUR"
+        case .gbp: return "£ GBP"
+        case .ils: return "₪ ILS"
+        case .rub: return "₽ RUB"
+        case .jpy: return "¥ JPY"
+        case .cad: return "C$ CAD"
+        case .aud: return "A$ AUD"
         }
     }
 }
@@ -221,6 +266,7 @@ private struct ExportSnapshot: Encodable {
 
 private struct ExportPreferences: Encodable {
     let languageCode: String
+    let currencyCode: String
     let invoiceRemindersEnabled: Bool
     let overdueAlertsEnabled: Bool
     let budgetWarningsEnabled: Bool
