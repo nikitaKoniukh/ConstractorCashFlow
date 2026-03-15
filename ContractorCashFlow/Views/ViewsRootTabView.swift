@@ -42,17 +42,17 @@ struct RootTabView: View {
                 }
                 .tag(AppTab.invoices)
             
-            ClientsListView()
-                .tabItem {
-                    Label(AppTab.clients.displayNameKey, systemImage: AppTab.clients.iconName)
-                }
-                .tag(AppTab.clients)
-
             LaborListView()
                 .tabItem {
                     Label(AppTab.labor.displayNameKey, systemImage: AppTab.labor.iconName)
                 }
                 .tag(AppTab.labor)
+
+            ClientsListView()
+                .tabItem {
+                    Label(AppTab.clients.displayNameKey, systemImage: AppTab.clients.iconName)
+                }
+                .tag(AppTab.clients)
             
             AnalyticsView()
                 .tabItem {

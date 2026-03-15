@@ -1278,6 +1278,28 @@
         }
       }
     },
+    "client.editTitle" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit Client"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "עריכת לקוח"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Редактировать клиента"
+          }
+        }
+      }
+    },
     "client.empty" : {
       "localizations" : {
         "en" : {

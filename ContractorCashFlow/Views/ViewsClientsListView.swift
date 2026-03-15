@@ -148,9 +148,10 @@ struct ClientRow: View {
     }
 }
 
-// MARK: - Placeholder Views
+// MARK: - Client Detail View
 struct ClientDetailView: View {
-    let client: Client
+    @Bindable var client: Client
+    @State private var isEditing = false
     
     var body: some View {
         List {
@@ -180,6 +181,116 @@ struct ClientDetailView: View {
             }
         }
         .navigationTitle(client.name)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button {
+                    isEditing = true
+                } label: {
+                    Text(LocalizationKey.Action.edit)
+                }
+            }
+        }
+        .sheet(isPresented: $isEditing) {
+            EditClientView(client: client)
+        }
+    }
+}
+
+// MARK: - Edit Client View
+struct EditClientView: View {
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var modelContext
+    @Environment(AppState.self) private var appState
+    
+    @Bindable var client: Client
+    
+    @State private var name: String
+    @State private var email: String
+    @State private var phone: String
+    @State private var address: String
+    @State private var notes: String
+    @State private var isSaving: Bool = false
+    
+    init(client: Client) {
+        self.client = client
+        _name = State(initialValue: client.name)
+        _email = State(initialValue: client.email ?? "")
+        _phone = State(initialValue: client.phone ?? "")
+        _address = State(initialValue: client.address ?? "")
+        _notes = State(initialValue: client.notes ?? "")
+    }
+    
+    private var isValid: Bool {
+        !name.isEmpty
+    }
+    
+    private var hasChanges: Bool {
+        name != client.name ||
+        (email.isEmpty ? nil : email) != client.email ||
+        (phone.isEmpty ? nil : phone) != client.phone ||
+        (address.isEmpty ? nil : address) != client.address ||
+        (notes.isEmpty ? nil : notes) != client.notes
+    }
+    
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section(String(localized: "client.information")) {
+                    TextField(LocalizationKey.ClientS.name, text: $name)
+                    TextField(LocalizationKey.ClientS.email, text: $email)
+                        .textContentType(.emailAddress)
+                        .keyboardType(.emailAddress)
+                        .autocapitalization(.none)
+                    TextField(LocalizationKey.ClientS.phone, text: $phone)
+                        .textContentType(.telephoneNumber)
+                        .keyboardType(.phonePad)
+                }
+                
+                Section(String(localized: "client.address")) {
+                    TextField(LocalizationKey.ClientS.address, text: $address, axis: .vertical)
+                        .lineLimit(3...5)
+                }
+                
+                Section(String(localized: "client.notes")) {
+                    TextField(LocalizationKey.ClientS.notes, text: $notes, axis: .vertical)
+                        .lineLimit(4...8)
+                }
+            }
+            .navigationTitle(LocalizationKey.ClientS.editTitle)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button(LocalizationKey.Action.cancel) {
+                        dismiss()
+                    }
+                    .disabled(isSaving)
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button(LocalizationKey.Action.save) {
+                        saveChanges()
+                    }
+                    .disabled(!isValid || !hasChanges || isSaving)
+                }
+            }
+        }
+    }
+    
+    private func saveChanges() {
+        isSaving = true
+        
+        client.name = name
+        client.email = email.isEmpty ? nil : email
+        client.phone = phone.isEmpty ? nil : phone
+        client.address = address.isEmpty ? nil : address
+        client.notes = notes.isEmpty ? nil : notes
+        
+        do {
+            try modelContext.save()
+            dismiss()
+        } catch {
+            appState.showError("Failed to update client: \(error.localizedDescription)")
+            isSaving = false
+        }
     }
 }
 

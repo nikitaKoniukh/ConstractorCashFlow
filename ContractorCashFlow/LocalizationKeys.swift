@@ -95,6 +95,7 @@ enum LocalizationKey {
         static let notes = LocalizedStringKey("client.notes")
         static let information = LocalizedStringKey("client.information")
         static let newTitle = LocalizedStringKey("client.newTitle")
+        static let editTitle = LocalizedStringKey("client.editTitle")
         static let empty = LocalizedStringKey("client.empty")
         static let emptyDescription = LocalizedStringKey("client.emptyDescription")
     }
