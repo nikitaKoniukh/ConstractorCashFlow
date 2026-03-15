@@ -26,7 +26,17 @@ struct ContractorCashFlowApp: App {
         do {
             return try ModelContainer(for: schema, configurations: [modelConfiguration])
         } catch {
-            fatalError("Could not create ModelContainer: \(error)")
+            // Schema migration failed — delete the old store and recreate
+            let url = modelConfiguration.url
+            try? FileManager.default.removeItem(at: url)
+            try? FileManager.default.removeItem(at: url.appendingPathExtension("wal"))
+            try? FileManager.default.removeItem(at: url.appendingPathExtension("shm"))
+            
+            do {
+                return try ModelContainer(for: schema, configurations: [modelConfiguration])
+            } catch {
+                fatalError("Could not create ModelContainer: \(error)")
+            }
         }
     }()
 

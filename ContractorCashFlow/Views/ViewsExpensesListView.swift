@@ -291,12 +291,13 @@ struct ExpenseRow: View {
     }
 }
 
-// MARK: - Placeholder View
+// MARK: - New Expense View
 struct NewExpenseView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
     @Environment(AppState.self) private var appState
     @Query private var projects: [Project]
+    @Query(sort: \LaborDetails.workerName) private var allWorkers: [LaborDetails]
     
     @State private var category: ExpenseCategory = .materials
     @State private var amount: Double = 0
@@ -305,8 +306,21 @@ struct NewExpenseView: View {
     @State private var selectedProject: Project?
     @State private var isSaving: Bool = false
     
+    // Labor-specific fields
+    @State private var selectedWorker: LaborDetails?
+    @State private var hoursWorked: String = ""
+    
     private var isValid: Bool {
         !descriptionText.isEmpty && amount > 0
+    }
+    
+    /// Auto-calculated amount from worker rate * hours
+    private var calculatedAmount: Double? {
+        guard let worker = selectedWorker,
+              let rate = worker.hourlyRate,
+              let hours = Double(hoursWorked),
+              rate > 0, hours > 0 else { return nil }
+        return rate * hours
     }
     
     var body: some View {
@@ -316,6 +330,54 @@ struct NewExpenseView: View {
                     Picker(LocalizationKey.Expense.category, selection: $category) {
                         ForEach(ExpenseCategory.allCases, id: \.self) { category in
                             Text(category.localizedDisplayName).tag(category)
+                        }
+                    }
+                    
+                    // Show worker picker when labor category is chosen
+                    if category == .labor && !allWorkers.isEmpty {
+                        Picker(LocalizationKey.Labor.selectWorker, selection: $selectedWorker) {
+                            Text(LocalizationKey.Labor.selectWorkerPrompt).tag(nil as LaborDetails?)
+                            ForEach(allWorkers) { worker in
+                                HStack {
+                                    Text(worker.workerName)
+                                    if let rate = worker.hourlyRate {
+                                        Text("(\(rate.formatted(.currency(code: "USD")))/hr)")
+                                            .foregroundStyle(.secondary)
+                                    }
+                                }
+                                .tag(worker as LaborDetails?)
+                            }
+                        }
+                        .onChange(of: selectedWorker) {
+                            updateFromWorkerSelection()
+                        }
+                        
+                        // Hours worked input
+                        if selectedWorker != nil {
+                            HStack {
+                                Text(LocalizationKey.Labor.hoursWorkedLabel)
+                                Spacer()
+                                TextField("0.0", text: $hoursWorked)
+                                    .keyboardType(.decimalPad)
+                                    .multilineTextAlignment(.trailing)
+                                    .onChange(of: hoursWorked) {
+                                        if let calc = calculatedAmount {
+                                            amount = calc
+                                        }
+                                    }
+                            }
+                            
+                            if let calc = calculatedAmount {
+                                HStack {
+                                    Text(LocalizationKey.Labor.calculatedTotal)
+                                        .foregroundStyle(.secondary)
+                                    Spacer()
+                                    Text(calc.formatted(.currency(code: "USD")))
+                                        .fontWeight(.semibold)
+                                        .foregroundStyle(.secondary)
+                                }
+                                .font(.subheadline)
+                            }
                         }
                     }
                     
@@ -356,18 +418,40 @@ struct NewExpenseView: View {
                     .disabled(!isValid || isSaving)
                 }
             }
+            .onChange(of: category) {
+                // Reset labor fields when switching away from labor category
+                if category != .labor {
+                    selectedWorker = nil
+                    hoursWorked = ""
+                }
+            }
+        }
+    }
+    
+    /// Updates description when a worker is selected
+    private func updateFromWorkerSelection() {
+        if let worker = selectedWorker {
+            descriptionText = "Labor: \(worker.workerName)"
+            hoursWorked = ""
+            if let calc = calculatedAmount {
+                amount = calc
+            }
         }
     }
     
     private func saveExpense() {
         isSaving = true
         
+        let hours = Double(hoursWorked)
+        
         let expense = Expense(
             category: category,
             amount: amount,
             descriptionText: descriptionText,
             date: date,
-            project: selectedProject
+            project: selectedProject,
+            worker: category == .labor ? selectedWorker : nil,
+            hoursWorked: category == .labor ? hours : nil
         )
         
         do {

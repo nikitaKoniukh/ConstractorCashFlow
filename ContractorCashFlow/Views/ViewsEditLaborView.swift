@@ -13,46 +13,33 @@ struct EditLaborView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(AppState.self) private var appState
     
-    @Query private var projects: [Project]
-    
     @Bindable var labor: LaborDetails
     
     // Form state
     @State private var workerName: String
     @State private var laborType: LaborType
     @State private var hourlyRate: String
-    @State private var hoursWorked: String
-    @State private var totalAmount: String
-    @State private var workDate: Date
     @State private var notes: String
-    @State private var isCompleted: Bool
-    @State private var selectedProject: Project?
+    @State private var showDeleteConfirmation = false
     
     @FocusState private var focusedField: Field?
     
     enum Field: Hashable {
-        case workerName, hourlyRate, hoursWorked, totalAmount, notes
+        case workerName, hourlyRate, notes
     }
     
     init(labor: LaborDetails) {
         self.labor = labor
-        
-        // Initialize state from labor details
         _workerName = State(initialValue: labor.workerName)
         _laborType = State(initialValue: labor.laborType)
         _hourlyRate = State(initialValue: labor.hourlyRate.map { String(format: "%.2f", $0) } ?? "")
-        _hoursWorked = State(initialValue: labor.hoursWorked.map { String(format: "%.1f", $0) } ?? "")
-        _totalAmount = State(initialValue: String(format: "%.2f", labor.totalAmount))
-        _workDate = State(initialValue: labor.workDate)
         _notes = State(initialValue: labor.notes ?? "")
-        _isCompleted = State(initialValue: labor.isCompleted)
-        _selectedProject = State(initialValue: labor.project)
     }
     
     var body: some View {
         NavigationStack {
             Form {
-                // Basic Information
+                // Worker Information
                 Section(header: Text(LocalizationKey.Labor.basicInfo)) {
                     TextField(LocalizationKey.Labor.workerNamePlaceholder, text: $workerName)
                         .focused($focusedField, equals: .workerName)
@@ -62,81 +49,17 @@ struct EditLaborView: View {
                             Text(type.localizedDisplayName).tag(type)
                         }
                     }
-                    
-                    DatePicker(LocalizationKey.Labor.workDateLabel, selection: $workDate, displayedComponents: .date)
-                    
-                    Toggle(LocalizationKey.Labor.completedLabel, isOn: $isCompleted)
                 }
                 
-                // Rate and Hours Section (for hourly labor)
-                if laborType == .hourly {
-                    Section(header: Text(LocalizationKey.Labor.rateAndHours)) {
-                        HStack {
-                            Text(LocalizationKey.Labor.hourlyRateLabel)
-                            Spacer()
-                            TextField("0.00", text: $hourlyRate)
-                                .keyboardType(.decimalPad)
-                                .multilineTextAlignment(.trailing)
-                                .focused($focusedField, equals: .hourlyRate)
-                                .onChange(of: hourlyRate) {
-                                    calculateTotal()
-                                }
-                        }
-                        
-                        HStack {
-                            Text(LocalizationKey.Labor.hoursWorkedLabel)
-                            Spacer()
-                            TextField("0.0", text: $hoursWorked)
-                                .keyboardType(.decimalPad)
-                                .multilineTextAlignment(.trailing)
-                                .focused($focusedField, equals: .hoursWorked)
-                                .onChange(of: hoursWorked) {
-                                    calculateTotal()
-                                }
-                        }
-                        
-                        if let rate = Double(hourlyRate), let hours = Double(hoursWorked), rate > 0, hours > 0 {
-                            HStack {
-                                Text(LocalizationKey.Labor.calculatedTotal)
-                                Spacer()
-                                Text((rate * hours).formatted(.currency(code: "USD")))
-                                    .foregroundStyle(.secondary)
-                            }
-                        }
-                    }
-                }
-                
-                // Total Amount Section
-                Section(header: Text(LocalizationKey.Labor.totalAmount)) {
+                // Default Hourly Rate
+                Section(header: Text(LocalizationKey.Labor.defaultRate)) {
                     HStack {
-                        Text(LocalizationKey.Labor.amountLabel)
+                        Text(LocalizationKey.Labor.hourlyRateLabel)
                         Spacer()
-                        TextField("0.00", text: $totalAmount)
+                        TextField("0.00", text: $hourlyRate)
                             .keyboardType(.decimalPad)
                             .multilineTextAlignment(.trailing)
-                            .focused($focusedField, equals: .totalAmount)
-                    }
-                    
-                    if laborType == .hourly {
-                        Text(LocalizationKey.Labor.manualOverrideHint)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                }
-                
-                // Project Association
-                Section(header: Text(LocalizationKey.Labor.projectAssociation)) {
-                    Picker(LocalizationKey.Labor.selectProject, selection: $selectedProject) {
-                        Text(LocalizationKey.Labor.noProject).tag(nil as Project?)
-                        ForEach(projects, id: \.id) { project in
-                            Text(project.name).tag(project as Project?)
-                        }
-                    }
-                    
-                    if labor.expense != nil {
-                        Label(LocalizationKey.Labor.linkedToExpense, systemImage: "link")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+                            .focused($focusedField, equals: .hourlyRate)
                     }
                 }
                 
@@ -147,10 +70,59 @@ struct EditLaborView: View {
                         .focused($focusedField, equals: .notes)
                 }
                 
+                // Stats Section (aggregated from linked expenses)
+                if !labor.expenses.isEmpty {
+                    Section(header: Text(LocalizationKey.Labor.workerStats)) {
+                        HStack {
+                            Text(LocalizationKey.Labor.totalEarned)
+                            Spacer()
+                            Text(labor.totalAmountEarned.formatted(.currency(code: "USD")))
+                                .fontWeight(.semibold)
+                        }
+                        
+                        HStack {
+                            Text(LocalizationKey.Labor.totalHours)
+                            Spacer()
+                            Text(String(format: "%.1f", labor.totalHoursWorked))
+                                .foregroundStyle(.secondary)
+                        }
+                        
+                        HStack {
+                            Text(LocalizationKey.Labor.totalDaysWorked)
+                            Spacer()
+                            Text("\(labor.totalDaysWorked)")
+                                .foregroundStyle(.secondary)
+                        }
+                        
+                        if !labor.associatedProjects.isEmpty {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(LocalizationKey.Labor.associatedProjects)
+                                    .foregroundStyle(.secondary)
+                                ForEach(labor.associatedProjects, id: \.id) { project in
+                                    Label(project.name, systemImage: "folder")
+                                        .font(.subheadline)
+                                        .foregroundStyle(.blue)
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                // Created Date
+                Section {
+                    HStack {
+                        Text(LocalizationKey.Labor.createdDate)
+                            .foregroundStyle(.secondary)
+                        Spacer()
+                        Text(labor.createdDate, format: .dateTime.month().day().year())
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                
                 // Delete Section
                 Section {
                     Button(role: .destructive) {
-                        deleteLabor()
+                        showDeleteConfirmation = true
                     } label: {
                         HStack {
                             Spacer()
@@ -183,27 +155,28 @@ struct EditLaborView: View {
                     }
                 }
             }
+            .confirmationDialog(
+                "Delete Worker",
+                isPresented: $showDeleteConfirmation,
+                titleVisibility: .visible
+            ) {
+                Button("Delete", role: .destructive) {
+                    deleteWorker()
+                }
+            } message: {
+                if labor.expenses.isEmpty {
+                    Text("Are you sure you want to delete this worker?")
+                } else {
+                    Text("This worker has \(labor.expenses.count) linked expense(s). The expenses will remain but won't be linked to a worker.")
+                }
+            }
         }
     }
     
     // MARK: - Helper Methods
     
     private var isFormValid: Bool {
-        !workerName.trimmingCharacters(in: .whitespaces).isEmpty &&
-        !totalAmount.isEmpty &&
-        Double(totalAmount) != nil &&
-        Double(totalAmount)! > 0
-    }
-    
-    private func calculateTotal() {
-        guard laborType == .hourly,
-              let rate = Double(hourlyRate),
-              let hours = Double(hoursWorked),
-              rate > 0, hours > 0 else {
-            return
-        }
-        
-        totalAmount = String(format: "%.2f", rate * hours)
+        !workerName.trimmingCharacters(in: .whitespaces).isEmpty
     }
     
     private func saveChanges() {
@@ -211,51 +184,37 @@ struct EditLaborView: View {
         
         labor.workerName = workerName.trimmingCharacters(in: .whitespaces)
         labor.laborType = laborType
-        labor.hourlyRate = laborType == .hourly ? Double(hourlyRate) : nil
-        labor.hoursWorked = laborType == .hourly ? Double(hoursWorked) : nil
-        labor.totalAmount = Double(totalAmount) ?? 0
-        labor.workDate = workDate
+        labor.hourlyRate = Double(hourlyRate)
         labor.notes = notes.isEmpty ? nil : notes
-        labor.isCompleted = isCompleted
-        labor.project = selectedProject
-        
-        // Update associated expense if exists
-        if let expense = labor.expense {
-            expense.amount = labor.totalAmount
-            expense.date = workDate
-            expense.descriptionText = "Labor: \(labor.workerName)"
-        }
         
         do {
             try modelContext.save()
             dismiss()
         } catch {
-            appState.showError("Failed to update labor details: \(error.localizedDescription)")
+            appState.showError("Failed to update worker: \(error.localizedDescription)")
         }
     }
     
-    private func deleteLabor() {
+    private func deleteWorker() {
         modelContext.delete(labor)
         
         do {
             try modelContext.save()
             dismiss()
         } catch {
-            appState.showError("Failed to delete labor details: \(error.localizedDescription)")
+            appState.showError("Failed to delete worker: \(error.localizedDescription)")
         }
     }
 }
 
 #Preview {
     let config = ModelConfiguration(isStoredInMemoryOnly: true)
-    let container = try! ModelContainer(for: LaborDetails.self, configurations: config)
+    let container = try! ModelContainer(for: LaborDetails.self, Expense.self, Project.self, configurations: config)
     
     let sampleLabor = LaborDetails(
         workerName: "John Doe",
         laborType: .hourly,
-        hourlyRate: 50.0,
-        hoursWorked: 8.0,
-        totalAmount: 400.0
+        hourlyRate: 50.0
     )
     container.mainContext.insert(sampleLabor)
     

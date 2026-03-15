@@ -41,8 +41,12 @@ final class Expense {
     var descriptionText: String
     var date: Date
     
-    // Relationship
+    // Relationships
     var project: Project?
+    var worker: LaborDetails?
+    
+    // Hours worked (for labor expenses linked to a worker)
+    var hoursWorked: Double?
     
     init(
         id: UUID = UUID(),
@@ -50,7 +54,9 @@ final class Expense {
         amount: Double,
         descriptionText: String,
         date: Date = Date(),
-        project: Project? = nil
+        project: Project? = nil,
+        worker: LaborDetails? = nil,
+        hoursWorked: Double? = nil
     ) {
         self.id = id
         self.category = category
@@ -58,5 +64,7 @@ final class Expense {
         self.descriptionText = descriptionText
         self.date = date
         self.project = project
+        self.worker = worker
+        self.hoursWorked = hoursWorked
     }
 }

@@ -1,6 +1,9 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "(%@/hr)" : {
+
+    },
     "(%lld%%)" : {
 
     },
@@ -22,6 +25,19 @@
     },
     "%@%% of budget" : {
 
+    },
+    "%lld" : {
+
+    },
+    "%lld %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld %2$@"
+          }
+        }
+      }
     },
     "%lld/%lld paid" : {
       "localizations" : {
@@ -46,6 +62,9 @@
 
     },
     "A client with this name already exists. Consider selecting from existing clients." : {
+
+    },
+    "A worker with this name already exists" : {
 
     },
     "action.add" : {
@@ -618,6 +637,9 @@
     "Apply" : {
 
     },
+    "Are you sure you want to delete this worker?" : {
+
+    },
     "Budget" : {
 
     },
@@ -1000,6 +1022,12 @@
       }
     },
     "Date Range" : {
+
+    },
+    "Delete" : {
+
+    },
+    "Delete Worker" : {
 
     },
     "Due %@" : {
@@ -1919,6 +1947,9 @@
     "Item at %@" : {
 
     },
+    "labor.activeProjects" : {
+
+    },
     "labor.add" : {
       "localizations" : {
         "en" : {
@@ -1964,6 +1995,7 @@
       }
     },
     "labor.allProjects" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2008,6 +2040,7 @@
       }
     },
     "labor.amount" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2028,6 +2061,9 @@
           }
         }
       }
+    },
+    "labor.associatedProjects" : {
+
     },
     "labor.basicInfo" : {
       "localizations" : {
@@ -2096,6 +2132,7 @@
       }
     },
     "labor.completed" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2118,6 +2155,7 @@
       }
     },
     "labor.completedJobs" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2139,7 +2177,11 @@
         }
       }
     },
+    "labor.createdDate" : {
+
+    },
     "labor.createExpenseHint" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2162,6 +2204,7 @@
       }
     },
     "labor.createExpenseToggle" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2184,6 +2227,7 @@
       }
     },
     "labor.dateRange" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2204,6 +2248,18 @@
           }
         }
       }
+    },
+    "labor.daysUnit" : {
+
+    },
+    "labor.dayUnit" : {
+
+    },
+    "labor.defaultRate" : {
+
+    },
+    "labor.defaultRateHint" : {
+
     },
     "labor.delete" : {
       "localizations" : {
@@ -2228,6 +2284,7 @@
       }
     },
     "labor.duration.hours" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2250,6 +2307,7 @@
       }
     },
     "labor.duration.unavailable" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2294,6 +2352,7 @@
       }
     },
     "labor.endDate" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2316,6 +2375,7 @@
       }
     },
     "labor.expenseLinked" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2492,6 +2552,7 @@
       }
     },
     "labor.linkedToExpense" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2514,6 +2575,7 @@
       }
     },
     "labor.manualOverrideHint" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2580,6 +2642,7 @@
       }
     },
     "labor.noProject" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2668,6 +2731,7 @@
       }
     },
     "labor.project" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2690,6 +2754,7 @@
       }
     },
     "labor.projectAssociation" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2712,6 +2777,7 @@
       }
     },
     "labor.rateAndHours" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2756,6 +2822,7 @@
       }
     },
     "labor.selectProject" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2777,7 +2844,14 @@
         }
       }
     },
+    "labor.selectWorker" : {
+
+    },
+    "labor.selectWorkerPrompt" : {
+
+    },
     "labor.showCompletedOnly" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2844,6 +2918,7 @@
       }
     },
     "labor.sort.dateNewest" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2866,6 +2941,7 @@
       }
     },
     "labor.sort.dateOldest" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2886,6 +2962,9 @@
           }
         }
       }
+    },
+    "labor.sort.recentlyAdded" : {
+
     },
     "labor.sort.workerName" : {
       "localizations" : {
@@ -2954,6 +3033,7 @@
       }
     },
     "labor.startDate" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2976,6 +3056,7 @@
       }
     },
     "labor.status" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2998,6 +3079,7 @@
       }
     },
     "labor.status.completed" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3042,6 +3124,7 @@
       }
     },
     "labor.totalAmount" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3064,6 +3147,7 @@
       }
     },
     "labor.totalCost" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3085,7 +3169,14 @@
         }
       }
     },
+    "labor.totalDaysWorked" : {
+
+    },
+    "labor.totalEarned" : {
+
+    },
     "labor.totalEntries" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3128,6 +3219,9 @@
           }
         }
       }
+    },
+    "labor.totalWorkers" : {
+
     },
     "labor.type" : {
       "localizations" : {
@@ -3240,6 +3334,7 @@
       }
     },
     "labor.useEndDate" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3262,6 +3357,7 @@
       }
     },
     "labor.useStartDate" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3284,6 +3380,7 @@
       }
     },
     "labor.workDate" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3326,6 +3423,9 @@
           }
         }
       }
+    },
+    "labor.workerStats" : {
+
     },
     "Net Balance" : {
 
@@ -4285,6 +4385,9 @@
 
     },
     "Test Invoice Notifications" : {
+
+    },
+    "This worker has %lld linked expense(s). The expenses will remain but won't be linked to a worker." : {
 
     },
     "To" : {

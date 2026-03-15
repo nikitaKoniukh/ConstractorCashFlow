@@ -229,11 +229,14 @@ struct EditInvoiceView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(AppState.self) private var appState
     @Query private var projects: [Project]
+    @Query(sort: \Client.name) private var clients: [Client]
     
     @Bindable var invoice: Invoice
     
     @State private var amount: String
     @State private var clientName: String
+    @State private var selectedClient: Client?
+    @State private var useExistingClient: Bool
     @State private var dueDate: Date
     @State private var isPaid: Bool
     @State private var selectedProject: Project?
@@ -243,22 +246,84 @@ struct EditInvoiceView: View {
         self.invoice = invoice
         _amount = State(initialValue: String(format: "%.2f", invoice.amount))
         _clientName = State(initialValue: invoice.clientName)
+        _selectedClient = State(initialValue: nil)
+        _useExistingClient = State(initialValue: false)
         _dueDate = State(initialValue: invoice.dueDate)
         _isPaid = State(initialValue: invoice.isPaid)
         _selectedProject = State(initialValue: invoice.project)
     }
     
+    private var finalClientName: String {
+        if useExistingClient {
+            return selectedClient?.name ?? ""
+        } else {
+            return clientName
+        }
+    }
+    
     private var isValid: Bool {
-        !clientName.trimmingCharacters(in: .whitespaces).isEmpty &&
+        !finalClientName.trimmingCharacters(in: .whitespaces).isEmpty &&
         !amount.isEmpty &&
         Double(amount) != nil &&
         Double(amount)! > 0
     }
     
+    private func clientExists(name: String) -> Bool {
+        clients.contains { $0.name.lowercased() == name.lowercased() }
+    }
+    
     var body: some View {
         Form {
             Section(String(localized: "invoice.details")) {
-                TextField(LocalizationKey.Invoice.clientName, text: $clientName)
+                // Client selection
+                if !clients.isEmpty {
+                    Picker("Client Source", selection: $useExistingClient) {
+                        Text("Enter Name").tag(false)
+                        Text("Select Existing").tag(true)
+                    }
+                    .pickerStyle(.segmented)
+                    
+                    if useExistingClient {
+                        Picker(LocalizationKey.Invoice.clientName, selection: $selectedClient) {
+                            Text("Select a client")
+                                .tag(nil as Client?)
+                            
+                            ForEach(clients) { client in
+                                Text(client.name)
+                                    .tag(client as Client?)
+                            }
+                        }
+                        
+                        if let client = selectedClient {
+                            VStack(alignment: .leading, spacing: 4) {
+                                if let email = client.email {
+                                    Label(email, systemImage: "envelope")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+                                if let phone = client.phone {
+                                    Label(phone, systemImage: "phone")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+                            }
+                        }
+                    } else {
+                        TextField(LocalizationKey.Invoice.clientName, text: $clientName)
+                        
+                        if !clientName.isEmpty && clientExists(name: clientName) {
+                            HStack(spacing: 6) {
+                                Image(systemName: "exclamationmark.triangle.fill")
+                                    .foregroundStyle(.orange)
+                                Text("A client with this name already exists. Consider selecting from existing clients.")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                    }
+                } else {
+                    TextField(LocalizationKey.Invoice.clientName, text: $clientName)
+                }
                 
                 HStack {
                     Text(LocalizationKey.Invoice.amount)
@@ -304,6 +369,13 @@ struct EditInvoiceView: View {
                 .disabled(!isValid || isSaving)
             }
         }
+        .onAppear {
+            // Pre-select existing client if the invoice's clientName matches one
+            if let matchingClient = clients.first(where: { $0.name.lowercased() == invoice.clientName.lowercased() }) {
+                selectedClient = matchingClient
+                useExistingClient = true
+            }
+        }
     }
     
     private func saveChanges() {
@@ -311,8 +383,15 @@ struct EditInvoiceView: View {
         isSaving = true
         
         let wasPaid = invoice.isPaid
+        let invoiceClientName = finalClientName.trimmingCharacters(in: .whitespaces)
         
-        invoice.clientName = clientName.trimmingCharacters(in: .whitespaces)
+        // Auto-create client if entering manually and doesn't exist
+        if !useExistingClient && !clientName.isEmpty && !clientExists(name: clientName) {
+            let newClient = Client(name: clientName.trimmingCharacters(in: .whitespaces))
+            modelContext.insert(newClient)
+        }
+        
+        invoice.clientName = invoiceClientName
         invoice.amount = Double(amount) ?? 0
         invoice.dueDate = dueDate
         invoice.isPaid = isPaid
@@ -352,29 +431,92 @@ struct EditInvoiceView: View {
     }
 }
 
-// MARK: - Placeholder View
+// MARK: - New Invoice View
 struct NewInvoiceView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
     @Environment(AppState.self) private var appState
     @Query private var projects: [Project]
+    @Query(sort: \Client.name) private var clients: [Client]
     
     @State private var amount: Double = 0
     @State private var clientName: String = ""
+    @State private var selectedClient: Client?
+    @State private var useExistingClient: Bool = false
     @State private var dueDate: Date = Calendar.current.date(byAdding: .day, value: 30, to: Date()) ?? Date()
     @State private var isPaid: Bool = false
     @State private var selectedProject: Project?
     @State private var isSaving: Bool = false
     
+    private var finalClientName: String {
+        if useExistingClient {
+            return selectedClient?.name ?? ""
+        } else {
+            return clientName
+        }
+    }
+    
     private var isValid: Bool {
-        !clientName.isEmpty && amount > 0
+        !finalClientName.isEmpty && amount > 0
+    }
+    
+    private func clientExists(name: String) -> Bool {
+        clients.contains { $0.name.lowercased() == name.lowercased() }
     }
     
     var body: some View {
         NavigationStack {
             Form {
                 Section(String(localized: "invoice.details")) {
-                    TextField(LocalizationKey.Invoice.clientName, text: $clientName)
+                    // Client selection
+                    if !clients.isEmpty {
+                        Picker("Client Source", selection: $useExistingClient) {
+                            Text("Enter Name").tag(false)
+                            Text("Select Existing").tag(true)
+                        }
+                        .pickerStyle(.segmented)
+                        
+                        if useExistingClient {
+                            Picker(LocalizationKey.Invoice.clientName, selection: $selectedClient) {
+                                Text("Select a client")
+                                    .tag(nil as Client?)
+                                
+                                ForEach(clients) { client in
+                                    Text(client.name)
+                                        .tag(client as Client?)
+                                }
+                            }
+                            
+                            if let client = selectedClient {
+                                VStack(alignment: .leading, spacing: 4) {
+                                    if let email = client.email {
+                                        Label(email, systemImage: "envelope")
+                                            .font(.caption)
+                                            .foregroundStyle(.secondary)
+                                    }
+                                    if let phone = client.phone {
+                                        Label(phone, systemImage: "phone")
+                                            .font(.caption)
+                                            .foregroundStyle(.secondary)
+                                    }
+                                }
+                            }
+                        } else {
+                            TextField(LocalizationKey.Invoice.clientName, text: $clientName)
+                            
+                            if !clientName.isEmpty && clientExists(name: clientName) {
+                                HStack(spacing: 6) {
+                                    Image(systemName: "exclamationmark.triangle.fill")
+                                        .foregroundStyle(.orange)
+                                    Text("A client with this name already exists. Consider selecting from existing clients.")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+                            }
+                        }
+                    } else {
+                        TextField(LocalizationKey.Invoice.clientName, text: $clientName)
+                    }
                     
                     TextField(LocalizationKey.Invoice.amount, value: $amount, format: .currency(code: "USD"))
                         .keyboardType(.decimalPad)
@@ -415,11 +557,19 @@ struct NewInvoiceView: View {
     private func saveInvoice() {
         isSaving = true
         
+        let invoiceClientName = finalClientName
+        
+        // Auto-create client if entering manually and doesn't exist
+        if !useExistingClient && !clientName.isEmpty && !clientExists(name: clientName) {
+            let newClient = Client(name: clientName)
+            modelContext.insert(newClient)
+        }
+        
         let invoice = Invoice(
             amount: amount,
             dueDate: dueDate,
             isPaid: isPaid,
-            clientName: clientName,
+            clientName: invoiceClientName,
             project: selectedProject
         )
         

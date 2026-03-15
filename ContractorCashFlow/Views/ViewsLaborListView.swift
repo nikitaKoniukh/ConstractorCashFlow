@@ -13,32 +13,25 @@ struct LaborListView: View {
     
     @State private var searchText: String = ""
     @State private var selectedType: LaborType?
-    @State private var selectedProject: Project?
-    @State private var showCompletedOnly: Bool = false
-    @State private var startDate: Date?
-    @State private var endDate: Date?
     @State private var isShowingFilters = false
-    @State private var sortOrder: SortOrder = .dateDescending
+    @State private var sortOrder: SortOrder = .recentlyAdded
     
     enum SortOrder: CaseIterable {
-        case dateDescending
-        case dateAscending
-        case amountDescending
-        case amountAscending
+        case recentlyAdded
         case workerName
+        case totalEarnedHigh
+        case totalEarnedLow
         
         var titleKey: LocalizedStringKey {
             switch self {
-            case .dateDescending:
-                return LocalizationKey.Labor.sortDateNewest
-            case .dateAscending:
-                return LocalizationKey.Labor.sortDateOldest
-            case .amountDescending:
-                return LocalizationKey.Labor.sortAmountHighToLow
-            case .amountAscending:
-                return LocalizationKey.Labor.sortAmountLowToHigh
+            case .recentlyAdded:
+                return LocalizationKey.Labor.sortRecentlyAdded
             case .workerName:
                 return LocalizationKey.Labor.sortWorkerName
+            case .totalEarnedHigh:
+                return LocalizationKey.Labor.sortAmountHighToLow
+            case .totalEarnedLow:
+                return LocalizationKey.Labor.sortAmountLowToHigh
             }
         }
     }
@@ -48,10 +41,6 @@ struct LaborListView: View {
             LaborListContent(
                 searchText: searchText,
                 selectedType: selectedType,
-                selectedProject: selectedProject,
-                showCompletedOnly: showCompletedOnly,
-                startDate: startDate,
-                endDate: endDate,
                 sortOrder: sortOrder
             )
             .navigationTitle(LocalizationKey.Labor.title)
@@ -61,7 +50,7 @@ struct LaborListView: View {
                     Button {
                         isShowingFilters.toggle()
                     } label: {
-                        Label(LocalizationKey.Labor.filtersButton, systemImage: hasActiveFilters ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease.circle")
+                        Label(LocalizationKey.Labor.filtersButton, systemImage: selectedType != nil ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease.circle")
                     }
                 }
                 
@@ -92,13 +81,7 @@ struct LaborListView: View {
                 AddLaborView()
             }
             .sheet(isPresented: $isShowingFilters) {
-                LaborFiltersView(
-                    selectedType: $selectedType,
-                    selectedProject: $selectedProject,
-                    showCompletedOnly: $showCompletedOnly,
-                    startDate: $startDate,
-                    endDate: $endDate
-                )
+                LaborFiltersView(selectedType: $selectedType)
             }
             .alert(LocalizationKey.General.error, isPresented: Binding(
                 get: { appState.isShowingError },
@@ -110,36 +93,26 @@ struct LaborListView: View {
             }
         }
     }
-    
-    private var hasActiveFilters: Bool {
-        selectedType != nil || selectedProject != nil || showCompletedOnly || startDate != nil || endDate != nil
-    }
 }
 
 // MARK: - Labor List Content
 private struct LaborListContent: View {
     @Environment(\.modelContext) private var modelContext
-    @Query private var allLabor: [LaborDetails]
+    @Query private var allWorkers: [LaborDetails]
     
     let searchText: String
     let selectedType: LaborType?
-    let selectedProject: Project?
-    let showCompletedOnly: Bool
-    let startDate: Date?
-    let endDate: Date?
     let sortOrder: LaborListView.SortOrder
     
-    @State private var selectedLabor: LaborDetails?
+    @State private var selectedWorker: LaborDetails?
     
-    private var calendar: Calendar { .current }
-    
-    var filteredAndSortedLabor: [LaborDetails] {
-        var result = allLabor
+    var filteredAndSortedWorkers: [LaborDetails] {
+        var result = allWorkers
         
         if !searchText.isEmpty {
-            result = result.filter { labor in
-                labor.workerName.localizedStandardContains(searchText) ||
-                (labor.notes?.localizedStandardContains(searchText) ?? false)
+            result = result.filter { worker in
+                worker.workerName.localizedStandardContains(searchText) ||
+                (worker.notes?.localizedStandardContains(searchText) ?? false)
             }
         }
         
@@ -147,35 +120,15 @@ private struct LaborListContent: View {
             result = result.filter { $0.laborType == type }
         }
         
-        if let project = selectedProject {
-            result = result.filter { $0.project?.id == project.id }
-        }
-        
-        if showCompletedOnly {
-            result = result.filter { $0.isCompleted }
-        }
-        
-        if let start = startDate {
-            let startOfDay = calendar.startOfDay(for: start)
-            result = result.filter { $0.workDate >= startOfDay }
-        }
-        
-        if let end = endDate,
-           let endOfDay = calendar.date(byAdding: DateComponents(day: 1, second: -1), to: calendar.startOfDay(for: end)) {
-            result = result.filter { $0.workDate <= endOfDay }
-        }
-        
         switch sortOrder {
-        case .dateDescending:
-            result.sort { $0.workDate > $1.workDate }
-        case .dateAscending:
-            result.sort { $0.workDate < $1.workDate }
-        case .amountDescending:
-            result.sort { $0.totalAmount > $1.totalAmount }
-        case .amountAscending:
-            result.sort { $0.totalAmount < $1.totalAmount }
+        case .recentlyAdded:
+            result.sort { $0.createdDate > $1.createdDate }
         case .workerName:
             result.sort { $0.workerName.localizedCaseInsensitiveCompare($1.workerName) == .orderedAscending }
+        case .totalEarnedHigh:
+            result.sort { $0.totalAmountEarned > $1.totalAmountEarned }
+        case .totalEarnedLow:
+            result.sort { $0.totalAmountEarned < $1.totalAmountEarned }
         }
         
         return result
@@ -183,7 +136,7 @@ private struct LaborListContent: View {
     
     var body: some View {
         Group {
-            if filteredAndSortedLabor.isEmpty {
+            if filteredAndSortedWorkers.isEmpty {
                 ContentUnavailableView {
                     Label(LocalizationKey.Labor.noLabor, systemImage: "person.2.slash")
                 } description: {
@@ -196,49 +149,50 @@ private struct LaborListContent: View {
             } else {
                 List {
                     Section {
-                        LaborSummaryCard(labor: filteredAndSortedLabor)
+                        WorkerSummaryCard(workers: filteredAndSortedWorkers)
                     }
                     
                     Section {
-                        ForEach(filteredAndSortedLabor) { labor in
-                            LaborRowView(labor: labor)
+                        ForEach(filteredAndSortedWorkers) { worker in
+                            WorkerCardRow(worker: worker)
                                 .contentShape(Rectangle())
                                 .onTapGesture {
-                                    selectedLabor = labor
+                                    selectedWorker = worker
                                 }
                         }
-                        .onDelete(perform: deleteLabor)
+                        .onDelete(perform: deleteWorker)
                     }
                 }
             }
         }
-        .sheet(item: $selectedLabor) { labor in
-            EditLaborView(labor: labor)
+        .sheet(item: $selectedWorker) { worker in
+            EditLaborView(labor: worker)
         }
     }
     
-    private func deleteLabor(at offsets: IndexSet) {
+    private func deleteWorker(at offsets: IndexSet) {
         for index in offsets {
-            let labor = filteredAndSortedLabor[index]
-            modelContext.delete(labor)
+            let worker = filteredAndSortedWorkers[index]
+            modelContext.delete(worker)
         }
         
         try? modelContext.save()
     }
 }
 
-// MARK: - Labor Row View
-private struct LaborRowView: View {
-    let labor: LaborDetails
+// MARK: - Worker Card Row
+private struct WorkerCardRow: View {
+    let worker: LaborDetails
     
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
+            // Name and type
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(labor.workerName)
+                    Text(worker.workerName)
                         .font(.headline)
                     
-                    Text(labor.laborType.localizedDisplayName)
+                    Text(worker.laborType.localizedDisplayName)
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
@@ -246,61 +200,58 @@ private struct LaborRowView: View {
                 Spacer()
                 
                 VStack(alignment: .trailing, spacing: 4) {
-                    Text(labor.totalAmount.formatted(.currency(code: "USD")))
+                    Text(worker.totalAmountEarned.formatted(.currency(code: "USD")))
                         .font(.headline)
-                        .foregroundStyle(.primary)
+                        .foregroundStyle(worker.totalAmountEarned > 0 ? .primary : .secondary)
                     
-                    Text(labor.workDate.formatted(date: .abbreviated, time: .omitted))
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-            }
-            
-            if labor.laborType == .hourly, let hours = labor.hoursWorked, let rate = labor.hourlyRate {
-                HStack {
-                    Label {
-                        Text(String(format: "%.1f %@", hours, String(localized: "labor.hourUnitShort")))
-                    } icon: {
-                        Image(systemName: "clock")
+                    if let rate = worker.hourlyRate {
+                        Text(rate.formatted(.currency(code: "USD")) + String(localized: "labor.hourlyRateSuffix"))
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
                     }
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    
-                    Text("•")
-                        .foregroundStyle(.secondary)
-                    
-                    Text(rate.formatted(.currency(code: "USD")) + String(localized: "labor.hourlyRateSuffix"))
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
                 }
             }
             
-            if let project = labor.project {
-                HStack {
+            // Stats row
+            if worker.totalDaysWorked > 0 || worker.totalHoursWorked > 0 {
+                HStack(spacing: 12) {
+                    if worker.totalDaysWorked > 0 {
+                        Label {
+                            Text("\(worker.totalDaysWorked) \(worker.totalDaysWorked == 1 ? String(localized: "labor.dayUnit") : String(localized: "labor.daysUnit"))")
+                        } icon: {
+                            Image(systemName: "calendar")
+                        }
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    }
+                    
+                    if worker.totalHoursWorked > 0 {
+                        Label {
+                            Text(String(format: "%.1f %@", worker.totalHoursWorked, String(localized: "labor.hourUnitShort")))
+                        } icon: {
+                            Image(systemName: "clock")
+                        }
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    }
+                }
+            }
+            
+            // Associated projects
+            if !worker.associatedProjects.isEmpty {
+                HStack(spacing: 4) {
                     Image(systemName: "folder")
                         .font(.caption)
                         .foregroundStyle(.blue)
-                    Text(project.name)
+                    Text(worker.associatedProjects.map(\.name).joined(separator: ", "))
                         .font(.caption)
                         .foregroundStyle(.blue)
+                        .lineLimit(1)
                 }
             }
             
-            HStack {
-                if labor.isCompleted {
-                    Label(LocalizationKey.Labor.completed, systemImage: "checkmark.circle.fill")
-                        .font(.caption)
-                        .foregroundStyle(.green)
-                }
-                
-                if labor.expense != nil {
-                    Label(LocalizationKey.Labor.expenseLinked, systemImage: "link")
-                        .font(.caption)
-                        .foregroundStyle(.orange)
-                }
-            }
-            
-            if let notes = labor.notes, !notes.isEmpty {
+            // Notes
+            if let notes = worker.notes, !notes.isEmpty {
                 Text(notes)
                     .font(.caption)
                     .foregroundStyle(.secondary)
@@ -311,28 +262,30 @@ private struct LaborRowView: View {
     }
 }
 
-// MARK: - Labor Summary Card
-private struct LaborSummaryCard: View {
-    let labor: [LaborDetails]
+// MARK: - Worker Summary Card
+private struct WorkerSummaryCard: View {
+    let workers: [LaborDetails]
     
-    var totalAmount: Double {
-        labor.reduce(0) { $0 + $1.totalAmount }
+    var totalEarned: Double {
+        workers.reduce(0) { $0 + $1.totalAmountEarned }
     }
     
     var totalHours: Double {
-        labor.compactMap { $0.hoursWorked }.reduce(0, +)
+        workers.reduce(0) { $0 + $1.totalHoursWorked }
     }
     
-    var completedCount: Int {
-        labor.filter { $0.isCompleted }.count
+    var activeProjectCount: Int {
+        let allProjects = workers.flatMap { $0.associatedProjects }
+        var seen = Set<UUID>()
+        return allProjects.filter { seen.insert($0.id).inserted }.count
     }
     
     var body: some View {
         VStack(spacing: 12) {
             HStack {
                 StatCard(
-                    title: LocalizationKey.Labor.totalCost,
-                    value: totalAmount.formatted(.currency(code: "USD")),
+                    title: LocalizationKey.Labor.totalEarned,
+                    value: totalEarned.formatted(.currency(code: "USD")),
                     systemImage: "dollarsign.circle.fill",
                     color: .blue
                 )
@@ -347,16 +300,16 @@ private struct LaborSummaryCard: View {
             
             HStack {
                 StatCard(
-                    title: LocalizationKey.Labor.totalEntries,
-                    value: "\(labor.count)",
+                    title: LocalizationKey.Labor.totalWorkers,
+                    value: "\(workers.count)",
                     systemImage: "person.2.fill",
                     color: .purple
                 )
                 
                 StatCard(
-                    title: LocalizationKey.Labor.completedJobs,
-                    value: "\(completedCount)",
-                    systemImage: "checkmark.circle.fill",
+                    title: LocalizationKey.Labor.activeProjects,
+                    value: "\(activeProjectCount)",
+                    systemImage: "folder.fill",
                     color: .green
                 )
             }
@@ -396,16 +349,8 @@ private struct StatCard: View {
 // MARK: - Labor Filters View
 struct LaborFiltersView: View {
     @Environment(\.dismiss) private var dismiss
-    @Query private var projects: [Project]
     
     @Binding var selectedType: LaborType?
-    @Binding var selectedProject: Project?
-    @Binding var showCompletedOnly: Bool
-    @Binding var startDate: Date?
-    @Binding var endDate: Date?
-    
-    @State private var useStartDate = false
-    @State private var useEndDate = false
     
     var body: some View {
         NavigationStack {
@@ -419,48 +364,10 @@ struct LaborFiltersView: View {
                     }
                 }
                 
-                Section(header: Text(LocalizationKey.Labor.project)) {
-                    Picker(LocalizationKey.Labor.selectProject, selection: $selectedProject) {
-                        Text(LocalizationKey.Labor.allProjects).tag(nil as Project?)
-                        ForEach(projects.filter(\.isActive), id: \.id) { project in
-                            Text(project.name).tag(project as Project?)
-                        }
-                    }
-                }
-                
-                Section(header: Text(LocalizationKey.Labor.status)) {
-                    Toggle(LocalizationKey.Labor.showCompletedOnly, isOn: $showCompletedOnly)
-                }
-                
-                Section(header: Text(LocalizationKey.Labor.dateRange)) {
-                    Toggle(LocalizationKey.Labor.useStartDate, isOn: $useStartDate)
-                    if useStartDate {
-                        DatePicker(
-                            LocalizationKey.Labor.startDate,
-                            selection: Binding(
-                                get: { startDate ?? Date() },
-                                set: { startDate = $0 }
-                            ),
-                            displayedComponents: .date
-                        )
-                    }
-                    
-                    Toggle(LocalizationKey.Labor.useEndDate, isOn: $useEndDate)
-                    if useEndDate {
-                        DatePicker(
-                            LocalizationKey.Labor.endDate,
-                            selection: Binding(
-                                get: { endDate ?? Date() },
-                                set: { endDate = $0 }
-                            ),
-                            displayedComponents: .date
-                        )
-                    }
-                }
-                
                 Section {
                     Button(LocalizationKey.Labor.clearFilters) {
-                        clearFilters()
+                        selectedType = nil
+                        dismiss()
                     }
                 }
             }
@@ -473,31 +380,7 @@ struct LaborFiltersView: View {
                     }
                 }
             }
-            .onAppear {
-                useStartDate = startDate != nil
-                useEndDate = endDate != nil
-            }
-            .onChange(of: useStartDate) {
-                if !useStartDate {
-                    startDate = nil
-                }
-            }
-            .onChange(of: useEndDate) {
-                if !useEndDate {
-                    endDate = nil
-                }
-            }
         }
-    }
-    
-    private func clearFilters() {
-        selectedType = nil
-        selectedProject = nil
-        showCompletedOnly = false
-        startDate = nil
-        endDate = nil
-        useStartDate = false
-        useEndDate = false
     }
 }
 

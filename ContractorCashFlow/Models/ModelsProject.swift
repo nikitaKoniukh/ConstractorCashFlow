@@ -42,6 +42,14 @@ final class Project {
     
     // MARK: - Computed Properties
     
+    /// Workers associated with this project (derived from labor expenses)
+    var workers: [LaborDetails] {
+        let laborExpenses = expenses.filter { $0.category == .labor }
+        let workerList = laborExpenses.compactMap { $0.worker }
+        var seen = Set<UUID>()
+        return workerList.filter { seen.insert($0.id).inserted }
+    }
+    
     /// Total amount spent on expenses for this project
     var totalExpenses: Double {
         expenses.reduce(0) { $0 + $1.amount }

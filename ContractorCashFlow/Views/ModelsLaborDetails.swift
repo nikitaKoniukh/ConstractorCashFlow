@@ -48,64 +48,52 @@ final class LaborDetails {
     var workerName: String
     var laborType: LaborType
     var hourlyRate: Double?
-    var hoursWorked: Double?
-    var totalAmount: Double
-    var workDate: Date
     var notes: String?
-    var isCompleted: Bool
+    var createdDate: Date
     
-    // Relationship to Expense
-    var expense: Expense?
-    
-    // Relationship to Project (optional direct link)
-    var project: Project?
+    // Worker owns many labor expenses
+    @Relationship(deleteRule: .nullify, inverse: \Expense.worker)
+    var expenses: [Expense] = []
     
     init(
         id: UUID = UUID(),
         workerName: String,
         laborType: LaborType,
         hourlyRate: Double? = nil,
-        hoursWorked: Double? = nil,
-        totalAmount: Double,
-        workDate: Date = Date(),
         notes: String? = nil,
-        isCompleted: Bool = false,
-        expense: Expense? = nil,
-        project: Project? = nil
+        createdDate: Date = Date()
     ) {
         self.id = id
         self.workerName = workerName
         self.laborType = laborType
         self.hourlyRate = hourlyRate
-        self.hoursWorked = hoursWorked
-        self.totalAmount = totalAmount
-        self.workDate = workDate
         self.notes = notes
-        self.isCompleted = isCompleted
-        self.expense = expense
-        self.project = project
+        self.createdDate = createdDate
     }
     
-    // MARK: - Computed Properties
+    // MARK: - Computed Properties (aggregated from linked expenses)
     
-    /// Calculated amount based on hourly rate and hours worked
-    var calculatedAmount: Double {
-        guard let rate = hourlyRate, let hours = hoursWorked else {
-            return totalAmount
-        }
-        return rate * hours
+    /// Total amount earned across all linked labor expenses
+    var totalAmountEarned: Double {
+        expenses.reduce(0) { $0 + $1.amount }
     }
     
-    /// Check if labor is hourly-based
-    var isHourlyBased: Bool {
-        laborType == .hourly
+    /// Total hours worked across all linked labor expenses
+    var totalHoursWorked: Double {
+        expenses.compactMap { $0.hoursWorked }.reduce(0, +)
     }
     
-    /// Formatted work duration
-    var formattedDuration: String {
-        guard let hours = hoursWorked else { return String(localized: "labor.duration.unavailable") }
-        return String(format: "%@ %@", String(format: "%.1f", hours), String(localized: "labor.duration.hours"))
+    /// Total number of distinct work days
+    var totalDaysWorked: Int {
+        let calendar = Calendar.current
+        let uniqueDays = Set(expenses.map { calendar.startOfDay(for: $0.date) })
+        return uniqueDays.count
+    }
+    
+    /// Projects this worker is associated with (derived from expenses)
+    var associatedProjects: [Project] {
+        let projects = expenses.compactMap { $0.project }
+        var seen = Set<UUID>()
+        return projects.filter { seen.insert($0.id).inserted }
     }
 }
-
-// Reverse lookup helpers can be added later with a real stored relationship on Expense if needed.
