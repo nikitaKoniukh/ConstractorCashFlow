@@ -252,6 +252,7 @@ struct AllAppTests {
             #expect(ExpenseCategory.materials.displayName == "Materials")
             #expect(ExpenseCategory.labor.displayName == "Labor")
             #expect(ExpenseCategory.equipment.displayName == "Equipment")
+            #expect(ExpenseCategory.subcontractor.displayName == "Subcontractor")
             #expect(ExpenseCategory.misc.displayName == "Miscellaneous")
         }
     }

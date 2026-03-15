@@ -13,6 +13,7 @@ enum ExpenseCategory: String, Codable, CaseIterable {
     case materials = "Materials"
     case labor = "Labor"
     case equipment = "Equipment"
+    case subcontractor = "Subcontractor"
     case misc = "Miscellaneous"
     
     var displayName: String {
@@ -27,6 +28,8 @@ enum ExpenseCategory: String, Codable, CaseIterable {
             return LocalizationKey.Expense.labor
         case .equipment:
             return LocalizationKey.Expense.equipment
+        case .subcontractor:
+            return LocalizationKey.Expense.subcontractor
         case .misc:
             return LocalizationKey.Expense.miscellaneous
         }

@@ -13,6 +13,8 @@ struct LaborListView: View {
     
     @State private var searchText: String = ""
     @State private var selectedType: LaborType?
+    @State private var selectedProject: Project?
+    @State private var currentMonthOnly: Bool = false
     @State private var isShowingFilters = false
     @State private var sortOrder: SortOrder = .recentlyAdded
     
@@ -41,6 +43,8 @@ struct LaborListView: View {
             LaborListContent(
                 searchText: searchText,
                 selectedType: selectedType,
+                selectedProject: selectedProject,
+                currentMonthOnly: currentMonthOnly,
                 sortOrder: sortOrder
             )
             .navigationTitle(LocalizationKey.Labor.title)
@@ -50,7 +54,7 @@ struct LaborListView: View {
                     Button {
                         isShowingFilters.toggle()
                     } label: {
-                        Label(LocalizationKey.Labor.filtersButton, systemImage: selectedType != nil ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease.circle")
+                        Label(LocalizationKey.Labor.filtersButton, systemImage: (selectedType != nil || selectedProject != nil || currentMonthOnly) ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease.circle")
                     }
                 }
                 
@@ -81,7 +85,11 @@ struct LaborListView: View {
                 AddLaborView()
             }
             .sheet(isPresented: $isShowingFilters) {
-                LaborFiltersView(selectedType: $selectedType)
+                LaborFiltersView(
+                    selectedType: $selectedType,
+                    selectedProject: $selectedProject,
+                    currentMonthOnly: $currentMonthOnly
+                )
             }
             .alert(LocalizationKey.General.error, isPresented: Binding(
                 get: { appState.isShowingError },
@@ -102,6 +110,8 @@ private struct LaborListContent: View {
     
     let searchText: String
     let selectedType: LaborType?
+    let selectedProject: Project?
+    let currentMonthOnly: Bool
     let sortOrder: LaborListView.SortOrder
     
     @State private var selectedWorker: LaborDetails?
@@ -118,6 +128,22 @@ private struct LaborListContent: View {
         
         if let type = selectedType {
             result = result.filter { $0.laborType == type }
+        }
+        
+        if let project = selectedProject {
+            result = result.filter { worker in
+                worker.associatedProjects.contains { $0.id == project.id }
+            }
+        }
+        
+        if currentMonthOnly {
+            let calendar = Calendar.current
+            let now = Date()
+            let startOfMonth = calendar.date(from: calendar.dateComponents([.year, .month], from: now))!
+            let endOfMonth = calendar.date(byAdding: .month, value: 1, to: startOfMonth)!
+            result = result.filter { worker in
+                worker.expenses.contains { $0.date >= startOfMonth && $0.date < endOfMonth }
+            }
         }
         
         switch sortOrder {
@@ -351,8 +377,11 @@ private struct StatCard: View {
 // MARK: - Labor Filters View
 struct LaborFiltersView: View {
     @Environment(\.dismiss) private var dismiss
+    @Query(sort: \Project.name) private var projects: [Project]
     
     @Binding var selectedType: LaborType?
+    @Binding var selectedProject: Project?
+    @Binding var currentMonthOnly: Bool
     
     var body: some View {
         NavigationStack {
@@ -366,9 +395,24 @@ struct LaborFiltersView: View {
                     }
                 }
                 
+                Section(header: Text(LocalizationKey.Labor.filterByProject)) {
+                    Picker(LocalizationKey.Labor.projectLabel, selection: $selectedProject) {
+                        Text(LocalizationKey.Labor.allProjects).tag(nil as Project?)
+                        ForEach(projects) { project in
+                            Text(project.name).tag(project as Project?)
+                        }
+                    }
+                }
+                
+                Section(header: Text(LocalizationKey.Labor.filterByDate)) {
+                    Toggle(LocalizationKey.Labor.currentMonthOnly, isOn: $currentMonthOnly)
+                }
+                
                 Section {
                     Button(LocalizationKey.Labor.clearFilters) {
                         selectedType = nil
+                        selectedProject = nil
+                        currentMonthOnly = false
                         dismiss()
                     }
                 }
