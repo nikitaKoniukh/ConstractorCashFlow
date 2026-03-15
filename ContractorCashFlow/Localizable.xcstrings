@@ -1,8 +1,15 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "(%@/hr)" : {
-
+    "(%@%@)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "(%1$@%2$@)"
+          }
+        }
+      }
     },
     "(%lld%%)" : {
 
@@ -2177,6 +2184,9 @@
         }
       }
     },
+    "labor.contractPrice" : {
+
+    },
     "labor.createdDate" : {
 
     },
@@ -2250,6 +2260,9 @@
       }
     },
     "labor.daysUnit" : {
+
+    },
+    "labor.daysWorked" : {
 
     },
     "labor.dayUnit" : {
@@ -2799,6 +2812,18 @@
         }
       }
     },
+    "labor.ratePerDay" : {
+
+    },
+    "labor.ratePerHour" : {
+
+    },
+    "labor.rateSuffix.daily" : {
+
+    },
+    "labor.rateSuffix.hourly" : {
+
+    },
     "labor.searchPrompt" : {
       "localizations" : {
         "en" : {
@@ -3169,6 +3194,9 @@
         }
       }
     },
+    "labor.totalDaysLabel" : {
+
+    },
     "labor.totalDaysWorked" : {
 
     },
@@ -3332,6 +3360,12 @@
           }
         }
       }
+    },
+    "labor.unit.days" : {
+
+    },
+    "labor.unit.hours" : {
+
     },
     "labor.useEndDate" : {
       "extractionState" : "stale",

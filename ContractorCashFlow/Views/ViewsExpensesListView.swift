@@ -81,54 +81,50 @@ struct ExpensesListView: View {
 private struct ExpensesListContent: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(AppState.self) private var appState
+    @Query(sort: \Expense.date, order: .reverse) private var allExpenses: [Expense]
+    
     let searchText: String
     let selectedCategory: ExpenseCategory?
     let startDate: Date?
     let endDate: Date?
     
-    init(searchText: String, selectedCategory: ExpenseCategory?, startDate: Date?, endDate: Date?) {
-        self.searchText = searchText
-        self.selectedCategory = selectedCategory
-        self.startDate = startDate
-        self.endDate = endDate
+    private var filteredExpenses: [Expense] {
+        var result = allExpenses
         
-        // Build complex predicate with all filters
-        let predicate: Predicate<Expense>
-        
-        // Capture values outside the predicate to simplify the expression
-        let hasStart = startDate != nil
-        let hasEnd = endDate != nil
-        let hasCategory = selectedCategory != nil
-        let searchEmpty = searchText.isEmpty
-        
-        predicate = #Predicate<Expense> { expense in
-            // All conditions combined into ONE single expression
-            (searchEmpty || expense.descriptionText.localizedStandardContains(searchText)) &&
-            (!hasCategory || expense.category == selectedCategory!) &&
-            (
-                (!hasStart && !hasEnd) ||
-                (hasStart && hasEnd && expense.date >= startDate! && expense.date <= endDate!) ||
-                (hasStart && !hasEnd && expense.date >= startDate!) ||
-                (!hasStart && hasEnd && expense.date <= endDate!)
-            )
+        if !searchText.isEmpty {
+            result = result.filter {
+                $0.descriptionText.localizedStandardContains(searchText)
+            }
         }
         
-        _expenses = Query(filter: predicate, sort: \Expense.date, order: .reverse)
+        if let category = selectedCategory {
+            result = result.filter { $0.category == category }
+        }
+        
+        if let start = startDate {
+            let startOfDay = Calendar.current.startOfDay(for: start)
+            result = result.filter { $0.date >= startOfDay }
+        }
+        
+        if let end = endDate {
+            if let endOfDay = Calendar.current.date(byAdding: DateComponents(day: 1, second: -1), to: Calendar.current.startOfDay(for: end)) {
+                result = result.filter { $0.date <= endOfDay }
+            }
+        }
+        
+        return result
     }
-    
-    @Query private var expenses: [Expense]
     
     var body: some View {
         List {
-            ForEach(expenses) { expense in
+            ForEach(filteredExpenses) { expense in
                 ExpenseRow(expense: expense)
             }
             .onDelete(perform: deleteExpenses)
         }
         .overlay {
-            if expenses.isEmpty {
+            if filteredExpenses.isEmpty {
                 if searchText.isEmpty && selectedCategory == nil && startDate == nil && endDate == nil {
-                    // Enhanced empty state with CTA button
                     ContentUnavailableView {
                         Label("No Expenses", systemImage: "dollarsign.circle")
                     } description: {
@@ -151,13 +147,10 @@ private struct ExpensesListContent: View {
     private func deleteExpenses(offsets: IndexSet) {
         withAnimation {
             for index in offsets {
-                do {
-                    modelContext.delete(expenses[index])
-                    try modelContext.save()
-                } catch {
-                    appState.showError("Failed to delete expense: \(error.localizedDescription)")
-                }
+                let expense = filteredExpenses[index]
+                modelContext.delete(expense)
             }
+            try? modelContext.save()
         }
     }
 }
@@ -308,19 +301,26 @@ struct NewExpenseView: View {
     
     // Labor-specific fields
     @State private var selectedWorker: LaborDetails?
-    @State private var hoursWorked: String = ""
+    @State private var unitsWorked: String = ""
     
     private var isValid: Bool {
         !descriptionText.isEmpty && amount > 0
     }
     
-    /// Auto-calculated amount from worker rate * hours
+    /// Auto-calculated amount from worker rate * units (hours or days)
     private var calculatedAmount: Double? {
         guard let worker = selectedWorker,
-              let rate = worker.hourlyRate,
-              let hours = Double(hoursWorked),
-              rate > 0, hours > 0 else { return nil }
-        return rate * hours
+              let rate = worker.rate,
+              rate > 0 else { return nil }
+        
+        if worker.laborType.usesQuantity {
+            // Hourly or Daily: rate × units
+            guard let units = Double(unitsWorked), units > 0 else { return nil }
+            return rate * units
+        } else {
+            // Contract / Subcontractor: fixed price
+            return rate
+        }
     }
     
     var body: some View {
@@ -340,8 +340,8 @@ struct NewExpenseView: View {
                             ForEach(allWorkers) { worker in
                                 HStack {
                                     Text(worker.workerName)
-                                    if let rate = worker.hourlyRate {
-                                        Text("(\(rate.formatted(.currency(code: "USD")))/hr)")
+                                    if let rate = worker.rate {
+                                        Text("(\(rate.formatted(.currency(code: "USD")))\(worker.laborType.rateSuffix))")
                                             .foregroundStyle(.secondary)
                                     }
                                 }
@@ -352,31 +352,46 @@ struct NewExpenseView: View {
                             updateFromWorkerSelection()
                         }
                         
-                        // Hours worked input
-                        if selectedWorker != nil {
-                            HStack {
-                                Text(LocalizationKey.Labor.hoursWorkedLabel)
-                                Spacer()
-                                TextField("0.0", text: $hoursWorked)
-                                    .keyboardType(.decimalPad)
-                                    .multilineTextAlignment(.trailing)
-                                    .onChange(of: hoursWorked) {
-                                        if let calc = calculatedAmount {
-                                            amount = calc
-                                        }
-                                    }
-                            }
-                            
-                            if let calc = calculatedAmount {
+                        if let worker = selectedWorker {
+                            if worker.laborType.usesQuantity {
+                                // Hourly / Daily: show quantity input
                                 HStack {
-                                    Text(LocalizationKey.Labor.calculatedTotal)
-                                        .foregroundStyle(.secondary)
+                                    Text(worker.laborType.quantityLabel)
                                     Spacer()
-                                    Text(calc.formatted(.currency(code: "USD")))
-                                        .fontWeight(.semibold)
-                                        .foregroundStyle(.secondary)
+                                    TextField("0.0", text: $unitsWorked)
+                                        .keyboardType(.decimalPad)
+                                        .multilineTextAlignment(.trailing)
+                                        .onChange(of: unitsWorked) {
+                                            if let calc = calculatedAmount {
+                                                amount = calc
+                                            }
+                                        }
                                 }
-                                .font(.subheadline)
+                                
+                                if let calc = calculatedAmount {
+                                    HStack {
+                                        Text(LocalizationKey.Labor.calculatedTotal)
+                                            .foregroundStyle(.secondary)
+                                        Spacer()
+                                        Text(calc.formatted(.currency(code: "USD")))
+                                            .fontWeight(.semibold)
+                                            .foregroundStyle(.secondary)
+                                    }
+                                    .font(.subheadline)
+                                }
+                            } else {
+                                // Contract / Subcontractor: show the fixed price
+                                if let rate = worker.rate {
+                                    HStack {
+                                        Text(LocalizationKey.Labor.contractPrice)
+                                            .foregroundStyle(.secondary)
+                                        Spacer()
+                                        Text(rate.formatted(.currency(code: "USD")))
+                                            .fontWeight(.semibold)
+                                            .foregroundStyle(.secondary)
+                                    }
+                                    .font(.subheadline)
+                                }
                             }
                         }
                     }
@@ -422,19 +437,20 @@ struct NewExpenseView: View {
                 // Reset labor fields when switching away from labor category
                 if category != .labor {
                     selectedWorker = nil
-                    hoursWorked = ""
+                    unitsWorked = ""
                 }
             }
         }
     }
     
-    /// Updates description when a worker is selected
+    /// Updates description and amount when a worker is selected
     private func updateFromWorkerSelection() {
         if let worker = selectedWorker {
             descriptionText = "Labor: \(worker.workerName)"
-            hoursWorked = ""
-            if let calc = calculatedAmount {
-                amount = calc
+            unitsWorked = ""
+            // For contract/subcontractor, auto-fill the amount from the fixed rate
+            if !worker.laborType.usesQuantity, let rate = worker.rate {
+                amount = rate
             }
         }
     }
@@ -442,7 +458,7 @@ struct NewExpenseView: View {
     private func saveExpense() {
         isSaving = true
         
-        let hours = Double(hoursWorked)
+        let units = Double(unitsWorked)
         
         let expense = Expense(
             category: category,
@@ -451,7 +467,7 @@ struct NewExpenseView: View {
             date: date,
             project: selectedProject,
             worker: category == .labor ? selectedWorker : nil,
-            hoursWorked: category == .labor ? hours : nil
+            unitsWorked: category == .labor ? units : nil
         )
         
         do {

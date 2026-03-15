@@ -204,8 +204,8 @@ private struct WorkerCardRow: View {
                         .font(.headline)
                         .foregroundStyle(worker.totalAmountEarned > 0 ? .primary : .secondary)
                     
-                    if let rate = worker.hourlyRate {
-                        Text(rate.formatted(.currency(code: "USD")) + String(localized: "labor.hourlyRateSuffix"))
+                    if let rate = worker.rate {
+                        Text(rate.formatted(.currency(code: "USD")) + worker.laborType.rateSuffix)
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
@@ -213,7 +213,7 @@ private struct WorkerCardRow: View {
             }
             
             // Stats row
-            if worker.totalDaysWorked > 0 || worker.totalHoursWorked > 0 {
+            if worker.totalDaysWorked > 0 || worker.totalUnitsWorked > 0 {
                 HStack(spacing: 12) {
                     if worker.totalDaysWorked > 0 {
                         Label {
@@ -225,9 +225,9 @@ private struct WorkerCardRow: View {
                         .foregroundStyle(.secondary)
                     }
                     
-                    if worker.totalHoursWorked > 0 {
+                    if worker.laborType.usesQuantity && worker.totalUnitsWorked > 0 {
                         Label {
-                            Text(String(format: "%.1f %@", worker.totalHoursWorked, String(localized: "labor.hourUnitShort")))
+                            Text(String(format: "%.1f %@", worker.totalUnitsWorked, worker.laborType.unitName))
                         } icon: {
                             Image(systemName: "clock")
                         }
@@ -271,7 +271,7 @@ private struct WorkerSummaryCard: View {
     }
     
     var totalHours: Double {
-        workers.reduce(0) { $0 + $1.totalHoursWorked }
+        workers.reduce(0) { $0 + $1.totalUnitsWorked }
     }
     
     var activeProjectCount: Int {

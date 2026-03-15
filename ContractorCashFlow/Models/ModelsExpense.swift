@@ -45,8 +45,8 @@ final class Expense {
     var project: Project?
     var worker: LaborDetails?
     
-    // Hours worked (for labor expenses linked to a worker)
-    var hoursWorked: Double?
+    // Units worked: hours for hourly, days for daily (nil for contract/subcontractor)
+    var unitsWorked: Double?
     
     init(
         id: UUID = UUID(),
@@ -56,7 +56,7 @@ final class Expense {
         date: Date = Date(),
         project: Project? = nil,
         worker: LaborDetails? = nil,
-        hoursWorked: Double? = nil
+        unitsWorked: Double? = nil
     ) {
         self.id = id
         self.category = category
@@ -65,6 +65,6 @@ final class Expense {
         self.date = date
         self.project = project
         self.worker = worker
-        self.hoursWorked = hoursWorked
+        self.unitsWorked = unitsWorked
     }
 }

@@ -141,11 +141,15 @@ enum LocalizationKey {
         static let contract = LocalizedStringKey("labor.type.contract")
         static let subcontractor = LocalizedStringKey("labor.type.subcontractor")
         
-        // Rate
+        // Rate (type-specific)
         static let defaultRate = LocalizedStringKey("labor.defaultRate")
         static let defaultRateHint = LocalizedStringKey("labor.defaultRateHint")
+        static let ratePerHour = LocalizedStringKey("labor.ratePerHour")
+        static let ratePerDay = LocalizedStringKey("labor.ratePerDay")
+        static let contractPrice = LocalizedStringKey("labor.contractPrice")
         static let hourlyRateLabel = LocalizedStringKey("labor.hourlyRate")
         static let hoursWorkedLabel = LocalizedStringKey("labor.hoursWorked")
+        static let daysWorkedLabel = LocalizedStringKey("labor.daysWorked")
         static let calculatedTotal = LocalizedStringKey("labor.calculatedTotal")
         
         // Notes
@@ -157,6 +161,7 @@ enum LocalizationKey {
         static let totalEarned = LocalizedStringKey("labor.totalEarned")
         static let totalHours = LocalizedStringKey("labor.totalHours")
         static let totalDaysWorked = LocalizedStringKey("labor.totalDaysWorked")
+        static let totalDaysLabel = LocalizedStringKey("labor.totalDaysLabel")
         static let totalWorkers = LocalizedStringKey("labor.totalWorkers")
         static let activeProjects = LocalizedStringKey("labor.activeProjects")
         static let associatedProjects = LocalizedStringKey("labor.associatedProjects")

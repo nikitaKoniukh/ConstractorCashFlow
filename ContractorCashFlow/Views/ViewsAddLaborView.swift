@@ -18,13 +18,13 @@ struct AddLaborView: View {
     // Form state
     @State private var workerName: String = ""
     @State private var laborType: LaborType = .hourly
-    @State private var hourlyRate: String = ""
+    @State private var rate: String = ""
     @State private var notes: String = ""
     
     @FocusState private var focusedField: Field?
     
     enum Field: Hashable {
-        case workerName, hourlyRate, notes
+        case workerName, rate, notes
     }
     
     /// Check if a worker with the same name already exists
@@ -54,15 +54,15 @@ struct AddLaborView: View {
                     }
                 }
                 
-                // Default Hourly Rate
-                Section(header: Text(LocalizationKey.Labor.defaultRate)) {
+                // Rate Section (adapts to labor type)
+                Section(header: Text(laborType.rateLabel)) {
                     HStack {
-                        Text(LocalizationKey.Labor.hourlyRateLabel)
+                        Text(laborType.rateLabel)
                         Spacer()
-                        TextField("0.00", text: $hourlyRate)
+                        TextField("0.00", text: $rate)
                             .keyboardType(.decimalPad)
                             .multilineTextAlignment(.trailing)
-                            .focused($focusedField, equals: .hourlyRate)
+                            .focused($focusedField, equals: .rate)
                     }
                     
                     Text(LocalizationKey.Labor.defaultRateHint)
@@ -112,12 +112,12 @@ struct AddLaborView: View {
     private func saveWorker() {
         guard isFormValid else { return }
         
-        let rate = Double(hourlyRate)
+        let parsedRate = Double(rate)
         
         let worker = LaborDetails(
             workerName: workerName.trimmingCharacters(in: .whitespaces),
             laborType: laborType,
-            hourlyRate: rate,
+            rate: parsedRate,
             notes: notes.isEmpty ? nil : notes
         )
         

@@ -18,21 +18,21 @@ struct EditLaborView: View {
     // Form state
     @State private var workerName: String
     @State private var laborType: LaborType
-    @State private var hourlyRate: String
+    @State private var rate: String
     @State private var notes: String
     @State private var showDeleteConfirmation = false
     
     @FocusState private var focusedField: Field?
     
     enum Field: Hashable {
-        case workerName, hourlyRate, notes
+        case workerName, rate, notes
     }
     
     init(labor: LaborDetails) {
         self.labor = labor
         _workerName = State(initialValue: labor.workerName)
         _laborType = State(initialValue: labor.laborType)
-        _hourlyRate = State(initialValue: labor.hourlyRate.map { String(format: "%.2f", $0) } ?? "")
+        _rate = State(initialValue: labor.rate.map { String(format: "%.2f", $0) } ?? "")
         _notes = State(initialValue: labor.notes ?? "")
     }
     
@@ -51,15 +51,15 @@ struct EditLaborView: View {
                     }
                 }
                 
-                // Default Hourly Rate
-                Section(header: Text(LocalizationKey.Labor.defaultRate)) {
+                // Rate Section (adapts to labor type)
+                Section(header: Text(laborType.rateLabel)) {
                     HStack {
-                        Text(LocalizationKey.Labor.hourlyRateLabel)
+                        Text(laborType.rateLabel)
                         Spacer()
-                        TextField("0.00", text: $hourlyRate)
+                        TextField("0.00", text: $rate)
                             .keyboardType(.decimalPad)
                             .multilineTextAlignment(.trailing)
-                            .focused($focusedField, equals: .hourlyRate)
+                            .focused($focusedField, equals: .rate)
                     }
                 }
                 
@@ -80,11 +80,13 @@ struct EditLaborView: View {
                                 .fontWeight(.semibold)
                         }
                         
-                        HStack {
-                            Text(LocalizationKey.Labor.totalHours)
-                            Spacer()
-                            Text(String(format: "%.1f", labor.totalHoursWorked))
-                                .foregroundStyle(.secondary)
+                        if labor.laborType.usesQuantity && labor.totalUnitsWorked > 0 {
+                            HStack {
+                                Text(labor.laborType == .hourly ? LocalizationKey.Labor.totalHours : LocalizationKey.Labor.totalDaysLabel)
+                                Spacer()
+                                Text(String(format: "%.1f", labor.totalUnitsWorked))
+                                    .foregroundStyle(.secondary)
+                            }
                         }
                         
                         HStack {
@@ -184,7 +186,7 @@ struct EditLaborView: View {
         
         labor.workerName = workerName.trimmingCharacters(in: .whitespaces)
         labor.laborType = laborType
-        labor.hourlyRate = Double(hourlyRate)
+        labor.rate = Double(rate)
         labor.notes = notes.isEmpty ? nil : notes
         
         do {
@@ -214,7 +216,7 @@ struct EditLaborView: View {
     let sampleLabor = LaborDetails(
         workerName: "John Doe",
         laborType: .hourly,
-        hourlyRate: 50.0
+        rate: 50.0
     )
     container.mainContext.insert(sampleLabor)
     
