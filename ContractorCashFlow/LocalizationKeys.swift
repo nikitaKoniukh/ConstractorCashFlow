@@ -71,6 +71,7 @@ enum LocalizationKey {
         static let projectOptional = LocalizedStringKey("invoice.projectOptional")
         static let none = LocalizedStringKey("invoice.none")
         static let newTitle = LocalizedStringKey("invoice.newTitle")
+        static let editTitle = LocalizedStringKey("invoice.editTitle")
         static let pending = LocalizedStringKey("invoice.status.pending")
         static let duePrefix = LocalizedStringKey("invoice.duePrefix")
         static let empty = LocalizedStringKey("invoice.empty")

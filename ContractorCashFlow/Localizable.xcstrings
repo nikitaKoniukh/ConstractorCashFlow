@@ -1668,6 +1668,9 @@
         }
       }
     },
+    "invoice.editTitle" : {
+
+    },
     "invoice.empty" : {
       "localizations" : {
         "en" : {

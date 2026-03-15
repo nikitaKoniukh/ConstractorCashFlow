@@ -126,7 +126,11 @@ private struct InvoicesListContent: View {
     var body: some View {
         List {
             ForEach(invoices) { invoice in
-                InvoiceRow(invoice: invoice)
+                NavigationLink {
+                    EditInvoiceView(invoice: invoice)
+                } label: {
+                    InvoiceRow(invoice: invoice)
+                }
             }
             .onDelete(perform: deleteInvoices)
         }
@@ -216,6 +220,135 @@ struct InvoiceRow: View {
                 .foregroundStyle(invoice.isPaid ? .green : .primary)
         }
         .padding(.vertical, 4)
+    }
+}
+
+// MARK: - Edit Invoice View
+struct EditInvoiceView: View {
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var modelContext
+    @Environment(AppState.self) private var appState
+    @Query private var projects: [Project]
+    
+    @Bindable var invoice: Invoice
+    
+    @State private var amount: String
+    @State private var clientName: String
+    @State private var dueDate: Date
+    @State private var isPaid: Bool
+    @State private var selectedProject: Project?
+    @State private var isSaving: Bool = false
+    
+    init(invoice: Invoice) {
+        self.invoice = invoice
+        _amount = State(initialValue: String(format: "%.2f", invoice.amount))
+        _clientName = State(initialValue: invoice.clientName)
+        _dueDate = State(initialValue: invoice.dueDate)
+        _isPaid = State(initialValue: invoice.isPaid)
+        _selectedProject = State(initialValue: invoice.project)
+    }
+    
+    private var isValid: Bool {
+        !clientName.trimmingCharacters(in: .whitespaces).isEmpty &&
+        !amount.isEmpty &&
+        Double(amount) != nil &&
+        Double(amount)! > 0
+    }
+    
+    var body: some View {
+        Form {
+            Section(String(localized: "invoice.details")) {
+                TextField(LocalizationKey.Invoice.clientName, text: $clientName)
+                
+                HStack {
+                    Text(LocalizationKey.Invoice.amount)
+                    Spacer()
+                    TextField("0.00", text: $amount)
+                        .keyboardType(.decimalPad)
+                        .multilineTextAlignment(.trailing)
+                }
+                
+                DatePicker(LocalizationKey.Invoice.dueDate, selection: $dueDate, displayedComponents: .date)
+                
+                Toggle(LocalizationKey.Invoice.paid, isOn: $isPaid)
+            }
+            
+            Section(String(localized: "invoice.project")) {
+                Picker(LocalizationKey.Invoice.projectOptional, selection: $selectedProject) {
+                    Text(LocalizationKey.Invoice.none).tag(nil as Project?)
+                    ForEach(projects.filter { $0.isActive }) { project in
+                        Text(project.name).tag(project as Project?)
+                    }
+                }
+            }
+            
+            Section {
+                Button(role: .destructive) {
+                    deleteInvoice()
+                } label: {
+                    HStack {
+                        Spacer()
+                        Label(LocalizationKey.Action.delete, systemImage: "trash")
+                        Spacer()
+                    }
+                }
+            }
+        }
+        .navigationTitle(LocalizationKey.Invoice.editTitle)
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .confirmationAction) {
+                Button(LocalizationKey.Action.save) {
+                    saveChanges()
+                }
+                .disabled(!isValid || isSaving)
+            }
+        }
+    }
+    
+    private func saveChanges() {
+        guard isValid else { return }
+        isSaving = true
+        
+        let wasPaid = invoice.isPaid
+        
+        invoice.clientName = clientName.trimmingCharacters(in: .whitespaces)
+        invoice.amount = Double(amount) ?? 0
+        invoice.dueDate = dueDate
+        invoice.isPaid = isPaid
+        invoice.project = selectedProject
+        
+        do {
+            try modelContext.save()
+            
+            // Update notifications based on paid status change
+            Task {
+                if isPaid {
+                    await NotificationService.shared.cancelNotifications(for: invoice)
+                } else if wasPaid && !isPaid {
+                    await NotificationService.shared.scheduleNotifications(for: invoice)
+                }
+            }
+            
+            dismiss()
+        } catch {
+            appState.showError("Failed to update invoice: \(error.localizedDescription)")
+            isSaving = false
+        }
+    }
+    
+    private func deleteInvoice() {
+        Task {
+            await NotificationService.shared.cancelNotifications(for: invoice)
+        }
+        modelContext.delete(invoice)
+        
+        do {
+            try modelContext.save()
+            dismiss()
+        } catch {
+            appState.showError("Failed to delete invoice: \(error.localizedDescription)")
+        }
     }
 }
 
