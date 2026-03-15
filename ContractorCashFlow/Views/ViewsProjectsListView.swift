@@ -14,7 +14,7 @@ struct ProjectsListView: View {
     @State private var searchText: String = ""
     
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: appState.navigationPath(for: .projects)) {
             ProjectsListContent(searchText: searchText)
             .navigationTitle(LocalizationKey.Project.title)
             .navigationDestination(for: Project.self) { project in

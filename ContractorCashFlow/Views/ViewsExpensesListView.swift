@@ -19,7 +19,7 @@ struct ExpensesListView: View {
     @State private var isShowingFilters = false
     
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: appState.navigationPath(for: .expenses)) {
             ExpensesListContent(
                 searchText: searchText,
                 selectedCategory: selectedCategory,

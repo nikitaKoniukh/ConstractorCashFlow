@@ -18,8 +18,10 @@ struct SettingsView: View {
     @State private var exportDocument: JSONExportDocument?
     @State private var isExporting = false
 
+    @Environment(AppState.self) private var appState
+
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: appState.navigationPath(for: .settings)) {
             Form {
                 Section {
                     Picker(selection: languageSelectionBinding) {
@@ -114,7 +116,12 @@ struct SettingsView: View {
     private var languageSelectionBinding: Binding<AppLanguageOption> {
         Binding(
             get: { selectedLanguage },
-            set: { appLanguageCode = $0.rawValue }
+            set: { newLanguage in
+                appLanguageCode = newLanguage.rawValue
+                if let language = LanguageManager.SupportedLanguage(rawValue: newLanguage.rawValue) {
+                    LanguageManager.shared.switchLanguage(to: language)
+                }
+            }
         )
     }
 

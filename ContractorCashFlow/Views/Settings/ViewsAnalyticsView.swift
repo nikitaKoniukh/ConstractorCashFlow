@@ -14,8 +14,10 @@ struct AnalyticsView: View {
     @Query(sort: \Expense.date, order: .reverse) private var expenses: [Expense]
     @Query(sort: \Invoice.createdDate, order: .reverse) private var invoices: [Invoice]
     
+    @Environment(AppState.self) private var appState
+    
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: appState.navigationPath(for: .analytics)) {
             ScrollView {
                 VStack(spacing: 24) {
                     // Income vs Expenses Overview

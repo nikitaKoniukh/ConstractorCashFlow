@@ -15,7 +15,14 @@ struct RootTabView: View {
     var body: some View {
         TabView(selection: Binding(
             get: { appState.selectedTab },
-            set: { appState.selectedTab = $0 }
+            set: { newTab in
+                if newTab == appState.selectedTab {
+                    appState.popToRoot(tab: newTab)
+                } else {
+                    appState.popToRoot(tab: appState.selectedTab)
+                }
+                appState.selectedTab = newTab
+            }
         )) {
             ProjectsListView()
                 .tabItem {

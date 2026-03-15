@@ -31,6 +31,22 @@ final class AppState {
     /// Flag to show/hide labor creation sheet
     var isShowingNewLabor: Bool = false
     
+    /// Navigation paths for each tab (to support pop-to-root on tab re-tap)
+    var navigationPaths: [AppTab: NavigationPath] = [:]
+    
+    /// Resets the navigation path for a given tab, popping to root
+    func popToRoot(tab: AppTab) {
+        navigationPaths[tab] = NavigationPath()
+    }
+    
+    /// Returns a binding to the NavigationPath for the given tab
+    func navigationPath(for tab: AppTab) -> Binding<NavigationPath> {
+        Binding(
+            get: { self.navigationPaths[tab, default: NavigationPath()] },
+            set: { self.navigationPaths[tab] = $0 }
+        )
+    }
+    
     /// Search query for filtering
     var searchQuery: String = ""
     

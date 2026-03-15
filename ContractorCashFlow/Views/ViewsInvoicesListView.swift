@@ -16,7 +16,7 @@ struct InvoicesListView: View {
     @State private var selectedStatusFilter: InvoiceStatusFilter = .all
     
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: appState.navigationPath(for: .invoices)) {
             InvoicesListContent(
                 searchText: searchText,
                 statusFilter: selectedStatusFilter

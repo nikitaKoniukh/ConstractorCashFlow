@@ -37,7 +37,7 @@ struct LaborListView: View {
     }
     
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: appState.navigationPath(for: .labor)) {
             LaborListContent(
                 searchText: searchText,
                 selectedType: selectedType,
