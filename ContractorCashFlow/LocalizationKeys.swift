@@ -195,8 +195,12 @@ enum LocalizationKey {
         static let filterByProject = LocalizedStringKey("labor.filterByProject")
         static let projectLabel = LocalizedStringKey("labor.projectLabel")
         static let allProjects = LocalizedStringKey("labor.allProjects")
-        static let filterByDate = LocalizedStringKey("labor.filterByDate")
-        static let currentMonthOnly = LocalizedStringKey("labor.currentMonthOnly")
+        static let filterByMonth = LocalizedStringKey("labor.filterByMonth")
+        static let filterByMonthToggle = LocalizedStringKey("labor.filterByMonthToggle")
+        static let selectMonth = LocalizedStringKey("labor.selectMonth")
+        static let totalLaborCost = LocalizedStringKey("labor.totalLaborCost")
+        static let avgDailyCost = LocalizedStringKey("labor.avgDailyCost")
+        static let summaryAllTime = LocalizedStringKey("labor.summaryAllTime")
     }
     
     // MARK: - Common Actions

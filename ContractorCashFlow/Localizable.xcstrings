@@ -1982,28 +1982,6 @@
         }
       }
     },
-    "expense.category.subcontractor" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Subcontractor"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "קבלן משנה"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Субподрядчик"
-          }
-        }
-      }
-    },
     "expense.category.miscellaneous" : {
       "localizations" : {
         "en" : {
@@ -2022,6 +2000,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Прочее"
+          }
+        }
+      }
+    },
+    "expense.category.subcontractor" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Subcontractor"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "קבלן משנה"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Субподрядчик"
           }
         }
       }
@@ -3347,6 +3347,28 @@
         }
       }
     },
+    "labor.avgDailyCost" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avg/Day"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ממוצע/יום"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Средн./день"
+          }
+        }
+      }
+    },
     "labor.basicInfo" : {
       "localizations" : {
         "en" : {
@@ -3545,28 +3567,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Создать связанную расходную запись"
-          }
-        }
-      }
-    },
-    "labor.currentMonthOnly" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Current Month Only"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "החודש הנוכחי בלבד"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Только текущий месяц"
           }
         }
       }
@@ -3841,6 +3841,7 @@
       }
     },
     "labor.filterByDate" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -3858,6 +3859,50 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Дата"
+          }
+        }
+      }
+    },
+    "labor.filterByMonth" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Month"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "חודש"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Месяц"
+          }
+        }
+      }
+    },
+    "labor.filterByMonthToggle" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Filter by Month"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "סינון לפי חודש"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Фильтр по месяцу"
           }
         }
       }
@@ -4418,6 +4463,28 @@
         }
       }
     },
+    "labor.selectMonth" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select Month"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "בחר חודש"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Выберите месяц"
+          }
+        }
+      }
+    },
     "labor.selectProject" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -4755,6 +4822,28 @@
         }
       }
     },
+    "labor.summaryAllTime" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All Time"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "כל הזמנים"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "За всё время"
+          }
+        }
+      }
+    },
     "labor.title" : {
       "localizations" : {
         "en" : {
@@ -4930,6 +5019,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Всего часов"
+          }
+        }
+      }
+    },
+    "labor.totalLaborCost" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Labor Cost"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "עלות עבודה"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Стоимость труда"
           }
         }
       }

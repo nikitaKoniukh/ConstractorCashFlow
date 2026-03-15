@@ -14,7 +14,7 @@ struct LaborListView: View {
     @State private var searchText: String = ""
     @State private var selectedType: LaborType?
     @State private var selectedProject: Project?
-    @State private var currentMonthOnly: Bool = false
+    @State private var selectedMonth: Date?
     @State private var isShowingFilters = false
     @State private var sortOrder: SortOrder = .recentlyAdded
     
@@ -44,7 +44,7 @@ struct LaborListView: View {
                 searchText: searchText,
                 selectedType: selectedType,
                 selectedProject: selectedProject,
-                currentMonthOnly: currentMonthOnly,
+                selectedMonth: selectedMonth,
                 sortOrder: sortOrder
             )
             .navigationTitle(LocalizationKey.Labor.title)
@@ -54,7 +54,7 @@ struct LaborListView: View {
                     Button {
                         isShowingFilters.toggle()
                     } label: {
-                        Label(LocalizationKey.Labor.filtersButton, systemImage: (selectedType != nil || selectedProject != nil || currentMonthOnly) ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease.circle")
+                        Label(LocalizationKey.Labor.filtersButton, systemImage: (selectedType != nil || selectedProject != nil || selectedMonth != nil) ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease.circle")
                     }
                 }
                 
@@ -88,7 +88,7 @@ struct LaborListView: View {
                 LaborFiltersView(
                     selectedType: $selectedType,
                     selectedProject: $selectedProject,
-                    currentMonthOnly: $currentMonthOnly
+                    selectedMonth: $selectedMonth
                 )
             }
             .alert(LocalizationKey.General.error, isPresented: Binding(
@@ -111,7 +111,7 @@ private struct LaborListContent: View {
     let searchText: String
     let selectedType: LaborType?
     let selectedProject: Project?
-    let currentMonthOnly: Bool
+    let selectedMonth: Date?
     let sortOrder: LaborListView.SortOrder
     
     @State private var selectedWorker: LaborDetails?
@@ -136,10 +136,9 @@ private struct LaborListContent: View {
             }
         }
         
-        if currentMonthOnly {
+        if let month = selectedMonth {
             let calendar = Calendar.current
-            let now = Date()
-            let startOfMonth = calendar.date(from: calendar.dateComponents([.year, .month], from: now))!
+            let startOfMonth = calendar.date(from: calendar.dateComponents([.year, .month], from: month))!
             let endOfMonth = calendar.date(byAdding: .month, value: 1, to: startOfMonth)!
             result = result.filter { worker in
                 worker.expenses.contains { $0.date >= startOfMonth && $0.date < endOfMonth }
@@ -175,7 +174,7 @@ private struct LaborListContent: View {
             } else {
                 List {
                     Section {
-                        WorkerSummaryCard(workers: filteredAndSortedWorkers)
+                        WorkerSummaryCard(workers: filteredAndSortedWorkers, selectedMonth: selectedMonth)
                     }
                     
                     Section {
@@ -292,54 +291,92 @@ private struct WorkerCardRow: View {
 // MARK: - Worker Summary Card
 private struct WorkerSummaryCard: View {
     let workers: [LaborDetails]
+    let selectedMonth: Date?
     @AppStorage(StorageKey.selectedCurrencyCode) private var currencyCode = "USD"
     
-    var totalEarned: Double {
-        workers.reduce(0) { $0 + $1.totalAmountEarned }
+    private var relevantExpenses: [Expense] {
+        let allExpenses = workers.flatMap { $0.expenses }
+        guard let month = selectedMonth else { return allExpenses }
+        let calendar = Calendar.current
+        let startOfMonth = calendar.date(from: calendar.dateComponents([.year, .month], from: month))!
+        let endOfMonth = calendar.date(byAdding: .month, value: 1, to: startOfMonth)!
+        return allExpenses.filter { $0.date >= startOfMonth && $0.date < endOfMonth }
     }
     
-    var totalHours: Double {
-        workers.reduce(0) { $0 + $1.totalUnitsWorked }
+    private var totalLaborCost: Double {
+        relevantExpenses.reduce(0) { $0 + $1.amount }
     }
     
-    var activeProjectCount: Int {
-        let allProjects = workers.flatMap { $0.associatedProjects }
-        var seen = Set<UUID>()
-        return allProjects.filter { seen.insert($0.id).inserted }.count
+    private var totalDaysWorked: Int {
+        let calendar = Calendar.current
+        let uniqueDays = Set(relevantExpenses.map { calendar.startOfDay(for: $0.date) })
+        return uniqueDays.count
+    }
+    
+    private var totalHoursWorked: Double {
+        relevantExpenses.compactMap { $0.unitsWorked }.reduce(0, +)
+    }
+    
+    private var averageDailyCost: Double {
+        totalDaysWorked > 0 ? totalLaborCost / Double(totalDaysWorked) : 0
+    }
+    
+    private var periodLabel: String {
+        if let month = selectedMonth {
+            return month.formatted(.dateTime.month(.wide).year())
+        }
+        return String(localized: "labor.summaryAllTime")
     }
     
     var body: some View {
-        VStack(spacing: 12) {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(periodLabel)
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+            
             HStack {
                 StatCard(
-                    title: LocalizationKey.Labor.totalEarned,
-                    value: totalEarned.formatted(.currency(code: currencyCode)),
+                    title: LocalizationKey.Labor.totalLaborCost,
+                    value: totalLaborCost.formatted(.currency(code: currencyCode)),
                     systemImage: "dollarsign.circle.fill",
                     color: .blue
                 )
                 
-                StatCard(
-                    title: LocalizationKey.Labor.totalHours,
-                    value: String(format: "%.1f", totalHours),
-                    systemImage: "clock.fill",
-                    color: .orange
-                )
-            }
-            
-            HStack {
                 StatCard(
                     title: LocalizationKey.Labor.totalWorkers,
                     value: "\(workers.count)",
                     systemImage: "person.2.fill",
                     color: .purple
                 )
+            }
+            
+            HStack {
+                StatCard(
+                    title: LocalizationKey.Labor.totalDaysWorked,
+                    value: "\(totalDaysWorked)",
+                    systemImage: "calendar",
+                    color: .orange
+                )
                 
                 StatCard(
-                    title: LocalizationKey.Labor.activeProjects,
-                    value: "\(activeProjectCount)",
-                    systemImage: "folder.fill",
+                    title: LocalizationKey.Labor.avgDailyCost,
+                    value: averageDailyCost.formatted(.currency(code: currencyCode)),
+                    systemImage: "chart.line.uptrend.xyaxis",
                     color: .green
                 )
+            }
+            
+            if totalHoursWorked > 0 {
+                HStack {
+                    StatCard(
+                        title: LocalizationKey.Labor.totalHours,
+                        value: String(format: "%.1f", totalHoursWorked),
+                        systemImage: "clock.fill",
+                        color: .teal
+                    )
+                    
+                    Spacer()
+                }
             }
         }
         .padding(.vertical, 8)
@@ -381,7 +418,23 @@ struct LaborFiltersView: View {
     
     @Binding var selectedType: LaborType?
     @Binding var selectedProject: Project?
-    @Binding var currentMonthOnly: Bool
+    @Binding var selectedMonth: Date?
+    
+    @State private var monthFilterEnabled: Bool = false
+    @State private var monthPickerDate: Date = Date()
+    
+    private var availableMonths: [Date] {
+        let calendar = Calendar.current
+        var months: [Date] = []
+        let now = Date()
+        for i in (0..<12).reversed() {
+            if let date = calendar.date(byAdding: .month, value: -i, to: now) {
+                let startOfMonth = calendar.date(from: calendar.dateComponents([.year, .month], from: date))!
+                months.append(startOfMonth)
+            }
+        }
+        return months
+    }
     
     var body: some View {
         NavigationStack {
@@ -404,15 +457,33 @@ struct LaborFiltersView: View {
                     }
                 }
                 
-                Section(header: Text(LocalizationKey.Labor.filterByDate)) {
-                    Toggle(LocalizationKey.Labor.currentMonthOnly, isOn: $currentMonthOnly)
+                Section(header: Text(LocalizationKey.Labor.filterByMonth)) {
+                    Toggle(LocalizationKey.Labor.filterByMonthToggle, isOn: $monthFilterEnabled)
+                        .onChange(of: monthFilterEnabled) { _, enabled in
+                            selectedMonth = enabled ? monthPickerDate : nil
+                        }
+                    
+                    if monthFilterEnabled {
+                        Picker(LocalizationKey.Labor.selectMonth, selection: $monthPickerDate) {
+                            ForEach(availableMonths, id: \.self) { month in
+                                Text(month.formatted(.dateTime.month(.wide).year()))
+                                    .tag(month)
+                            }
+                        }
+                        .pickerStyle(.wheel)
+                        .onChange(of: monthPickerDate) { _, newMonth in
+                            selectedMonth = newMonth
+                        }
+                    }
                 }
                 
                 Section {
                     Button(LocalizationKey.Labor.clearFilters) {
                         selectedType = nil
                         selectedProject = nil
-                        currentMonthOnly = false
+                        selectedMonth = nil
+                        monthFilterEnabled = false
+                        monthPickerDate = Date()
                         dismiss()
                     }
                 }
@@ -424,6 +495,12 @@ struct LaborFiltersView: View {
                     Button(LocalizationKey.General.done) {
                         dismiss()
                     }
+                }
+            }
+            .onAppear {
+                if let month = selectedMonth {
+                    monthFilterEnabled = true
+                    monthPickerDate = month
                 }
             }
         }
