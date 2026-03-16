@@ -10,7 +10,7 @@ import StoreKit
 
 struct PaywallView: View {
     @Environment(\.dismiss) private var dismiss
-    @State private var purchaseManager = PurchaseManager.shared
+    @Environment(PurchaseManager.self) private var purchaseManager
     @State private var selectedProduct: Product? = nil
     @State private var showError = false
     
