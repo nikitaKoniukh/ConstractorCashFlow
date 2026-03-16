@@ -177,6 +177,7 @@ struct ProjectDetailView: View {
     @State private var isShowingAddExpense = false
     @State private var isShowingAddInvoice = false
     @State private var isShowingShareSheet = false
+    @State private var expenseToEdit: Expense?
     
     var body: some View {
         List {
@@ -280,6 +281,10 @@ struct ProjectDetailView: View {
                 } else {
                     ForEach(project.safeExpenses.sorted(by: { $0.date > $1.date })) { expense in
                         ExpenseRowView(expense: expense)
+                            .contentShape(Rectangle())
+                            .onTapGesture {
+                                expenseToEdit = expense
+                            }
                     }
                     .onDelete(perform: deleteExpenses)
                 }
@@ -393,6 +398,9 @@ struct ProjectDetailView: View {
         }
         .sheet(isPresented: $isShowingAddExpense) {
             NewExpenseView()
+        }
+        .sheet(item: $expenseToEdit) { expense in
+            EditExpenseView(expense: expense)
         }
         .sheet(isPresented: $isShowingAddInvoice) {
             NewInvoiceView()

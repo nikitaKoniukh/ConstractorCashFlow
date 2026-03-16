@@ -88,6 +88,8 @@ private struct ExpensesListContent: View {
     let startDate: Date?
     let endDate: Date?
     
+    @State private var expenseToEdit: Expense?
+    
     private var filteredExpenses: [Expense] {
         var result = allExpenses
         
@@ -119,8 +121,15 @@ private struct ExpensesListContent: View {
         List {
             ForEach(filteredExpenses) { expense in
                 ExpenseRow(expense: expense)
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        expenseToEdit = expense
+                    }
             }
             .onDelete(perform: deleteExpenses)
+        }
+        .sheet(item: $expenseToEdit) { expense in
+            EditExpenseView(expense: expense)
         }
         .overlay {
             if filteredExpenses.isEmpty {
@@ -477,6 +486,210 @@ struct NewExpenseView: View {
             try modelContext.save()
             
             // Check budget notifications if associated with a project
+            if let project = selectedProject {
+                Task {
+                    await NotificationService.shared.checkBudgetAndScheduleNotifications(for: project)
+                }
+            }
+            
+            dismiss()
+        } catch {
+            appState.showError("Failed to save expense: \(error.localizedDescription)")
+            isSaving = false
+        }
+    }
+}
+
+// MARK: - Edit Expense View
+struct EditExpenseView: View {
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var modelContext
+    @Environment(AppState.self) private var appState
+    @AppStorage(StorageKey.selectedCurrencyCode) private var currencyCode = "USD"
+    @Query private var projects: [Project]
+    @Query(sort: \LaborDetails.workerName) private var allWorkers: [LaborDetails]
+    
+    let expense: Expense
+    
+    @State private var category: ExpenseCategory
+    @State private var amount: Double?
+    @State private var descriptionText: String
+    @State private var date: Date
+    @State private var selectedProject: Project?
+    @State private var isSaving: Bool = false
+    
+    // Labor-specific fields
+    @State private var selectedWorker: LaborDetails?
+    @State private var unitsWorked: String
+    
+    init(expense: Expense) {
+        self.expense = expense
+        _category = State(initialValue: expense.category)
+        _amount = State(initialValue: expense.amount)
+        _descriptionText = State(initialValue: expense.descriptionText)
+        _date = State(initialValue: expense.date)
+        _selectedProject = State(initialValue: expense.project)
+        _selectedWorker = State(initialValue: expense.worker)
+        _unitsWorked = State(initialValue: expense.unitsWorked.map { String($0) } ?? "")
+    }
+    
+    private var isValid: Bool {
+        !descriptionText.isEmpty && (amount ?? 0) > 0
+    }
+    
+    private var calculatedAmount: Double? {
+        guard let worker = selectedWorker,
+              let rate = worker.rate,
+              rate > 0 else { return nil }
+        
+        if worker.laborType.usesQuantity {
+            guard let units = Double(unitsWorked), units > 0 else { return nil }
+            return rate * units
+        } else {
+            return rate
+        }
+    }
+    
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section {
+                    Picker(LocalizationKey.Expense.category, selection: $category) {
+                        ForEach(ExpenseCategory.allCases, id: \.self) { category in
+                            Text(category.localizedDisplayName).tag(category)
+                        }
+                    }
+                    
+                    if category == .labor && !allWorkers.isEmpty {
+                        Picker(LocalizationKey.Labor.selectWorker, selection: $selectedWorker) {
+                            Text(LocalizationKey.Labor.selectWorkerPrompt).tag(nil as LaborDetails?)
+                            ForEach(allWorkers) { worker in
+                                HStack {
+                                    Text(worker.workerName)
+                                    if let rate = worker.rate {
+                                        Text("(\(rate.formatted(.currency(code: currencyCode)))\(worker.laborType.rateSuffix))")
+                                            .foregroundStyle(.secondary)
+                                    }
+                                }
+                                .tag(worker as LaborDetails?)
+                            }
+                        }
+                        .onChange(of: selectedWorker) {
+                            updateFromWorkerSelection()
+                        }
+                        
+                        if let worker = selectedWorker {
+                            if worker.laborType.usesQuantity {
+                                HStack {
+                                    Text(worker.laborType.quantityLabel)
+                                    Spacer()
+                                    TextField("0.0", text: $unitsWorked)
+                                        .keyboardType(.decimalPad)
+                                        .multilineTextAlignment(.trailing)
+                                        .onChange(of: unitsWorked) {
+                                            if let calc = calculatedAmount {
+                                                amount = calc
+                                            }
+                                        }
+                                }
+                                
+                                if let calc = calculatedAmount {
+                                    HStack {
+                                        Text(LocalizationKey.Labor.calculatedTotal)
+                                            .foregroundStyle(.secondary)
+                                        Spacer()
+                                        Text(calc.formatted(.currency(code: currencyCode)))
+                                            .fontWeight(.semibold)
+                                            .foregroundStyle(.secondary)
+                                    }
+                                    .font(.subheadline)
+                                }
+                            } else {
+                                if let rate = worker.rate {
+                                    HStack {
+                                        Text(LocalizationKey.Labor.contractPrice)
+                                            .foregroundStyle(.secondary)
+                                        Spacer()
+                                        Text(rate.formatted(.currency(code: currencyCode)))
+                                            .fontWeight(.semibold)
+                                            .foregroundStyle(.secondary)
+                                    }
+                                    .font(.subheadline)
+                                }
+                            }
+                        }
+                    }
+                    
+                    TextField(LocalizationKey.Expense.amount, value: $amount, format: .currency(code: currencyCode))
+                        .keyboardType(.decimalPad)
+                    
+                    TextField(LocalizationKey.Expense.description, text: $descriptionText)
+                    
+                    DatePicker(LocalizationKey.Expense.date, selection: $date, displayedComponents: .date)
+                } header: {
+                    Text(LocalizationKey.Expense.details)
+                }
+                
+                Section {
+                    Picker(LocalizationKey.Expense.projectOptional, selection: $selectedProject) {
+                        Text(LocalizationKey.Expense.none).tag(nil as Project?)
+                        ForEach(projects.filter { $0.isActive }) { project in
+                            Text(project.name).tag(project as Project?)
+                        }
+                    }
+                } header: {
+                    Text(LocalizationKey.Expense.project)
+                }
+            }
+            .navigationTitle("Edit Expense")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button(LocalizationKey.Action.cancel) {
+                        dismiss()
+                    }
+                    .disabled(isSaving)
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button(LocalizationKey.Action.save) {
+                        saveChanges()
+                    }
+                    .disabled(!isValid || isSaving)
+                }
+            }
+            .onChange(of: category) {
+                if category != .labor {
+                    selectedWorker = nil
+                    unitsWorked = ""
+                }
+            }
+        }
+    }
+    
+    private func updateFromWorkerSelection() {
+        if let worker = selectedWorker {
+            descriptionText = "Labor: \(worker.workerName)"
+            unitsWorked = ""
+            if !worker.laborType.usesQuantity, let rate = worker.rate {
+                amount = rate
+            }
+        }
+    }
+    
+    private func saveChanges() {
+        isSaving = true
+        
+        expense.category = category
+        expense.amount = amount ?? 0
+        expense.descriptionText = descriptionText
+        expense.date = date
+        expense.project = selectedProject
+        expense.worker = category == .labor ? selectedWorker : nil
+        expense.unitsWorked = category == .labor ? Double(unitsWorked) : nil
+        
+        do {
+            try modelContext.save()
+            
             if let project = selectedProject {
                 Task {
                     await NotificationService.shared.checkBudgetAndScheduleNotifications(for: project)
