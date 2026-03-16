@@ -319,6 +319,7 @@ enum LocalizationKey {
 enum StorageKey {
     static let appLanguage = "AppLanguage"
     static let selectedCurrencyCode = "selectedCurrencyCode"
+    static let defaultCurrencyCode = "ILS"
     
     enum Notifications {
         static let invoiceReminders = "settings.notifications.invoiceReminders"

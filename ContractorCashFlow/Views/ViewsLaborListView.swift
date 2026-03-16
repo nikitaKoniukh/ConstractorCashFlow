@@ -222,7 +222,7 @@ private struct LaborListContent: View {
 // MARK: - Worker Card Row
 private struct WorkerCardRow: View {
     let worker: LaborDetails
-    @AppStorage(StorageKey.selectedCurrencyCode) private var currencyCode = "USD"
+    @AppStorage(StorageKey.selectedCurrencyCode) private var currencyCode = StorageKey.defaultCurrencyCode
     
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -306,7 +306,7 @@ private struct WorkerCardRow: View {
 private struct WorkerSummaryCard: View {
     let workers: [LaborDetails]
     let selectedMonth: Date?
-    @AppStorage(StorageKey.selectedCurrencyCode) private var currencyCode = "USD"
+    @AppStorage(StorageKey.selectedCurrencyCode) private var currencyCode = StorageKey.defaultCurrencyCode
     
     private var relevantExpenses: [Expense] {
         let allExpenses = workers.flatMap { $0.safeExpenses }

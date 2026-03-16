@@ -274,7 +274,7 @@ private struct ExpenseFiltersView: View {
 // MARK: - Expense Row Component
 struct ExpenseRow: View {
     let expense: Expense
-    @AppStorage(StorageKey.selectedCurrencyCode) private var currencyCode = "USD"
+    @AppStorage(StorageKey.selectedCurrencyCode) private var currencyCode = StorageKey.defaultCurrencyCode
     
     var body: some View {
         HStack {
@@ -318,7 +318,7 @@ struct NewExpenseView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
     @Environment(AppState.self) private var appState
-    @AppStorage(StorageKey.selectedCurrencyCode) private var currencyCode = "USD"
+    @AppStorage(StorageKey.selectedCurrencyCode) private var currencyCode = StorageKey.defaultCurrencyCode
     @Query private var projects: [Project]
     @Query(sort: \LaborDetails.workerName) private var allWorkers: [LaborDetails]
     
@@ -524,7 +524,7 @@ struct EditExpenseView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
     @Environment(AppState.self) private var appState
-    @AppStorage(StorageKey.selectedCurrencyCode) private var currencyCode = "USD"
+    @AppStorage(StorageKey.selectedCurrencyCode) private var currencyCode = StorageKey.defaultCurrencyCode
     @Query private var projects: [Project]
     @Query(sort: \LaborDetails.workerName) private var allWorkers: [LaborDetails]
     

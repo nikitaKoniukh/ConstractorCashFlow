@@ -11,7 +11,7 @@ struct SettingsView: View {
     @Query(sort: \Client.name) private var clients: [Client]
 
     @AppStorage(StorageKey.appLanguage) private var appLanguageCode = AppLanguageOption.defaultCode
-    @AppStorage(StorageKey.selectedCurrencyCode) private var selectedCurrencyCode = "USD"
+    @AppStorage(StorageKey.selectedCurrencyCode) private var selectedCurrencyCode = StorageKey.defaultCurrencyCode
     @AppStorage(StorageKey.Notifications.invoiceReminders) private var invoiceRemindersEnabled = true
     @AppStorage(StorageKey.Notifications.overdueAlerts) private var overdueAlertsEnabled = true
     @AppStorage(StorageKey.Notifications.budgetWarnings) private var budgetWarningsEnabled = true
@@ -272,7 +272,7 @@ private enum AppLanguageOption: String, CaseIterable, Identifiable {
     case russian = "ru"
 
     static let defaultCode = "en"
-    static let defaultCurrency = "USD"
+    static let defaultCurrency = StorageKey.defaultCurrencyCode
 
     var id: String { rawValue }
 
