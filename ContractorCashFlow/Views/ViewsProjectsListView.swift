@@ -55,7 +55,7 @@ struct ProjectsListView: View {
                 Text(appState.errorMessage ?? "An error occurred")
             }
             .sheet(isPresented: $isShowingPaywall) {
-                PaywallView(limitReachedMessage: String(localized: "subscription.projectLimitReached"))
+                PaywallView(limitReachedMessage: LocalizationKey.Subscription.projectLimitReached)
             }
         }
     }
@@ -193,7 +193,7 @@ struct ProjectDetailView: View {
     @State private var isShowingShareSheet = false
     @State private var expenseToEdit: Expense?
     @State private var isShowingPaywall = false
-    @State private var paywallMessage: String? = nil
+    @State private var paywallMessage: LocalizedStringKey? = nil
     
     var body: some View {
         List {
@@ -289,7 +289,7 @@ struct ProjectDetailView: View {
                             if purchaseManager.canCreateExpense(currentCount: allExpenses.count) {
                                 isShowingAddExpense = true
                             } else {
-                                paywallMessage = String(localized: "subscription.expenseLimitReached")
+                                paywallMessage = LocalizationKey.Subscription.expenseLimitReached
                                 isShowingPaywall = true
                             }
                         } label: {
@@ -318,7 +318,7 @@ struct ProjectDetailView: View {
                             if purchaseManager.canCreateExpense(currentCount: allExpenses.count) {
                                 isShowingAddExpense = true
                             } else {
-                                paywallMessage = String(localized: "subscription.expenseLimitReached")
+                                paywallMessage = LocalizationKey.Subscription.expenseLimitReached
                                 isShowingPaywall = true
                             }
                         } label: {
@@ -344,7 +344,7 @@ struct ProjectDetailView: View {
                             if purchaseManager.canCreateInvoice(currentCount: allInvoices.count) {
                                 isShowingAddInvoice = true
                             } else {
-                                paywallMessage = String(localized: "subscription.invoiceLimitReached")
+                                paywallMessage = LocalizationKey.Subscription.invoiceLimitReached
                                 isShowingPaywall = true
                             }
                         } label: {
@@ -369,7 +369,7 @@ struct ProjectDetailView: View {
                             if purchaseManager.canCreateInvoice(currentCount: allInvoices.count) {
                                 isShowingAddInvoice = true
                             } else {
-                                paywallMessage = String(localized: "subscription.invoiceLimitReached")
+                                paywallMessage = LocalizationKey.Subscription.invoiceLimitReached
                                 isShowingPaywall = true
                             }
                         } label: {
@@ -417,7 +417,7 @@ struct ProjectDetailView: View {
                         if purchaseManager.canCreateExpense(currentCount: allExpenses.count) {
                             isShowingAddExpense = true
                         } else {
-                            paywallMessage = String(localized: "subscription.expenseLimitReached")
+                            paywallMessage = LocalizationKey.Subscription.expenseLimitReached
                             isShowingPaywall = true
                         }
                     } label: {
@@ -428,7 +428,7 @@ struct ProjectDetailView: View {
                         if purchaseManager.canCreateInvoice(currentCount: allInvoices.count) {
                             isShowingAddInvoice = true
                         } else {
-                            paywallMessage = String(localized: "subscription.invoiceLimitReached")
+                            paywallMessage = LocalizationKey.Subscription.invoiceLimitReached
                             isShowingPaywall = true
                         }
                     } label: {

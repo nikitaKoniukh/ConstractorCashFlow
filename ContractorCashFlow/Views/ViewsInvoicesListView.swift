@@ -62,7 +62,7 @@ struct InvoicesListView: View {
                 NewInvoiceView()
             }
             .sheet(isPresented: $isShowingPaywall) {
-                PaywallView(limitReachedMessage: String(localized: "subscription.invoiceLimitReached"))
+                PaywallView(limitReachedMessage: LocalizationKey.Subscription.invoiceLimitReached)
             }
         }
     }

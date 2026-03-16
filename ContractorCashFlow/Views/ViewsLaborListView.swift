@@ -99,7 +99,7 @@ struct LaborListView: View {
                 )
             }
             .sheet(isPresented: $isShowingPaywall) {
-                PaywallView(limitReachedMessage: String(localized: "subscription.workerLimitReached"))
+                PaywallView(limitReachedMessage: LocalizationKey.Subscription.workerLimitReached)
             }
             .alert(LocalizationKey.General.error, isPresented: Binding(
                 get: { appState.isShowingError },

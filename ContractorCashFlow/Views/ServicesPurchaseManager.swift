@@ -203,18 +203,18 @@ final class PurchaseManager {
         products.first { $0.id == SubscriptionProduct.yearlyID }
     }
     
-    var subscriptionStatusText: String {
+    var subscriptionStatusText: LocalizedStringKey {
         if isProUser {
             if let transaction = activeSubscription {
                 if transaction.productID == SubscriptionProduct.monthlyID {
-                    return String(localized: "subscription.proMonthly")
+                    return LocalizationKey.Subscription.proMonthly
                 } else {
-                    return String(localized: "subscription.proYearly")
+                    return LocalizationKey.Subscription.proYearly
                 }
             }
-            return String(localized: "subscription.proPlan")
+            return LocalizationKey.Subscription.proPlan
         }
-        return String(localized: "subscription.freePlan")
+        return LocalizationKey.Subscription.freePlan
     }
     
     var expirationDate: Date? {

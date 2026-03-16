@@ -15,7 +15,7 @@ struct PaywallView: View {
     @State private var showError = false
     
     /// Optional message describing which limit was reached
-    var limitReachedMessage: String? = nil
+    var limitReachedMessage: LocalizedStringKey? = nil
     
     var body: some View {
         NavigationStack {
@@ -242,9 +242,13 @@ private struct PaywallProductButton: View {
                                 .cornerRadius(4)
                         }
                     }
-                    Text(product.displayPrice + " / " + subscriptionPeriodText)
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                    HStack(spacing: 4) {
+                        Text(product.displayPrice)
+                        Text("/")
+                        Text(subscriptionPeriodKey)
+                    }
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
                 }
                 
                 Spacer()
@@ -263,11 +267,11 @@ private struct PaywallProductButton: View {
         .buttonStyle(.plain)
     }
     
-    private var subscriptionPeriodText: String {
+    private var subscriptionPeriodKey: LocalizedStringKey {
         guard let period = product.subscription?.subscriptionPeriod else { return "" }
         switch period.unit {
-        case .month: return String(localized: "subscription.perMonth")
-        case .year: return String(localized: "subscription.perYear")
+        case .month: return LocalizationKey.Subscription.perMonth
+        case .year: return LocalizationKey.Subscription.perYear
         default: return ""
         }
     }
@@ -278,5 +282,5 @@ private struct PaywallProductButton: View {
 }
 
 #Preview("Paywall - Limit Reached") {
-    PaywallView(limitReachedMessage: "You've reached the free limit of 1 project.")
+    PaywallView(limitReachedMessage: LocalizationKey.Subscription.projectLimitReached)
 }

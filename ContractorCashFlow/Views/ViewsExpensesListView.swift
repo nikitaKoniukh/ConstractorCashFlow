@@ -62,7 +62,7 @@ struct ExpensesListView: View {
                 NewExpenseView()
             }
             .sheet(isPresented: $isShowingPaywall) {
-                PaywallView(limitReachedMessage: String(localized: "subscription.expenseLimitReached"))
+                PaywallView(limitReachedMessage: LocalizationKey.Subscription.expenseLimitReached)
             }
             .sheet(isPresented: $isShowingFilters) {
                 ExpenseFiltersView(
@@ -168,7 +168,7 @@ private struct ExpensesListContent: View {
             }
         }
         .sheet(isPresented: $isShowingPaywall) {
-            PaywallView(limitReachedMessage: String(localized: "subscription.expenseLimitReached"))
+            PaywallView(limitReachedMessage: LocalizationKey.Subscription.expenseLimitReached)
         }
     }
     
