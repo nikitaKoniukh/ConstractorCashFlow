@@ -11,7 +11,10 @@ import SwiftData
 struct ProjectsListView: View {
     @Environment(AppState.self) private var appState
     @Environment(\.modelContext) private var modelContext
+    @Environment(PurchaseManager.self) private var purchaseManager
+    @Query private var allProjects: [Project]
     @State private var searchText: String = ""
+    @State private var isShowingPaywall = false
     
     var body: some View {
         NavigationStack(path: appState.navigationPath(for: .projects)) {
@@ -27,7 +30,11 @@ struct ProjectsListView: View {
                 }
                 ToolbarItem(placement: .primaryAction) {
                     Button {
-                        appState.isShowingNewProject = true
+                        if purchaseManager.canCreateProject(currentCount: allProjects.count) {
+                            appState.isShowingNewProject = true
+                        } else {
+                            isShowingPaywall = true
+                        }
                     } label: {
                         Label(LocalizationKey.Project.add, systemImage: "plus")
                     }
@@ -47,6 +54,9 @@ struct ProjectsListView: View {
             } message: {
                 Text(appState.errorMessage ?? "An error occurred")
             }
+            .sheet(isPresented: $isShowingPaywall) {
+                PaywallView(limitReachedMessage: String(localized: "subscription.projectLimitReached"))
+            }
         }
     }
 }
@@ -55,6 +65,7 @@ struct ProjectsListView: View {
 private struct ProjectsListContent: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(AppState.self) private var appState
+    @Environment(PurchaseManager.self) private var purchaseManager
     let searchText: String
     
     init(searchText: String) {
@@ -171,13 +182,18 @@ struct ProjectDetailView: View {
     let project: Project
     @Environment(\.modelContext) private var modelContext
     @Environment(AppState.self) private var appState
+    @Environment(PurchaseManager.self) private var purchaseManager
     @AppStorage(StorageKey.selectedCurrencyCode) private var currencyCode = "USD"
+    @Query private var allExpenses: [Expense]
+    @Query private var allInvoices: [Invoice]
     
     @State private var isShowingEditSheet = false
     @State private var isShowingAddExpense = false
     @State private var isShowingAddInvoice = false
     @State private var isShowingShareSheet = false
     @State private var expenseToEdit: Expense?
+    @State private var isShowingPaywall = false
+    @State private var paywallMessage: String? = nil
     
     var body: some View {
         List {
@@ -270,7 +286,12 @@ struct ProjectDetailView: View {
                             .foregroundStyle(.secondary)
                         
                         Button {
-                            isShowingAddExpense = true
+                            if purchaseManager.canCreateExpense(currentCount: allExpenses.count) {
+                                isShowingAddExpense = true
+                            } else {
+                                paywallMessage = String(localized: "subscription.expenseLimitReached")
+                                isShowingPaywall = true
+                            }
                         } label: {
                             Label("Add First Expense", systemImage: "plus.circle.fill")
                         }
@@ -294,7 +315,12 @@ struct ProjectDetailView: View {
                     Spacer()
                     if !project.safeExpenses.isEmpty {
                         Button {
-                            isShowingAddExpense = true
+                            if purchaseManager.canCreateExpense(currentCount: allExpenses.count) {
+                                isShowingAddExpense = true
+                            } else {
+                                paywallMessage = String(localized: "subscription.expenseLimitReached")
+                                isShowingPaywall = true
+                            }
                         } label: {
                             Image(systemName: "plus.circle.fill")
                                 .foregroundStyle(.blue)
@@ -315,7 +341,12 @@ struct ProjectDetailView: View {
                             .foregroundStyle(.secondary)
                         
                         Button {
-                            isShowingAddInvoice = true
+                            if purchaseManager.canCreateInvoice(currentCount: allInvoices.count) {
+                                isShowingAddInvoice = true
+                            } else {
+                                paywallMessage = String(localized: "subscription.invoiceLimitReached")
+                                isShowingPaywall = true
+                            }
                         } label: {
                             Label("Add First Invoice", systemImage: "plus.circle.fill")
                         }
@@ -335,7 +366,12 @@ struct ProjectDetailView: View {
                     Spacer()
                     if !project.safeInvoices.isEmpty {
                         Button {
-                            isShowingAddInvoice = true
+                            if purchaseManager.canCreateInvoice(currentCount: allInvoices.count) {
+                                isShowingAddInvoice = true
+                            } else {
+                                paywallMessage = String(localized: "subscription.invoiceLimitReached")
+                                isShowingPaywall = true
+                            }
                         } label: {
                             Image(systemName: "plus.circle.fill")
                                 .foregroundStyle(.blue)
@@ -378,13 +414,23 @@ struct ProjectDetailView: View {
                     Divider()
                     
                     Button {
-                        isShowingAddExpense = true
+                        if purchaseManager.canCreateExpense(currentCount: allExpenses.count) {
+                            isShowingAddExpense = true
+                        } else {
+                            paywallMessage = String(localized: "subscription.expenseLimitReached")
+                            isShowingPaywall = true
+                        }
                     } label: {
                         Label("Add Expense", systemImage: "arrow.down.circle")
                     }
                     
                     Button {
-                        isShowingAddInvoice = true
+                        if purchaseManager.canCreateInvoice(currentCount: allInvoices.count) {
+                            isShowingAddInvoice = true
+                        } else {
+                            paywallMessage = String(localized: "subscription.invoiceLimitReached")
+                            isShowingPaywall = true
+                        }
                     } label: {
                         Label("Add Invoice", systemImage: "arrow.up.circle")
                     }
@@ -404,6 +450,9 @@ struct ProjectDetailView: View {
         }
         .sheet(isPresented: $isShowingAddInvoice) {
             NewInvoiceView()
+        }
+        .sheet(isPresented: $isShowingPaywall) {
+            PaywallView(limitReachedMessage: paywallMessage)
         }
         .sheet(isPresented: $isShowingShareSheet) {
             ProjectExportView(project: project)

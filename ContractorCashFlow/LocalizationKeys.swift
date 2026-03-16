@@ -253,6 +253,32 @@ enum LocalizationKey {
         static let chartType = LocalizedStringKey("analytics.chart.type")
     }
     
+    // MARK: - Subscription
+    enum Subscription {
+        static let upgradeTitle = LocalizedStringKey("subscription.upgradeTitle")
+        static let upgradeSubtitle = LocalizedStringKey("subscription.upgradeSubtitle")
+        static let subscribe = LocalizedStringKey("subscription.subscribe")
+        static let restore = LocalizedStringKey("subscription.restore")
+        static let managePlan = LocalizedStringKey("subscription.managePlan")
+        static let currentPlan = LocalizedStringKey("subscription.currentPlan")
+        static let freePlan = LocalizedStringKey("subscription.freePlan")
+        static let proPlan = LocalizedStringKey("subscription.proPlan")
+        static let unlimited = LocalizedStringKey("subscription.unlimited")
+        static let unlimitedProjects = LocalizedStringKey("subscription.unlimitedProjects")
+        static let unlimitedExpenses = LocalizedStringKey("subscription.unlimitedExpenses")
+        static let unlimitedInvoices = LocalizedStringKey("subscription.unlimitedInvoices")
+        static let unlimitedWorkers = LocalizedStringKey("subscription.unlimitedWorkers")
+        static let projectLimitReached = LocalizedStringKey("subscription.projectLimitReached")
+        static let expenseLimitReached = LocalizedStringKey("subscription.expenseLimitReached")
+        static let invoiceLimitReached = LocalizedStringKey("subscription.invoiceLimitReached")
+        static let workerLimitReached = LocalizedStringKey("subscription.workerLimitReached")
+        static let renewsOn = LocalizedStringKey("subscription.renewsOn")
+        static let saveBadge = LocalizedStringKey("subscription.saveBadge")
+        static let termsOfService = LocalizedStringKey("subscription.termsOfService")
+        static let privacyPolicy = LocalizedStringKey("subscription.privacyPolicy")
+        static let subscriptionSection = LocalizedStringKey("subscription.section")
+    }
+    
     // MARK: - Tab Bar
     enum Tab {
         static let projects = LocalizedStringKey("tab.projects")

@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import StoreKit
 import UniformTypeIdentifiers
 
 struct SettingsView: View {
@@ -17,12 +18,60 @@ struct SettingsView: View {
 
     @State private var exportDocument: JSONExportDocument?
     @State private var isExporting = false
+    @State private var isShowingPaywall = false
 
     @Environment(AppState.self) private var appState
+    @Environment(PurchaseManager.self) private var purchaseManager
 
     var body: some View {
         NavigationStack(path: appState.navigationPath(for: .settings)) {
             Form {
+                // MARK: - Subscription
+                Section {
+                    if purchaseManager.isProUser {
+                        LabeledContent(LocalizationKey.Subscription.currentPlan) {
+                            HStack {
+                                Image(systemName: "crown.fill")
+                                    .foregroundStyle(.yellow)
+                                Text(purchaseManager.subscriptionStatusText)
+                                    .foregroundStyle(.green)
+                                    .fontWeight(.semibold)
+                            }
+                        }
+                        
+                        if let expirationDate = purchaseManager.expirationDate {
+                            LabeledContent(LocalizationKey.Subscription.renewsOn) {
+                                Text(expirationDate, style: .date)
+                            }
+                        }
+                        
+                        Button {
+                            Task {
+                                if let windowScene = UIApplication.shared.connectedScenes
+                                    .first(where: { $0.activationState == .foregroundActive }) as? UIWindowScene {
+                                    try? await AppStore.showManageSubscriptions(in: windowScene)
+                                }
+                            }
+                        } label: {
+                            Label(LocalizationKey.Subscription.managePlan, systemImage: "creditcard")
+                        }
+                    } else {
+                        LabeledContent(LocalizationKey.Subscription.currentPlan) {
+                            Text(LocalizationKey.Subscription.freePlan)
+                                .foregroundStyle(.secondary)
+                        }
+                        
+                        Button {
+                            isShowingPaywall = true
+                        } label: {
+                            Label(LocalizationKey.Subscription.upgradeTitle, systemImage: "crown.fill")
+                                .foregroundStyle(.yellow)
+                        }
+                    }
+                } header: {
+                    Text(LocalizationKey.Subscription.subscriptionSection)
+                }
+                
                 Section {
                     Picker(selection: languageSelectionBinding) {
                         ForEach(AppLanguageOption.allCases) { language in
@@ -110,6 +159,9 @@ struct SettingsView: View {
             defaultFilename: exportFileName
         ) { _ in
             exportDocument = nil
+        }
+        .sheet(isPresented: $isShowingPaywall) {
+            PaywallView()
         }
     }
 

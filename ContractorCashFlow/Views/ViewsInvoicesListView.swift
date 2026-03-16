@@ -11,9 +11,12 @@ import SwiftData
 struct InvoicesListView: View {
     @Environment(AppState.self) private var appState
     @Environment(\.modelContext) private var modelContext
+    @Environment(PurchaseManager.self) private var purchaseManager
+    @Query private var allInvoicesForCount: [Invoice]
     
     @State private var searchText: String = ""
     @State private var selectedStatusFilter: InvoiceStatusFilter = .all
+    @State private var isShowingPaywall = false
     
     var body: some View {
         NavigationStack(path: appState.navigationPath(for: .invoices)) {
@@ -42,7 +45,11 @@ struct InvoicesListView: View {
                 }
                 ToolbarItem(placement: .primaryAction) {
                     Button {
-                        appState.isShowingNewInvoice = true
+                        if purchaseManager.canCreateInvoice(currentCount: allInvoicesForCount.count) {
+                            appState.isShowingNewInvoice = true
+                        } else {
+                            isShowingPaywall = true
+                        }
                     } label: {
                         Label(LocalizationKey.Invoice.add, systemImage: "plus")
                     }
@@ -53,6 +60,9 @@ struct InvoicesListView: View {
                 set: { appState.isShowingNewInvoice = $0 }
             )) {
                 NewInvoiceView()
+            }
+            .sheet(isPresented: $isShowingPaywall) {
+                PaywallView(limitReachedMessage: String(localized: "subscription.invoiceLimitReached"))
             }
         }
     }
@@ -83,6 +93,7 @@ enum InvoiceStatusFilter: String, CaseIterable {
 private struct InvoicesListContent: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(AppState.self) private var appState
+    @Environment(PurchaseManager.self) private var purchaseManager
     let searchText: String
     let statusFilter: InvoiceStatusFilter
     

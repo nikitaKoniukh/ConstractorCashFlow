@@ -11,8 +11,11 @@ import SwiftData
 struct ExpensesListView: View {
     @Environment(AppState.self) private var appState
     @Environment(\.modelContext) private var modelContext
+    @Environment(PurchaseManager.self) private var purchaseManager
+    @Query private var allExpensesForCount: [Expense]
     
     @State private var searchText: String = ""
+    @State private var isShowingPaywall = false
     @State private var selectedCategory: ExpenseCategory?
     @State private var startDate: Date?
     @State private var endDate: Date?
@@ -42,7 +45,11 @@ struct ExpensesListView: View {
                 }
                 ToolbarItem(placement: .primaryAction) {
                     Button {
-                        appState.isShowingNewExpense = true
+                        if purchaseManager.canCreateExpense(currentCount: allExpensesForCount.count) {
+                            appState.isShowingNewExpense = true
+                        } else {
+                            isShowingPaywall = true
+                        }
                     } label: {
                         Label(LocalizationKey.Expense.add, systemImage: "plus")
                     }
@@ -53,6 +60,9 @@ struct ExpensesListView: View {
                 set: { appState.isShowingNewExpense = $0 }
             )) {
                 NewExpenseView()
+            }
+            .sheet(isPresented: $isShowingPaywall) {
+                PaywallView(limitReachedMessage: String(localized: "subscription.expenseLimitReached"))
             }
             .sheet(isPresented: $isShowingFilters) {
                 ExpenseFiltersView(
@@ -81,6 +91,7 @@ struct ExpensesListView: View {
 private struct ExpensesListContent: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(AppState.self) private var appState
+    @Environment(PurchaseManager.self) private var purchaseManager
     @Query(sort: \Expense.date, order: .reverse) private var allExpenses: [Expense]
     
     let searchText: String
@@ -89,6 +100,7 @@ private struct ExpensesListContent: View {
     let endDate: Date?
     
     @State private var expenseToEdit: Expense?
+    @State private var isShowingPaywall = false
     
     private var filteredExpenses: [Expense] {
         var result = allExpenses
@@ -140,7 +152,11 @@ private struct ExpensesListContent: View {
                         Text("No expenses recorded yet. Start tracking your project costs")
                     } actions: {
                         Button {
-                            appState.isShowingNewExpense = true
+                            if purchaseManager.canCreateExpense(currentCount: allExpenses.count) {
+                                appState.isShowingNewExpense = true
+                            } else {
+                                isShowingPaywall = true
+                            }
                         } label: {
                             Text("Add Expense")
                         }
@@ -150,6 +166,9 @@ private struct ExpensesListContent: View {
                     ContentUnavailableView.search(text: searchText.isEmpty ? "No matching expenses" : searchText)
                 }
             }
+        }
+        .sheet(isPresented: $isShowingPaywall) {
+            PaywallView(limitReachedMessage: String(localized: "subscription.expenseLimitReached"))
         }
     }
     

@@ -10,8 +10,11 @@ import SwiftData
 
 struct LaborListView: View {
     @Environment(AppState.self) private var appState
+    @Environment(PurchaseManager.self) private var purchaseManager
+    @Query private var allWorkersForCount: [LaborDetails]
     
     @State private var searchText: String = ""
+    @State private var isShowingPaywall = false
     @State private var selectedType: LaborType?
     @State private var selectedProject: Project?
     @State private var selectedMonth: Date?
@@ -72,7 +75,11 @@ struct LaborListView: View {
                 
                 ToolbarItem(placement: .primaryAction) {
                     Button {
-                        appState.isShowingNewLabor = true
+                        if purchaseManager.canCreateWorker(currentCount: allWorkersForCount.count) {
+                            appState.isShowingNewLabor = true
+                        } else {
+                            isShowingPaywall = true
+                        }
                     } label: {
                         Label(LocalizationKey.Labor.add, systemImage: "plus")
                     }
@@ -90,6 +97,9 @@ struct LaborListView: View {
                     selectedProject: $selectedProject,
                     selectedMonth: $selectedMonth
                 )
+            }
+            .sheet(isPresented: $isShowingPaywall) {
+                PaywallView(limitReachedMessage: String(localized: "subscription.workerLimitReached"))
             }
             .alert(LocalizationKey.General.error, isPresented: Binding(
                 get: { appState.isShowingError },
