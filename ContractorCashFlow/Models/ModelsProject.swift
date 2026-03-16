@@ -10,19 +10,20 @@ import SwiftData
 
 @Model
 final class Project {
-    var id: UUID
-    var name: String
-    var clientName: String
-    var budget: Double
-    var createdDate: Date
-    var isActive: Bool
+    // CloudKit requires all attributes to have default values
+    var id: UUID = UUID()
+    var name: String = ""
+    var clientName: String = ""
+    var budget: Double = 0
+    var createdDate: Date = Date()
+    var isActive: Bool = true
     
-    // Relationships
+    // CloudKit requires all relationships to be optional
     @Relationship(deleteRule: .cascade, inverse: \Expense.project)
-    var expenses: [Expense] = []
+    var expenses: [Expense]?
     
     @Relationship(deleteRule: .cascade, inverse: \Invoice.project)
-    var invoices: [Invoice] = []
+    var invoices: [Invoice]?
     
     init(
         id: UUID = UUID(),
@@ -40,11 +41,16 @@ final class Project {
         self.isActive = isActive
     }
     
+    // MARK: - Safe Accessors
+    
+    var safeExpenses: [Expense] { expenses ?? [] }
+    var safeInvoices: [Invoice] { invoices ?? [] }
+    
     // MARK: - Computed Properties
     
     /// Workers associated with this project (derived from labor expenses)
     var workers: [LaborDetails] {
-        let laborExpenses = expenses.filter { $0.category == .labor }
+        let laborExpenses = safeExpenses.filter { $0.category == .labor }
         let workerList = laborExpenses.compactMap { $0.worker }
         var seen = Set<UUID>()
         return workerList.filter { seen.insert($0.id).inserted }
@@ -52,12 +58,12 @@ final class Project {
     
     /// Total amount spent on expenses for this project
     var totalExpenses: Double {
-        expenses.reduce(0) { $0 + $1.amount }
+        safeExpenses.reduce(0) { $0 + $1.amount }
     }
     
     /// Total income from paid invoices
     var totalIncome: Double {
-        invoices.filter { $0.isPaid }.reduce(0) { $0 + $1.amount }
+        safeInvoices.filter { $0.isPaid }.reduce(0) { $0 + $1.amount }
     }
     
     /// Current balance (income minus expenses)

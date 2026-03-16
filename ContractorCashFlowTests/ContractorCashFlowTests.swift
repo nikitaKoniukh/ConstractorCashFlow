@@ -29,8 +29,8 @@ struct AllAppTests {
             #expect(project.clientName == "Test Client")
             #expect(project.budget == 10000.0)
             #expect(project.isActive == true)
-            #expect(project.expenses.isEmpty)
-            #expect(project.invoices.isEmpty)
+            #expect(project.safeExpenses.isEmpty)
+            #expect(project.safeInvoices.isEmpty)
         }
         
         @Test("Project total expenses calculation")
@@ -55,8 +55,8 @@ struct AllAppTests {
                 project: project
             )
             
-            project.expenses.append(expense1)
-            project.expenses.append(expense2)
+            project.expenses = (project.expenses ?? []) + [expense1]
+            project.expenses = (project.expenses ?? []) + [expense2]
             
             #expect(project.totalExpenses == 4000.0)
         }
@@ -93,9 +93,9 @@ struct AllAppTests {
                 project: project
             )
             
-            project.invoices.append(invoice1)
-            project.invoices.append(invoice2)
-            project.invoices.append(invoice3)
+            project.invoices = (project.invoices ?? []) + [invoice1]
+            project.invoices = (project.invoices ?? []) + [invoice2]
+            project.invoices = (project.invoices ?? []) + [invoice3]
             
             // Only paid invoices count
             #expect(project.totalIncome == 8000.0)
@@ -116,7 +116,7 @@ struct AllAppTests {
                 descriptionText: "Materials",
                 project: project
             )
-            project.expenses.append(expense)
+            project.expenses = (project.expenses ?? []) + [expense]
             
             // Add paid invoice
             let invoice = Invoice(
@@ -126,7 +126,7 @@ struct AllAppTests {
                 clientName: "Test Client",
                 project: project
             )
-            project.invoices.append(invoice)
+            project.invoices = (project.invoices ?? []) + [invoice]
             
             // Balance = Income - Expenses = 5000 - 3000 = 2000
             #expect(project.balance == 2000.0)
@@ -147,7 +147,7 @@ struct AllAppTests {
                 descriptionText: "Materials",
                 project: project
             )
-            project.expenses.append(expense)
+            project.expenses = (project.expenses ?? []) + [expense]
             
             // Add paid invoice
             let invoice = Invoice(
@@ -157,7 +157,7 @@ struct AllAppTests {
                 clientName: "Test Client",
                 project: project
             )
-            project.invoices.append(invoice)
+            project.invoices = (project.invoices ?? []) + [invoice]
             
             // Profit margin = ((Income - Expenses) / Income) * 100
             // = ((10000 - 3000) / 10000) * 100 = 70%
@@ -191,7 +191,7 @@ struct AllAppTests {
                 descriptionText: "Materials",
                 project: project
             )
-            project.expenses.append(expense)
+            project.expenses = (project.expenses ?? []) + [expense]
             
             // Budget utilization = (4000 / 10000) * 100 = 40%
             #expect(project.budgetUtilization == 40.0)
@@ -618,7 +618,7 @@ struct AllAppTests {
                 descriptionText: "Materials",
                 project: project
             )
-            project.expenses.append(expense)
+            project.expenses = (project.expenses ?? []) + [expense]
             
             // Add income
             let invoice = Invoice(
@@ -628,7 +628,7 @@ struct AllAppTests {
                 clientName: "Client",
                 project: project
             )
-            project.invoices.append(invoice)
+            project.invoices = (project.invoices ?? []) + [invoice]
             
             let isProfitable = project.balance > 0
             #expect(isProfitable == true)
@@ -649,7 +649,7 @@ struct AllAppTests {
                 descriptionText: "Expensive materials",
                 project: project
             )
-            project.expenses.append(expense)
+            project.expenses = (project.expenses ?? []) + [expense]
             
             let isOverBudget = project.totalExpenses > project.budget
             #expect(isOverBudget == true)
@@ -680,8 +680,8 @@ struct AllAppTests {
                 project: project
             )
             
-            project.invoices.append(paidInvoice)
-            project.invoices.append(unpaidInvoice)
+            project.invoices = (project.invoices ?? []) + [paidInvoice]
+            project.invoices = (project.invoices ?? []) + [unpaidInvoice]
             
             // Only paid invoice should count
             #expect(project.totalIncome == 5000.0)
@@ -750,7 +750,7 @@ struct AllAppTests {
                 descriptionText: "Major expense",
                 project: project
             )
-            project.expenses.append(expense)
+            project.expenses = (project.expenses ?? []) + [expense]
             
             #expect(project.budgetUtilization == 50.0)
         }
@@ -809,8 +809,8 @@ struct AllAppTests {
                 descriptionText: "Labor",
                 project: project
             )
-            project.expenses.append(expense1)
-            project.expenses.append(expense2)
+            project.expenses = (project.expenses ?? []) + [expense1]
+            project.expenses = (project.expenses ?? []) + [expense2]
             
             #expect(project.totalExpenses == 5000.0)
             #expect(project.budgetUtilization == 50.0)
@@ -823,7 +823,7 @@ struct AllAppTests {
                 clientName: "Client",
                 project: project
             )
-            project.invoices.append(invoice1)
+            project.invoices = (project.invoices ?? []) + [invoice1]
             
             #expect(project.totalIncome == 10000.0)
             #expect(project.balance == 5000.0)
@@ -876,7 +876,7 @@ struct AllAppTests {
                     descriptionText: "Expense \(i)",
                     project: project
                 )
-                project.expenses.append(expense)
+                project.expenses = (project.expenses ?? []) + [expense]
             }
             
             // Should calculate sum of 1+2+3+...+1000 = 500500
@@ -901,7 +901,7 @@ struct AllAppTests {
                     clientName: "Client", // Even numbered invoices are paid
                     project: project
                 )
-                project.invoices.append(invoice)
+                project.invoices = (project.invoices ?? []) + [invoice]
             }
             
             // 50 paid invoices * $1000 each = $50,000

@@ -21,19 +21,26 @@ struct ContractorCashFlowApp: App {
             Client.self,
             LaborDetails.self
         ])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
-
+        
+        // Try CloudKit first; fall back to local-only if it fails.
+        // IMPORTANT: Never delete the store on failure — that would wipe user data.
         do {
-            return try ModelContainer(for: schema, configurations: [modelConfiguration])
+            let cloudConfig = ModelConfiguration(
+                schema: schema,
+                isStoredInMemoryOnly: false,
+                cloudKitDatabase: .automatic
+            )
+            return try ModelContainer(for: schema, configurations: [cloudConfig])
         } catch {
-            // Schema migration failed — delete the old store and recreate
-            let url = modelConfiguration.url
-            try? FileManager.default.removeItem(at: url)
-            try? FileManager.default.removeItem(at: url.appendingPathExtension("wal"))
-            try? FileManager.default.removeItem(at: url.appendingPathExtension("shm"))
-            
+            print("CloudKit ModelContainer failed: \(error). Using local-only storage.")
+            // Fall back to local-only so the app doesn't crash and data is preserved.
+            let localConfig = ModelConfiguration(
+                schema: schema,
+                isStoredInMemoryOnly: false,
+                cloudKitDatabase: .none
+            )
             do {
-                return try ModelContainer(for: schema, configurations: [modelConfiguration])
+                return try ModelContainer(for: schema, configurations: [localConfig])
             } catch {
                 fatalError("Could not create ModelContainer: \(error)")
             }

@@ -72,7 +72,7 @@ struct EditLaborView: View {
                 }
                 
                 // Stats Section (aggregated from linked expenses)
-                if !labor.expenses.isEmpty {
+                if !labor.safeExpenses.isEmpty {
                     Section(header: Text(LocalizationKey.Labor.workerStats)) {
                         HStack {
                             Text(LocalizationKey.Labor.totalEarned)
@@ -167,10 +167,10 @@ struct EditLaborView: View {
                     deleteWorker()
                 }
             } message: {
-                if labor.expenses.isEmpty {
+                if labor.safeExpenses.isEmpty {
                     Text("Are you sure you want to delete this worker?")
                 } else {
-                    Text("This worker has \(labor.expenses.count) linked expense(s). The expenses will remain but won't be linked to a worker.")
+                    Text("This worker has \(labor.safeExpenses.count) linked expense(s). The expenses will remain but won't be linked to a worker.")
                 }
             }
         }

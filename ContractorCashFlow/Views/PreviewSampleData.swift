@@ -223,13 +223,13 @@ struct PreviewSampleData {
     }
 }
 
-// MARK: - Client Model (if not already defined)
+// MARK: - Client Model
 
-#if DEBUG
 @Model
 final class Client {
-    var id: UUID
-    var name: String
+    // CloudKit requires all attributes to have default values
+    var id: UUID = UUID()
+    var name: String = ""
     var email: String?
     var phone: String?
     var address: String?
@@ -251,4 +251,3 @@ final class Client {
         self.notes = notes
     }
 }
-#endif

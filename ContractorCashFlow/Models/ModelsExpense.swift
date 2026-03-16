@@ -38,13 +38,14 @@ enum ExpenseCategory: String, Codable, CaseIterable {
 
 @Model
 final class Expense {
-    var id: UUID
-    var category: ExpenseCategory
-    var amount: Double
-    var descriptionText: String
-    var date: Date
+    // CloudKit requires all attributes to have default values
+    var id: UUID = UUID()
+    var category: ExpenseCategory = ExpenseCategory.misc
+    var amount: Double = 0
+    var descriptionText: String = ""
+    var date: Date = Date()
     
-    // Relationships
+    // Relationships (already optional)
     var project: Project?
     var worker: LaborDetails?
     

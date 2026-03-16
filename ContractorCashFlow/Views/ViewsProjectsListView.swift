@@ -253,16 +253,16 @@ struct ProjectDetailView: View {
             }
             
             // Expenses by Category Chart
-            if !project.expenses.isEmpty {
+            if !project.safeExpenses.isEmpty {
                 Section("Expenses by Category") {
-                    ExpenseCategoryChart(expenses: project.expenses)
+                    ExpenseCategoryChart(expenses: project.safeExpenses)
                         .frame(height: 200)
                 }
             }
             
             // Expenses Section
             Section {
-                if project.expenses.isEmpty {
+                if project.safeExpenses.isEmpty {
                     VStack(spacing: 12) {
                         Text("No expenses recorded")
                             .font(.subheadline)
@@ -278,7 +278,7 @@ struct ProjectDetailView: View {
                     .frame(maxWidth: .infinity, alignment: .center)
                     .padding(.vertical, 8)
                 } else {
-                    ForEach(project.expenses.sorted(by: { $0.date > $1.date })) { expense in
+                    ForEach(project.safeExpenses.sorted(by: { $0.date > $1.date })) { expense in
                         ExpenseRowView(expense: expense)
                     }
                     .onDelete(perform: deleteExpenses)
@@ -287,7 +287,7 @@ struct ProjectDetailView: View {
                 HStack {
                     Text("Expenses")
                     Spacer()
-                    if !project.expenses.isEmpty {
+                    if !project.safeExpenses.isEmpty {
                         Button {
                             isShowingAddExpense = true
                         } label: {
@@ -303,7 +303,7 @@ struct ProjectDetailView: View {
             
             // Invoices Section
             Section {
-                if project.invoices.isEmpty {
+                if project.safeInvoices.isEmpty {
                     VStack(spacing: 12) {
                         Text("No invoices created")
                             .font(.subheadline)
@@ -319,7 +319,7 @@ struct ProjectDetailView: View {
                     .frame(maxWidth: .infinity, alignment: .center)
                     .padding(.vertical, 8)
                 } else {
-                    ForEach(project.invoices.sorted(by: { $0.createdDate > $1.createdDate })) { invoice in
+                    ForEach(project.safeInvoices.sorted(by: { $0.createdDate > $1.createdDate })) { invoice in
                         InvoiceRowView(invoice: invoice)
                     }
                     .onDelete(perform: deleteInvoices)
@@ -328,7 +328,7 @@ struct ProjectDetailView: View {
                 HStack {
                     Text("Invoices")
                     Spacer()
-                    if !project.invoices.isEmpty {
+                    if !project.safeInvoices.isEmpty {
                         Button {
                             isShowingAddInvoice = true
                         } label: {
@@ -340,9 +340,9 @@ struct ProjectDetailView: View {
                         Text(project.totalIncome, format: .currency(code: currencyCode))
                             .font(.subheadline)
                             .foregroundStyle(.green)
-                        if project.invoices.count > 0 {
-                            let paidCount = project.invoices.filter { $0.isPaid }.count
-                            Text("\(paidCount)/\(project.invoices.count) paid")
+                        if project.safeInvoices.count > 0 {
+                            let paidCount = project.safeInvoices.filter { $0.isPaid }.count
+                            Text("\(paidCount)/\(project.safeInvoices.count) paid")
                                 .font(.caption2)
                                 .foregroundStyle(.secondary)
                         }
@@ -416,7 +416,7 @@ struct ProjectDetailView: View {
     }
     
     private func deleteExpenses(at offsets: IndexSet) {
-        let sortedExpenses = project.expenses.sorted(by: { $0.date > $1.date })
+        let sortedExpenses = project.safeExpenses.sorted(by: { $0.date > $1.date })
         
         for index in offsets {
             let expense = sortedExpenses[index]
@@ -430,7 +430,7 @@ struct ProjectDetailView: View {
     }
     
     private func deleteInvoices(at offsets: IndexSet) {
-        let sortedInvoices = project.invoices.sorted(by: { $0.createdDate > $1.createdDate })
+        let sortedInvoices = project.safeInvoices.sorted(by: { $0.createdDate > $1.createdDate })
         
         for index in offsets {
             let invoice = sortedInvoices[index]
@@ -864,11 +864,11 @@ struct ProjectExportView: View {
         Budget Utilization: \(String(format: "%.1f%%", project.budgetUtilization))
         """
         
-        if includeExpenses && !project.expenses.isEmpty {
-            text += "\n\nEXPENSES (\(project.expenses.count))"
+        if includeExpenses && !project.safeExpenses.isEmpty {
+            text += "\n\nEXPENSES (\(project.safeExpenses.count))"
             text += "\n" + String(repeating: "-", count: 50)
             
-            for expense in project.expenses.sorted(by: { $0.date > $1.date }) {
+            for expense in project.safeExpenses.sorted(by: { $0.date > $1.date }) {
                 text += """
                 \n\(expense.date.formatted(date: .abbreviated, time: .omitted)) - \(expense.category.displayName)
                   \(expense.descriptionText)
@@ -877,11 +877,11 @@ struct ProjectExportView: View {
             }
         }
         
-        if includeInvoices && !project.invoices.isEmpty {
-            text += "\n\nINVOICES (\(project.invoices.count))"
+        if includeInvoices && !project.safeInvoices.isEmpty {
+            text += "\n\nINVOICES (\(project.safeInvoices.count))"
             text += "\n" + String(repeating: "-", count: 50)
             
-            for invoice in project.invoices.sorted(by: { $0.createdDate > $1.createdDate }) {
+            for invoice in project.safeInvoices.sorted(by: { $0.createdDate > $1.createdDate }) {
                 let status = invoice.isPaid ? "PAID" : (invoice.isOverdue ? "OVERDUE" : "PENDING")
                 text += """
                 \n\(invoice.createdDate.formatted(date: .abbreviated, time: .omitted)) - \(status)

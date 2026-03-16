@@ -10,14 +10,15 @@ import SwiftData
 
 @Model
 final class Invoice {
-    var id: UUID
-    var amount: Double
-    var dueDate: Date
-    var isPaid: Bool
-    var clientName: String
-    var createdDate: Date
+    // CloudKit requires all attributes to have default values
+    var id: UUID = UUID()
+    var amount: Double = 0
+    var dueDate: Date = Date()
+    var isPaid: Bool = false
+    var clientName: String = ""
+    var createdDate: Date = Date()
     
-    // Relationship
+    // Relationship (already optional)
     var project: Project?
     
     init(

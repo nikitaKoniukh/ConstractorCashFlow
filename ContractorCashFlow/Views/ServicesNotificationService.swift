@@ -11,13 +11,24 @@ import SwiftData
 
 /// Service responsible for managing local notifications for invoices and budget warnings
 @MainActor
-final class NotificationService {
+final class NotificationService: NSObject, UNUserNotificationCenterDelegate {
     
     // MARK: - Singleton
     
     static let shared = NotificationService()
     
     private let notificationCenter = UNUserNotificationCenter.current()
+    
+    // MARK: - UNUserNotificationCenterDelegate
+    
+    /// Show notifications even when the app is in the foreground
+    nonisolated func userNotificationCenter(
+        _ center: UNUserNotificationCenter,
+        willPresent notification: UNNotification,
+        withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
+    ) {
+        completionHandler([.banner, .sound, .badge])
+    }
     
     // MARK: - UserDefaults Keys
     
@@ -83,7 +94,10 @@ final class NotificationService {
     
     // MARK: - Private Init
     
-    private init() {}
+    private override init() {
+        super.init()
+        notificationCenter.delegate = self
+    }
     
     // MARK: - Permission Management
     

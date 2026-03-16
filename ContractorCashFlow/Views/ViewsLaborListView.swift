@@ -141,7 +141,7 @@ private struct LaborListContent: View {
             let startOfMonth = calendar.date(from: calendar.dateComponents([.year, .month], from: month))!
             let endOfMonth = calendar.date(byAdding: .month, value: 1, to: startOfMonth)!
             result = result.filter { worker in
-                worker.expenses.contains { $0.date >= startOfMonth && $0.date < endOfMonth }
+                worker.safeExpenses.contains { $0.date >= startOfMonth && $0.date < endOfMonth }
             }
         }
         
@@ -295,7 +295,7 @@ private struct WorkerSummaryCard: View {
     @AppStorage(StorageKey.selectedCurrencyCode) private var currencyCode = "USD"
     
     private var relevantExpenses: [Expense] {
-        let allExpenses = workers.flatMap { $0.expenses }
+        let allExpenses = workers.flatMap { $0.safeExpenses }
         guard let month = selectedMonth else { return allExpenses }
         let calendar = Calendar.current
         let startOfMonth = calendar.date(from: calendar.dateComponents([.year, .month], from: month))!

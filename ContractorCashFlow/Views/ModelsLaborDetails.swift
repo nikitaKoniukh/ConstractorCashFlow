@@ -89,16 +89,17 @@ enum LaborType: String, Codable, CaseIterable {
 
 @Model
 final class LaborDetails {
-    var id: UUID
-    var workerName: String
-    var laborType: LaborType
+    // CloudKit requires all attributes to have default values
+    var id: UUID = UUID()
+    var workerName: String = ""
+    var laborType: LaborType = LaborType.hourly
     var rate: Double?
     var notes: String?
-    var createdDate: Date
+    var createdDate: Date = Date()
     
-    // Worker owns many labor expenses
+    // CloudKit requires all relationships to be optional
     @Relationship(deleteRule: .nullify, inverse: \Expense.worker)
-    var expenses: [Expense] = []
+    var expenses: [Expense]?
     
     init(
         id: UUID = UUID(),
@@ -116,28 +117,32 @@ final class LaborDetails {
         self.createdDate = createdDate
     }
     
+    // MARK: - Safe Accessor
+    
+    var safeExpenses: [Expense] { expenses ?? [] }
+    
     // MARK: - Computed Properties (aggregated from linked expenses)
     
     /// Total amount earned across all linked labor expenses
     var totalAmountEarned: Double {
-        expenses.reduce(0) { $0 + $1.amount }
+        safeExpenses.reduce(0) { $0 + $1.amount }
     }
     
     /// Total units worked across all linked labor expenses (hours or days depending on type)
     var totalUnitsWorked: Double {
-        expenses.compactMap { $0.unitsWorked }.reduce(0, +)
+        safeExpenses.compactMap { $0.unitsWorked }.reduce(0, +)
     }
     
     /// Total number of distinct work days
     var totalDaysWorked: Int {
         let calendar = Calendar.current
-        let uniqueDays = Set(expenses.map { calendar.startOfDay(for: $0.date) })
+        let uniqueDays = Set(safeExpenses.map { calendar.startOfDay(for: $0.date) })
         return uniqueDays.count
     }
     
     /// Projects this worker is associated with (derived from expenses)
     var associatedProjects: [Project] {
-        let projects = expenses.compactMap { $0.project }
+        let projects = safeExpenses.compactMap { $0.project }
         var seen = Set<UUID>()
         return projects.filter { seen.insert($0.id).inserted }
     }
