@@ -107,7 +107,11 @@ struct LaborListView: View {
             )) {
                 Button(LocalizationKey.General.ok, role: .cancel) { }
             } message: {
-                Text(appState.errorMessage ?? String(localized: "general.genericError"))
+                if let errorMessage = appState.errorMessage {
+                    Text(errorMessage)
+                } else {
+                    Text(LocalizationKey.General.genericError)
+                }
             }
         }
     }
@@ -253,7 +257,7 @@ private struct WorkerCardRow: View {
                 HStack(spacing: 12) {
                     if worker.totalDaysWorked > 0 {
                         Label {
-                            Text("\(worker.totalDaysWorked) \(worker.totalDaysWorked == 1 ? String(localized: "labor.dayUnit") : String(localized: "labor.daysUnit"))")
+                            Text("\(worker.totalDaysWorked) ") + Text(worker.totalDaysWorked == 1 ? LocalizationKey.Labor.dayUnit : LocalizationKey.Labor.daysUnit)
                         } icon: {
                             Image(systemName: "calendar")
                         }
@@ -331,18 +335,17 @@ private struct WorkerSummaryCard: View {
         totalDaysWorked > 0 ? totalLaborCost / Double(totalDaysWorked) : 0
     }
     
-    private var periodLabel: String {
-        if let month = selectedMonth {
-            return month.formatted(.dateTime.month(.wide).year())
-        }
-        return String(localized: "labor.summaryAllTime")
-    }
-    
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text(periodLabel)
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
+            Group {
+                if let month = selectedMonth {
+                    Text(month.formatted(.dateTime.month(.wide).year()))
+                } else {
+                    Text(LocalizationKey.Labor.summaryAllTime)
+                }
+            }
+            .font(.subheadline)
+            .foregroundStyle(.secondary)
             
             HStack {
                 StatCard(

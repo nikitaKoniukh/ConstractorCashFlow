@@ -18,13 +18,13 @@ enum LaborType: String, Codable, CaseIterable {
     var displayName: String {
         switch self {
         case .hourly:
-            return String(localized: "labor.type.hourly")
+            return LocalizationKey.Labor.hourlyString
         case .daily:
-            return String(localized: "labor.type.daily")
+            return LocalizationKey.Labor.dailyString
         case .contract:
-            return String(localized: "labor.type.contract")
+            return LocalizationKey.Labor.contractString
         case .subcontractor:
-            return String(localized: "labor.type.subcontractor")
+            return LocalizationKey.Labor.subcontractorString
         }
     }
     
@@ -62,8 +62,8 @@ enum LaborType: String, Codable, CaseIterable {
     /// Short suffix for displaying rate (e.g. "/hr", "/day")
     var rateSuffix: String {
         switch self {
-        case .hourly: return String(localized: "labor.rateSuffix.hourly")
-        case .daily: return String(localized: "labor.rateSuffix.daily")
+        case .hourly: return LocalizationKey.Labor.rateSuffixHourly
+        case .daily: return LocalizationKey.Labor.rateSuffixDaily
         case .contract, .subcontractor: return ""
         }
     }
@@ -80,8 +80,8 @@ enum LaborType: String, Codable, CaseIterable {
     /// Unit name for display (e.g. "hours", "days")
     var unitName: String {
         switch self {
-        case .hourly: return String(localized: "labor.unit.hours")
-        case .daily: return String(localized: "labor.unit.days")
+        case .hourly: return LocalizationKey.Labor.unitHours
+        case .daily: return LocalizationKey.Labor.unitDays
         case .contract, .subcontractor: return ""
         }
     }

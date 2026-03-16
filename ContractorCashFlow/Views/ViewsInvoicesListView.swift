@@ -220,7 +220,7 @@ struct InvoiceRow: View {
                     }
                 }
                 
-                Text("\(String(localized: "invoice.duePrefix.label")): \(invoice.dueDate, format: .dateTime.month().day().year())")
+                Text("\(LocalizationKey.Invoice.duePrefixString): \(invoice.dueDate, format: .dateTime.month().day().year())")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -286,7 +286,7 @@ struct EditInvoiceView: View {
     
     var body: some View {
         Form {
-            Section(String(localized: "invoice.details")) {
+            Section(LocalizationKey.Invoice.details) {
                 // Client selection
                 if !clients.isEmpty {
                     Picker("Client Source", selection: $useExistingClient) {
@@ -350,7 +350,7 @@ struct EditInvoiceView: View {
                 Toggle(LocalizationKey.Invoice.paid, isOn: $isPaid)
             }
             
-            Section(String(localized: "invoice.project")) {
+            Section(LocalizationKey.Invoice.project) {
                 Picker(LocalizationKey.Invoice.projectOptional, selection: $selectedProject) {
                     Text(LocalizationKey.Invoice.none).tag(nil as Project?)
                     ForEach(projects.filter { $0.isActive }) { project in
@@ -480,7 +480,7 @@ struct NewInvoiceView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section(String(localized: "invoice.details")) {
+                Section(LocalizationKey.Invoice.details) {
                     // Client selection
                     if !clients.isEmpty {
                         Picker("Client Source", selection: $useExistingClient) {
@@ -539,7 +539,7 @@ struct NewInvoiceView: View {
                     Toggle(LocalizationKey.Invoice.paid, isOn: $isPaid)
                 }
                 
-                Section(String(localized: "invoice.project")) {
+                Section(LocalizationKey.Invoice.project) {
                     Picker(LocalizationKey.Invoice.projectOptional, selection: $selectedProject) {
                         Text(LocalizationKey.Invoice.none).tag(nil as Project?)
                         ForEach(projects.filter { $0.isActive }) { project in

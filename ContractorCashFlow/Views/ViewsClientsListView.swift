@@ -155,7 +155,7 @@ struct ClientDetailView: View {
     
     var body: some View {
         List {
-            Section(String(localized: "client.information")) {
+            Section(LocalizationKey.ClientS.information) {
                 LabeledContent(LocalizationKey.ClientS.name, value: client.name)
                 
                 if let email = client.email {
@@ -175,7 +175,7 @@ struct ClientDetailView: View {
             }
             
             if let notes = client.notes, !notes.isEmpty {
-                Section(String(localized: "client.notes")) {
+                Section(LocalizationKey.ClientS.notes) {
                     Text(notes)
                 }
             }
@@ -235,7 +235,7 @@ struct EditClientView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section(String(localized: "client.information")) {
+                Section(LocalizationKey.ClientS.information) {
                     TextField(LocalizationKey.ClientS.name, text: $name)
                     TextField(LocalizationKey.ClientS.email, text: $email)
                         .textContentType(.emailAddress)
@@ -246,12 +246,12 @@ struct EditClientView: View {
                         .keyboardType(.phonePad)
                 }
                 
-                Section(String(localized: "client.address")) {
+                Section(LocalizationKey.ClientS.address) {
                     TextField(LocalizationKey.ClientS.address, text: $address, axis: .vertical)
                         .lineLimit(3...5)
                 }
                 
-                Section(String(localized: "client.notes")) {
+                Section(LocalizationKey.ClientS.notes) {
                     TextField(LocalizationKey.ClientS.notes, text: $notes, axis: .vertical)
                         .lineLimit(4...8)
                 }
@@ -313,7 +313,7 @@ struct NewClientView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section(String(localized: "client.information")) {
+                Section(LocalizationKey.ClientS.information) {
                     TextField(LocalizationKey.ClientS.name, text: $name)
                     TextField(LocalizationKey.ClientS.email, text: $email)
                         .textContentType(.emailAddress)
@@ -324,12 +324,12 @@ struct NewClientView: View {
                         .keyboardType(.phonePad)
                 }
                 
-                Section(String(localized: "client.address")) {
+                Section(LocalizationKey.ClientS.address) {
                     TextField(LocalizationKey.ClientS.address, text: $address, axis: .vertical)
                         .lineLimit(3...5)
                 }
                 
-                Section(String(localized: "client.notes")) {
+                Section(LocalizationKey.ClientS.notes) {
                     TextField(LocalizationKey.ClientS.notes, text: $notes, axis: .vertical)
                         .lineLimit(4...8)
                 }

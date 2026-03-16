@@ -168,7 +168,7 @@ struct ProjectRow: View {
                 
                 Spacer()
                 
-                Text("\(String(localized: "project.balance.label")): \(project.balance, format: .currency(code: currencyCode))")
+                Text("\(LocalizationKey.Project.balanceString): \(project.balance, format: .currency(code: currencyCode))")
                     .font(.caption)
                     .foregroundStyle(project.balance >= 0 ? .green : .red)
             }
@@ -203,7 +203,7 @@ struct ProjectDetailView: View {
             }
             
             // Project Information Section
-            Section(String(localized: "project.information")) {
+            Section(LocalizationKey.Project.information) {
                 LabeledContent(LocalizationKey.Project.name, value: project.name)
                 
                 // Clickable client name
@@ -999,7 +999,7 @@ struct NewProjectView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section(String(localized: "project.information")) {
+                Section(LocalizationKey.Project.information) {
                     TextField(LocalizationKey.Project.name, text: $name)
                     
                     // Client selection section
@@ -1094,7 +1094,7 @@ struct NewProjectView: View {
                     }
                 }
                 
-                Section(String(localized: "project.budget")) {
+                Section(LocalizationKey.Project.budget) {
                     TextField(LocalizationKey.Project.budget, value: $budget, format: .currency(code: currencyCode))
                         .keyboardType(.decimalPad)
                 }

@@ -80,7 +80,7 @@ struct IncomeExpensesChartCard: View {
                     // Donut Chart
                     Chart(chartData) { item in
                         SectorMark(
-                            angle: .value(String(localized: "analytics.chart.amount"), item.amount),
+                            angle: .value(LocalizationKey.Analytics.chartAmountString, item.amount),
                             innerRadius: .ratio(0.618),
                             angularInset: 1.5
                         )
@@ -166,8 +166,8 @@ struct ExpenseByCategoryChartCard: View {
                 // Horizontal Bar Chart
                 Chart(categoryData) { item in
                     BarMark(
-                        x: .value(String(localized: "analytics.chart.amount"), item.amount),
-                        y: .value(String(localized: "analytics.chart.category"), item.category.displayName)
+                        x: .value(LocalizationKey.Analytics.chartAmountString, item.amount),
+                        y: .value(LocalizationKey.Analytics.chartCategoryString, item.category.displayName)
                     )
                     .foregroundStyle(item.category.chartColor)
                     .cornerRadius(6)
@@ -247,23 +247,23 @@ struct BudgetUtilizationChartCard: View {
                 Chart {
                     ForEach(projectData) { data in
                         BarMark(
-                            x: .value(String(localized: "analytics.chart.amount"), data.spent),
-                            y: .value(String(localized: "analytics.chart.project"), data.projectName)
+                            x: .value(LocalizationKey.Analytics.chartAmountString, data.spent),
+                            y: .value(LocalizationKey.Analytics.chartProjectString, data.projectName)
                         )
                         .foregroundStyle(.orange)
                         .position(by: .value(
-                            String(localized: "analytics.chart.type"),
-                            String(localized: "analytics.spent")
+                            LocalizationKey.Analytics.chartTypeString,
+                            LocalizationKey.Analytics.spentString
                         ))
                         
                         BarMark(
-                            x: .value(String(localized: "analytics.chart.amount"), data.remaining),
-                            y: .value(String(localized: "analytics.chart.project"), data.projectName)
+                            x: .value(LocalizationKey.Analytics.chartAmountString, data.remaining),
+                            y: .value(LocalizationKey.Analytics.chartProjectString, data.projectName)
                         )
                         .foregroundStyle(.blue.opacity(0.3))
                         .position(by: .value(
-                            String(localized: "analytics.chart.type"),
-                            String(localized: "analytics.remaining")
+                            LocalizationKey.Analytics.chartTypeString,
+                            LocalizationKey.Analytics.remainingString
                         ))
                     }
                 }
@@ -290,8 +290,8 @@ struct BudgetUtilizationChartCard: View {
                     }
                 }
                 .chartForegroundStyleScale([
-                    String(localized: "analytics.spent"): .orange,
-                    String(localized: "analytics.remaining"): .blue.opacity(0.3)
+                    LocalizationKey.Analytics.spentString: .orange,
+                    LocalizationKey.Analytics.remainingString: .blue.opacity(0.3)
                 ])
                 .chartLegend(position: .bottom, spacing: 16)
                 

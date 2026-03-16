@@ -272,6 +272,7 @@ private enum AppLanguageOption: String, CaseIterable, Identifiable {
     case russian = "ru"
 
     static let defaultCode = "en"
+    static let defaultCurrency = "USD"
 
     var id: String { rawValue }
 

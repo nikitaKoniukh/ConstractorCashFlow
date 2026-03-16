@@ -34,6 +34,7 @@ enum LocalizationKey {
         static let empty = LocalizedStringKey("project.empty")
         static let emptyDescription = LocalizedStringKey("project.emptyDescription")
         static let balance = LocalizedStringKey("project.balance")
+        static let balanceString = String(localized: "project.balance.label")
     }
     
     // MARK: - Expenses
@@ -75,6 +76,7 @@ enum LocalizationKey {
         static let editTitle = LocalizedStringKey("invoice.editTitle")
         static let pending = LocalizedStringKey("invoice.status.pending")
         static let duePrefix = LocalizedStringKey("invoice.duePrefix")
+        static let duePrefixString = String(localized: "invoice.duePrefix.label")
         static let empty = LocalizedStringKey("invoice.empty")
         static let emptyDescription = LocalizedStringKey("invoice.emptyDescription")
         
@@ -202,6 +204,16 @@ enum LocalizationKey {
         static let totalLaborCost = LocalizedStringKey("labor.totalLaborCost")
         static let avgDailyCost = LocalizedStringKey("labor.avgDailyCost")
         static let summaryAllTime = LocalizedStringKey("labor.summaryAllTime")
+        
+        // String variants for APIs requiring String (Charts, string interpolation)
+        static let hourlyString = String(localized: "labor.type.hourly")
+        static let dailyString = String(localized: "labor.type.daily")
+        static let contractString = String(localized: "labor.type.contract")
+        static let subcontractorString = String(localized: "labor.type.subcontractor")
+        static let rateSuffixHourly = String(localized: "labor.rateSuffix.hourly")
+        static let rateSuffixDaily = String(localized: "labor.rateSuffix.daily")
+        static let unitHours = String(localized: "labor.unit.hours")
+        static let unitDays = String(localized: "labor.unit.days")
     }
     
     // MARK: - Common Actions
@@ -251,6 +263,14 @@ enum LocalizationKey {
         static let chartCategory = LocalizedStringKey("analytics.chart.category")
         static let chartProject = LocalizedStringKey("analytics.chart.project")
         static let chartType = LocalizedStringKey("analytics.chart.type")
+        
+        // String variants for Charts API (requires String, not LocalizedStringKey)
+        static let spentString = String(localized: "analytics.spent")
+        static let remainingString = String(localized: "analytics.remaining")
+        static let chartAmountString = String(localized: "analytics.chart.amount")
+        static let chartCategoryString = String(localized: "analytics.chart.category")
+        static let chartProjectString = String(localized: "analytics.chart.project")
+        static let chartTypeString = String(localized: "analytics.chart.type")
     }
     
     // MARK: - Subscription
