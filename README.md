@@ -106,6 +106,16 @@ Every major list view supports search:
 - Graceful fallback to local-only storage if CloudKit is unavailable
 - Requires iCloud account with iCloud Drive enabled on each device
 
+### In-App Subscriptions (StoreKit 2)
+- **Free tier** — 1 project, 1 expense, 1 invoice, 1 worker
+- **Pro Monthly** — $19.99/month, unlimited everything
+- **Pro Yearly** — $199.99/year, unlimited everything
+- StoreKit 2 with transaction verification and real-time updates
+- Restore purchases via `AppStore.sync()`
+- Paywall UI with feature comparison table and plan selection
+- Subscription status displayed in Settings with expiration date
+- Limits enforced at all entity creation points across the app
+
 ---
 
 ## Screenshots
@@ -157,6 +167,7 @@ Every major list view supports search:
 | Charts | Swift Charts (`SectorMark`, `BarMark`) |
 | State Management | `@Observable` (Observation framework) |
 | Notifications | `UNUserNotificationCenter` |
+| In-App Purchases | StoreKit 2 (auto-renewable subscriptions) |
 | Localization | `Localizable.xcstrings` + type-safe `LocalizationKey` enums |
 
 ### Patterns
@@ -164,7 +175,7 @@ Every major list view supports search:
 - **Observable state** — `AppState` is an `@Observable` class injected via SwiftUI's `@Environment`, managing tab selection, navigation paths, sheet presentation flags, search queries, and error display
 - **Per-tab NavigationPath** — Each tab maintains its own `NavigationPath` enabling pop-to-root on tab re-tap
 - **SwiftData `@Query`** — Views use `@Query` with `#Predicate` for reactive, filtered data fetching directly from the model store
-- **Singleton services** — `NotificationService` and `LanguageManager` are `@MainActor` singletons
+- **Singleton services** — `NotificationService`, `LanguageManager`, and `PurchaseManager` are `@MainActor` singletons
 - **Centralized error handling** — All CRUD operations use do/catch with errors surfaced via `AppState.showError()`
 
 ---
@@ -213,11 +224,11 @@ Every major list view supports search:
 
 ```
 ContractorCashFlow/
-├── ContractorCashFlowApp.swift          # App entry point, ModelContainer + CloudKit setup
-├── ContentView.swift                     # Unused Xcode template
+├── ContractorCashFlowApp.swift           # App entry point, ModelContainer + CloudKit setup
 ├── LanguageManager.swift                 # Runtime language switching, RTL support
 ├── LocalizationKeys.swift                # Type-safe localization keys + StorageKey
 ├── Localizable.xcstrings                 # String catalog (EN, HE, RU)
+├── Products.storekit                     # StoreKit configuration for local IAP testing
 ├── Info.plist                            # Background modes config
 ├── ContractorCashFlow.entitlements       # CloudKit, APS entitlements
 │
@@ -225,8 +236,7 @@ ContractorCashFlow/
 │   ├── AppState.swift                    # Observable app state + AppTab enum
 │   ├── ModelsProject.swift               # Project model with computed financials
 │   ├── ModelsExpense.swift               # Expense model + ExpenseCategory enum
-│   ├── ModelsInvoice.swift               # Invoice model
-│   └── Item.swift                        # Unused Xcode template model
+│   └── ModelsInvoice.swift               # Invoice model
 │
 ├── Views/
 │   ├── ViewsRootTabView.swift            # Root 7-tab navigation
@@ -240,10 +250,12 @@ ContractorCashFlow/
 │   ├── ModelsLaborDetails.swift          # LaborDetails model + LaborType enum
 │   ├── PreviewSampleData.swift           # Sample data for SwiftUI previews + Client model
 │   ├── ServicesNotificationService.swift # Local notification service
+│   ├── ServicesPurchaseManager.swift     # StoreKit 2 subscription manager
 │   │
 │   └── Settings/
 │       ├── SettingsView.swift            # Settings: language, currency, notifications, export
 │       ├── ViewsAnalyticsView.swift      # Analytics: 3 chart types (Swift Charts)
+│       ├── PaywallView.swift             # Subscription paywall with plan selection
 │       └── ServicesView+Notifications.swift # Notification view modifiers
 │
 ├── ContractorCashFlowTests/

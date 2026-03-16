@@ -1014,6 +1014,7 @@
       }
     },
     "Budget Warnings" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1058,6 +1059,7 @@
       }
     },
     "Cancel All" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1102,6 +1104,7 @@
       }
     },
     "Check Permission Status" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1476,6 +1479,7 @@
       }
     },
     "Create Project at 85% Budget" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1498,6 +1502,7 @@
       }
     },
     "Create Project at 105% Budget" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1520,6 +1525,7 @@
       }
     },
     "Create Test Invoice (Due in 2 days)" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1542,6 +1548,7 @@
       }
     },
     "Create Test Invoice (Due in 4 days - will trigger reminder)" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1564,6 +1571,7 @@
       }
     },
     "Create Test Invoice (Overdue)" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2730,6 +2738,7 @@
       }
     },
     "Invoice" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2752,6 +2761,7 @@
       }
     },
     "Invoice Reminders" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -5642,6 +5652,7 @@
       }
     },
     "Notification Status" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -5664,6 +5675,7 @@
       }
     },
     "Notification Tests" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -5686,6 +5698,7 @@
       }
     },
     "Notifications" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -5730,6 +5743,7 @@
       }
     },
     "Overdue Alerts" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -5752,6 +5766,7 @@
       }
     },
     "Paid" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -5774,6 +5789,7 @@
       }
     },
     "Pending Notifications: %lld" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -5818,6 +5834,7 @@
       }
     },
     "Print All Notifications" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -5840,6 +5857,7 @@
       }
     },
     "Print All Pending" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -6281,6 +6299,7 @@
       }
     },
     "Refresh Count" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -7711,6 +7730,7 @@
       }
     },
     "Test Budget Notifications" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -7733,6 +7753,7 @@
       }
     },
     "Test Invoice Notifications" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
