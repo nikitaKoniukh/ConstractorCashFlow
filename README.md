@@ -2,7 +2,7 @@
 
 A comprehensive iOS app for construction contractors to manage projects, track expenses, create invoices, manage clients and workers, and visualize financial analytics — all from one place.
 
-Built with **SwiftUI**, **SwiftData**, and **Swift Charts**. Supports **3 languages** (English, Hebrew, Russian) and **8 currencies**.
+Built with **SwiftUI**, **SwiftData**, **CloudKit**, and **Swift Charts**. Supports **iCloud sync** across devices, **3 languages** (English, Hebrew, Russian), and **8 currencies**.
 
 ## Table of Contents
 
@@ -31,6 +31,7 @@ Built with **SwiftUI**, **SwiftData**, and **Swift Charts**. Supports **3 langua
 
 ### Expense Tracking
 - Log expenses under 5 categories: Materials, Labor, Equipment, Subcontractor, Miscellaneous
+- **Edit existing expenses** — tap any expense to modify category, amount, description, date, project, or worker assignment
 - Assign expenses to projects or track them as general overhead
 - Advanced filtering by category, date range, and search text
 - Labor expenses auto-calculate amounts from worker rate and hours/days worked
@@ -98,6 +99,13 @@ Every major list view supports search:
 - Language switching is instant — the entire UI rebuilds in the selected language
 - Type-safe localization keys prevent key typos at compile time
 
+### iCloud Sync
+- **Automatic CloudKit sync** — all data (projects, expenses, invoices, clients, workers) syncs across devices via iCloud
+- Uses SwiftData's built-in CloudKit integration (`cloudKitDatabase: .automatic`)
+- All model attributes have CloudKit-compatible default values; all relationships are optional
+- Graceful fallback to local-only storage if CloudKit is unavailable
+- Requires iCloud account with iCloud Drive enabled on each device
+
 ---
 
 ## Screenshots
@@ -112,7 +120,8 @@ Every major list view supports search:
 - iOS 17.0+
 - Xcode 15.0+
 - Swift 5.9+
-- Apple Developer account (for push notifications on device)
+- Apple Developer account (for push notifications and CloudKit sync)
+- iCloud account with iCloud Drive enabled (for cross-device sync)
 
 ---
 
@@ -144,6 +153,7 @@ Every major list view supports search:
 |-------|-----------|
 | UI Framework | SwiftUI |
 | Persistence | SwiftData (`@Model`) |
+| Cloud Sync | CloudKit (via `ModelConfiguration.cloudKitDatabase`) |
 | Charts | Swift Charts (`SectorMark`, `BarMark`) |
 | State Management | `@Observable` (Observation framework) |
 | Notifications | `UNUserNotificationCenter` |
@@ -203,7 +213,7 @@ Every major list view supports search:
 
 ```
 ContractorCashFlow/
-├── ContractorCashFlowApp.swift          # App entry point, ModelContainer setup
+├── ContractorCashFlowApp.swift          # App entry point, ModelContainer + CloudKit setup
 ├── ContentView.swift                     # Unused Xcode template
 ├── LanguageManager.swift                 # Runtime language switching, RTL support
 ├── LocalizationKeys.swift                # Type-safe localization keys + StorageKey
@@ -221,7 +231,7 @@ ContractorCashFlow/
 ├── Views/
 │   ├── ViewsRootTabView.swift            # Root 7-tab navigation
 │   ├── ViewsProjectsListView.swift       # Projects: list, detail, edit, new, charts, export
-│   ├── ViewsExpensesListView.swift       # Expenses: list, filters, new
+│   ├── ViewsExpensesListView.swift       # Expenses: list, filters, new, edit
 │   ├── ViewsInvoicesListView.swift       # Invoices: list, filters, edit, new
 │   ├── ViewsClientsListView.swift        # Clients: list, detail, edit, new
 │   ├── ViewsLaborListView.swift          # Labor: list, filters, summary cards
