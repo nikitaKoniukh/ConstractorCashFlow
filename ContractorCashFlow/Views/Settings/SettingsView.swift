@@ -271,7 +271,7 @@ private enum AppLanguageOption: String, CaseIterable, Identifiable {
     case hebrew = "he"
     case russian = "ru"
 
-    static let defaultCode = "en"
+    static let defaultCode = "he"
     static let defaultCurrency = StorageKey.defaultCurrencyCode
 
     var id: String { rawValue }

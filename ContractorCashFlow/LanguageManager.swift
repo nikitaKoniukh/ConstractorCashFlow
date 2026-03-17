@@ -71,13 +71,7 @@ final class LanguageManager {
            let language = SupportedLanguage(rawValue: savedLanguageCode) {
             self.currentLocale = language.locale
         } else {
-            // Try to match system language
-            let systemLanguage = Locale.current.language.languageCode?.identifier ?? "en"
-            if let matchedLanguage = SupportedLanguage(rawValue: systemLanguage) {
-                self.currentLocale = matchedLanguage.locale
-            } else {
-                self.currentLocale = SupportedLanguage.english.locale
-            }
+            self.currentLocale = SupportedLanguage.hebrew.locale
         }
     }
     
