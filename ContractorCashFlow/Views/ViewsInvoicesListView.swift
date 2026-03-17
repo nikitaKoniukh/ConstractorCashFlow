@@ -240,12 +240,13 @@ struct EditInvoiceView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
     @Environment(AppState.self) private var appState
+    @AppStorage(StorageKey.selectedCurrencyCode) private var currencyCode = StorageKey.defaultCurrencyCode
     @Query private var projects: [Project]
     @Query(sort: \Client.name) private var clients: [Client]
     
     @Bindable var invoice: Invoice
     
-    @State private var amount: String
+    @State private var amount: Double?
     @State private var clientName: String
     @State private var selectedClient: Client?
     @State private var useExistingClient: Bool
@@ -256,7 +257,7 @@ struct EditInvoiceView: View {
     
     init(invoice: Invoice) {
         self.invoice = invoice
-        _amount = State(initialValue: String(format: "%.2f", invoice.amount))
+        _amount = State(initialValue: invoice.amount > 0 ? invoice.amount : nil)
         _clientName = State(initialValue: invoice.clientName)
         _selectedClient = State(initialValue: nil)
         _useExistingClient = State(initialValue: false)
@@ -275,9 +276,7 @@ struct EditInvoiceView: View {
     
     private var isValid: Bool {
         !finalClientName.trimmingCharacters(in: .whitespaces).isEmpty &&
-        !amount.isEmpty &&
-        Double(amount) != nil &&
-        Double(amount)! > 0
+        (amount ?? 0) > 0
     }
     
     private func clientExists(name: String) -> Bool {
@@ -337,13 +336,7 @@ struct EditInvoiceView: View {
                     TextField(LocalizationKey.Invoice.clientName, text: $clientName)
                 }
                 
-                HStack {
-                    Text(LocalizationKey.Invoice.amount)
-                    Spacer()
-                    TextField("0.00", text: $amount)
-                        .keyboardType(.decimalPad)
-                        .multilineTextAlignment(.trailing)
-                }
+                CurrencyTextField(LocalizationKey.Invoice.amount, value: $amount, currencyCode: currencyCode)
                 
                 DatePicker(LocalizationKey.Invoice.dueDate, selection: $dueDate, displayedComponents: .date)
                 
@@ -380,6 +373,12 @@ struct EditInvoiceView: View {
                 }
                 .disabled(!isValid || isSaving)
             }
+            ToolbarItemGroup(placement: .keyboard) {
+                Spacer()
+                Button(LocalizationKey.Action.done) {
+                    UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                }
+            }
         }
         .onAppear {
             // Pre-select existing client if the invoice's clientName matches one
@@ -404,7 +403,7 @@ struct EditInvoiceView: View {
         }
         
         invoice.clientName = invoiceClientName
-        invoice.amount = Double(amount) ?? 0
+        invoice.amount = amount ?? 0
         invoice.dueDate = dueDate
         invoice.isPaid = isPaid
         invoice.project = selectedProject
@@ -531,8 +530,7 @@ struct NewInvoiceView: View {
                         TextField(LocalizationKey.Invoice.clientName, text: $clientName)
                     }
                     
-                    TextField(LocalizationKey.Invoice.amount, value: $amount, format: .currency(code: currencyCode))
-                        .keyboardType(.decimalPad)
+                    CurrencyTextField(LocalizationKey.Invoice.amount, value: $amount, currencyCode: currencyCode)
                     
                     DatePicker(LocalizationKey.Invoice.dueDate, selection: $dueDate, displayedComponents: .date)
                     
@@ -562,6 +560,12 @@ struct NewInvoiceView: View {
                         saveInvoice()
                     }
                     .disabled(!isValid || isSaving)
+                }
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    Button(LocalizationKey.Action.done) {
+                        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                    }
                 }
             }
         }

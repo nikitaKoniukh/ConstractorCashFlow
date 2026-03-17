@@ -19,7 +19,7 @@ struct EditLaborView: View {
     // Form state
     @State private var workerName: String
     @State private var laborType: LaborType
-    @State private var rate: String
+    @State private var rate: Double?
     @State private var notes: String
     @State private var showDeleteConfirmation = false
     
@@ -33,7 +33,7 @@ struct EditLaborView: View {
         self.labor = labor
         _workerName = State(initialValue: labor.workerName)
         _laborType = State(initialValue: labor.laborType)
-        _rate = State(initialValue: labor.rate.map { String(format: "%.2f", $0) } ?? "")
+        _rate = State(initialValue: labor.rate)
         _notes = State(initialValue: labor.notes ?? "")
     }
     
@@ -57,10 +57,8 @@ struct EditLaborView: View {
                     HStack {
                         Text(laborType.rateLabel)
                         Spacer()
-                        TextField("0.00", text: $rate)
-                            .keyboardType(.decimalPad)
+                        CurrencyTextField("0.00", value: $rate, currencyCode: currencyCode)
                             .multilineTextAlignment(.trailing)
-                            .focused($focusedField, equals: .rate)
                     }
                 }
                 
@@ -155,6 +153,7 @@ struct EditLaborView: View {
                     Spacer()
                     Button(LocalizationKey.General.done) {
                         focusedField = nil
+                        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
                     }
                 }
             }
@@ -187,7 +186,7 @@ struct EditLaborView: View {
         
         labor.workerName = workerName.trimmingCharacters(in: .whitespaces)
         labor.laborType = laborType
-        labor.rate = Double(rate)
+        labor.rate = rate
         labor.notes = notes.isEmpty ? nil : notes
         
         do {

@@ -12,13 +12,14 @@ struct AddLaborView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
     @Environment(AppState.self) private var appState
+    @AppStorage(StorageKey.selectedCurrencyCode) private var currencyCode = StorageKey.defaultCurrencyCode
     
     @Query private var existingWorkers: [LaborDetails]
     
     // Form state
     @State private var workerName: String = ""
     @State private var laborType: LaborType = .hourly
-    @State private var rate: String = ""
+    @State private var rate: Double?
     @State private var notes: String = ""
     
     @FocusState private var focusedField: Field?
@@ -59,10 +60,8 @@ struct AddLaborView: View {
                     HStack {
                         Text(laborType.rateLabel)
                         Spacer()
-                        TextField("0.00", text: $rate)
-                            .keyboardType(.decimalPad)
+                        CurrencyTextField("0.00", value: $rate, currencyCode: currencyCode)
                             .multilineTextAlignment(.trailing)
-                            .focused($focusedField, equals: .rate)
                     }
                     
                     Text(LocalizationKey.Labor.defaultRateHint)
@@ -97,6 +96,7 @@ struct AddLaborView: View {
                     Spacer()
                     Button(LocalizationKey.General.done) {
                         focusedField = nil
+                        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
                     }
                 }
             }
@@ -112,12 +112,10 @@ struct AddLaborView: View {
     private func saveWorker() {
         guard isFormValid else { return }
         
-        let parsedRate = Double(rate)
-        
         let worker = LaborDetails(
             workerName: workerName.trimmingCharacters(in: .whitespaces),
             laborType: laborType,
-            rate: parsedRate,
+            rate: rate,
             notes: notes.isEmpty ? nil : notes
         )
         

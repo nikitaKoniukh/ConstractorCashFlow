@@ -332,6 +332,7 @@ struct NewExpenseView: View {
     // Labor-specific fields
     @State private var selectedWorker: LaborDetails?
     @State private var unitsWorked: String = ""
+    @FocusState private var isAmountFieldFocused: Bool
     
     private var isValid: Bool {
         !descriptionText.isEmpty && (amount ?? 0) > 0
@@ -391,6 +392,7 @@ struct NewExpenseView: View {
                                     TextField("0.0", text: $unitsWorked)
                                         .keyboardType(.decimalPad)
                                         .multilineTextAlignment(.trailing)
+                                        .focused($isAmountFieldFocused)
                                         .onChange(of: unitsWorked) {
                                             if let calc = calculatedAmount {
                                                 amount = calc
@@ -426,8 +428,7 @@ struct NewExpenseView: View {
                         }
                     }
                     
-                    TextField(LocalizationKey.Expense.amount, value: $amount, format: .currency(code: currencyCode))
-                        .keyboardType(.decimalPad)
+                    CurrencyTextField(LocalizationKey.Expense.amount, value: $amount, currencyCode: currencyCode)
                     
                     TextField(LocalizationKey.Expense.description, text: $descriptionText)
                     
@@ -461,6 +462,13 @@ struct NewExpenseView: View {
                         saveExpense()
                     }
                     .disabled(!isValid || isSaving)
+                }
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    Button(LocalizationKey.Action.done) {
+                        isAmountFieldFocused = false
+                        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                    }
                 }
             }
             .onChange(of: category) {
@@ -540,6 +548,7 @@ struct EditExpenseView: View {
     // Labor-specific fields
     @State private var selectedWorker: LaborDetails?
     @State private var unitsWorked: String
+    @FocusState private var isAmountFieldFocused: Bool
     
     init(expense: Expense) {
         self.expense = expense
@@ -605,6 +614,7 @@ struct EditExpenseView: View {
                                     TextField("0.0", text: $unitsWorked)
                                         .keyboardType(.decimalPad)
                                         .multilineTextAlignment(.trailing)
+                                        .focused($isAmountFieldFocused)
                                         .onChange(of: unitsWorked) {
                                             if let calc = calculatedAmount {
                                                 amount = calc
@@ -639,8 +649,7 @@ struct EditExpenseView: View {
                         }
                     }
                     
-                    TextField(LocalizationKey.Expense.amount, value: $amount, format: .currency(code: currencyCode))
-                        .keyboardType(.decimalPad)
+                    CurrencyTextField(LocalizationKey.Expense.amount, value: $amount, currencyCode: currencyCode)
                     
                     TextField(LocalizationKey.Expense.description, text: $descriptionText)
                     
@@ -674,6 +683,13 @@ struct EditExpenseView: View {
                         saveChanges()
                     }
                     .disabled(!isValid || isSaving)
+                }
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    Button(LocalizationKey.Action.done) {
+                        isAmountFieldFocused = false
+                        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                    }
                 }
             }
             .onChange(of: category) {

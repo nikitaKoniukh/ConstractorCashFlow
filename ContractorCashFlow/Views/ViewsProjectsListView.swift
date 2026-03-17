@@ -168,9 +168,9 @@ struct ProjectRow: View {
                 Label("\(project.totalIncome, format: .currency(code: currencyCode))", systemImage: "arrow.up")
                     .font(.caption)
                     .foregroundStyle(.green)
-                
-                Spacer()
-                
+            }
+            
+            HStack {
                 Text("\(LocalizationKey.Project.balanceString): \(project.balance, format: .currency(code: currencyCode))")
                     .font(.caption)
                     .foregroundStyle(project.balance >= 0 ? .green : .red)
@@ -733,8 +733,7 @@ struct EditProjectView: View {
                 }
                 
                 Section("Budget") {
-                    TextField("Budget", value: $budget, format: .currency(code: currencyCode))
-                        .keyboardType(.decimalPad)
+                    CurrencyTextField("Budget", value: $budget, currencyCode: currencyCode)
                     
                     if (budget ?? 0) < project.totalExpenses {
                         Label {
@@ -779,6 +778,12 @@ struct EditProjectView: View {
                         saveChanges()
                     }
                     .disabled(!isValid || !hasChanges || isSaving)
+                }
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    Button(LocalizationKey.Action.done) {
+                        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                    }
                 }
             }
         }
@@ -1098,8 +1103,7 @@ struct NewProjectView: View {
                 }
                 
                 Section(LocalizationKey.Project.budget) {
-                    TextField(LocalizationKey.Project.budget, value: $budget, format: .currency(code: currencyCode))
-                        .keyboardType(.decimalPad)
+                    CurrencyTextField(LocalizationKey.Project.budget, value: $budget, currencyCode: currencyCode)
                 }
                 
                 Section {
@@ -1120,6 +1124,12 @@ struct NewProjectView: View {
                         saveProject()
                     }
                     .disabled(!isValid || isSaving)
+                }
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    Button(LocalizationKey.Action.done) {
+                        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                    }
                 }
             }
         }
