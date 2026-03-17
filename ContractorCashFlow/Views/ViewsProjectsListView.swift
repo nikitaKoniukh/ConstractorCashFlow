@@ -23,7 +23,7 @@ struct ProjectsListView: View {
             .navigationDestination(for: Project.self) { project in
                 ProjectDetailView(project: project)
             }
-            .searchable(text: $searchText, prompt: "Search by name or client")
+            .searchable(text: $searchText, prompt: LocalizationKey.Project.searchPrompt)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     EditButton()
@@ -46,13 +46,17 @@ struct ProjectsListView: View {
             )) {
                 NewProjectView()
             }
-            .alert("Error", isPresented: Binding(
+            .alert(LocalizationKey.General.error, isPresented: Binding(
                 get: { appState.isShowingError },
                 set: { appState.isShowingError = $0 }
             )) {
-                Button("OK", role: .cancel) { }
+                Button(LocalizationKey.General.ok, role: .cancel) { }
             } message: {
-                Text(appState.errorMessage ?? "An error occurred")
+                if let errorMessage = appState.errorMessage {
+                    Text(errorMessage)
+                } else {
+                    Text(LocalizationKey.General.genericError)
+                }
             }
             .sheet(isPresented: $isShowingPaywall) {
                 PaywallView(limitReachedMessage: LocalizationKey.Subscription.projectLimitReached)
@@ -99,16 +103,15 @@ private struct ProjectsListContent: View {
         .overlay {
             if projects.isEmpty {
                 if searchText.isEmpty {
-                    // Enhanced empty state with CTA button
                     ContentUnavailableView {
-                        Label("No Projects", systemImage: "folder.badge.plus")
+                        Label(LocalizationKey.Project.empty, systemImage: "folder.badge.plus")
                     } description: {
-                        Text("Add your first project to get started tracking expenses and invoices")
+                        Text(LocalizationKey.Project.emptyDescription)
                     } actions: {
                         Button {
                             appState.isShowingNewProject = true
                         } label: {
-                            Text("Add Project")
+                            Text(LocalizationKey.Project.add)
                         }
                         .buttonStyle(.borderedProminent)
                     }
@@ -126,7 +129,7 @@ private struct ProjectsListContent: View {
                     modelContext.delete(projects[index])
                     try modelContext.save()
                 } catch {
-                    appState.showError("Failed to delete project: \(error.localizedDescription)")
+                    appState.showError(String(format: LocalizationKey.General.failedToDeleteProject, error.localizedDescription))
                 }
             }
         }
@@ -221,25 +224,25 @@ struct ProjectDetailView: View {
                 LabeledContent(LocalizationKey.Project.budget) {
                     Text(project.budget, format: .currency(code: currencyCode))
                 }
-                LabeledContent("Status") {
+                LabeledContent(LocalizationKey.Project.status) {
                     HStack {
                         Circle()
                             .fill(project.isActive ? Color.green : Color.gray)
                             .frame(width: 8, height: 8)
-                        Text(project.isActive ? "Active" : "Inactive")
+                        Text(project.isActive ? LocalizationKey.Project.active : LocalizationKey.Project.inactive)
                             .foregroundStyle(project.isActive ? .primary : .secondary)
                     }
                 }
-                LabeledContent("Created") {
+                LabeledContent(LocalizationKey.Project.created) {
                     Text(project.createdDate, style: .date)
                 }
             }
             
             // Budget Utilization Section
-            Section("Budget Utilization") {
+            Section(LocalizationKey.Project.budgetUtilizationTitle) {
                 VStack(alignment: .leading, spacing: 12) {
                     HStack {
-                        Text("Spent")
+                        Text(LocalizationKey.Project.spent)
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                         Spacer()
@@ -249,14 +252,14 @@ struct ProjectDetailView: View {
                     }
                     
                     ProgressView(value: min(project.budgetUtilization, 100), total: 100) {
-                        Text("\(project.budgetUtilization, format: .number.precision(.fractionLength(1)))% of budget")
+                        Text(String(format: LocalizationKey.Project.budgetUsedFormat, project.budgetUtilization.formatted(.number.precision(.fractionLength(1)))))
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
                     .tint(budgetColor(for: project.budgetUtilization))
                     
                     HStack {
-                        Text("Remaining")
+                        Text(LocalizationKey.Project.remaining)
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                         Spacer()
@@ -271,7 +274,7 @@ struct ProjectDetailView: View {
             
             // Expenses by Category Chart
             if !project.safeExpenses.isEmpty {
-                Section("Expenses by Category") {
+                Section(LocalizationKey.Analytics.expensesByCategory) {
                     ExpenseCategoryChart(expenses: project.safeExpenses)
                         .frame(height: 200)
                 }
@@ -281,7 +284,7 @@ struct ProjectDetailView: View {
             Section {
                 if project.safeExpenses.isEmpty {
                     VStack(spacing: 12) {
-                        Text("No expenses recorded")
+                        Text(LocalizationKey.Project.noExpensesRecorded)
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                         
@@ -293,7 +296,7 @@ struct ProjectDetailView: View {
                                 isShowingPaywall = true
                             }
                         } label: {
-                            Label("Add First Expense", systemImage: "plus.circle.fill")
+                            Label(LocalizationKey.Project.addFirstExpense, systemImage: "plus.circle.fill")
                         }
                         .buttonStyle(.bordered)
                     }
@@ -311,7 +314,7 @@ struct ProjectDetailView: View {
                 }
             } header: {
                 HStack {
-                    Text("Expenses")
+                    Text(LocalizationKey.Expense.title)
                     Spacer()
                     if !project.safeExpenses.isEmpty {
                         Button {
@@ -336,7 +339,7 @@ struct ProjectDetailView: View {
             Section {
                 if project.safeInvoices.isEmpty {
                     VStack(spacing: 12) {
-                        Text("No invoices created")
+                        Text(LocalizationKey.Project.noInvoicesCreated)
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                         
@@ -348,7 +351,7 @@ struct ProjectDetailView: View {
                                 isShowingPaywall = true
                             }
                         } label: {
-                            Label("Add First Invoice", systemImage: "plus.circle.fill")
+                            Label(LocalizationKey.Project.addFirstInvoice, systemImage: "plus.circle.fill")
                         }
                         .buttonStyle(.bordered)
                     }
@@ -362,7 +365,7 @@ struct ProjectDetailView: View {
                 }
             } header: {
                 HStack {
-                    Text("Invoices")
+                    Text(LocalizationKey.Project.invoices)
                     Spacer()
                     if !project.safeInvoices.isEmpty {
                         Button {
@@ -383,7 +386,7 @@ struct ProjectDetailView: View {
                             .foregroundStyle(.green)
                         if project.safeInvoices.count > 0 {
                             let paidCount = project.safeInvoices.filter { $0.isPaid }.count
-                            Text("\(paidCount)/\(project.safeInvoices.count) paid")
+                            Text(String(format: LocalizationKey.Project.paidCountFormat, paidCount, project.safeInvoices.count))
                                 .font(.caption2)
                                 .foregroundStyle(.secondary)
                         }
@@ -402,13 +405,13 @@ struct ProjectDetailView: View {
                     Button {
                         isShowingEditSheet = true
                     } label: {
-                        Label("Edit Project", systemImage: "pencil")
+                        Label(LocalizationKey.Project.editProject, systemImage: "pencil")
                     }
                     
                     Button {
                         isShowingShareSheet = true
                     } label: {
-                        Label("Export & Share", systemImage: "square.and.arrow.up")
+                        Label(LocalizationKey.Project.exportAndShare, systemImage: "square.and.arrow.up")
                     }
                     
                     Divider()
@@ -421,7 +424,7 @@ struct ProjectDetailView: View {
                             isShowingPaywall = true
                         }
                     } label: {
-                        Label("Add Expense", systemImage: "arrow.down.circle")
+                        Label(LocalizationKey.Expense.add, systemImage: "arrow.down.circle")
                     }
                     
                     Button {
@@ -432,7 +435,7 @@ struct ProjectDetailView: View {
                             isShowingPaywall = true
                         }
                     } label: {
-                        Label("Add Invoice", systemImage: "arrow.up.circle")
+                        Label(LocalizationKey.Invoice.add, systemImage: "arrow.up.circle")
                     }
                 } label: {
                     Image(systemName: "ellipsis.circle")
@@ -481,7 +484,7 @@ struct ProjectDetailView: View {
                 modelContext.delete(expense)
                 try modelContext.save()
             } catch {
-                appState.showError("Failed to delete expense: \(error.localizedDescription)")
+                appState.showError(String(format: LocalizationKey.General.failedToDeleteExpense, error.localizedDescription))
             }
         }
     }
@@ -501,7 +504,7 @@ struct ProjectDetailView: View {
                 modelContext.delete(invoice)
                 try modelContext.save()
             } catch {
-                appState.showError("Failed to delete invoice: \(error.localizedDescription)")
+                appState.showError(String(format: LocalizationKey.General.failedToDeleteInvoice, error.localizedDescription))
             }
         }
     }
@@ -516,7 +519,7 @@ struct FinancialSummaryCard: View {
         VStack(spacing: 16) {
             // Balance
             VStack(spacing: 4) {
-                Text("Net Balance")
+                Text(LocalizationKey.Project.netBalance)
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                 Text(project.balance, format: .currency(code: currencyCode))
@@ -530,7 +533,7 @@ struct FinancialSummaryCard: View {
             HStack(spacing: 32) {
                 VStack(spacing: 8) {
                     Label {
-                        Text("Income")
+                        Text(LocalizationKey.Analytics.income)
                             .font(.subheadline)
                     } icon: {
                         Image(systemName: "arrow.up.circle.fill")
@@ -544,7 +547,7 @@ struct FinancialSummaryCard: View {
                 
                 VStack(spacing: 8) {
                     Label {
-                        Text("Expenses")
+                        Text(LocalizationKey.Analytics.expenses)
                             .font(.subheadline)
                     } icon: {
                         Image(systemName: "arrow.down.circle.fill")
@@ -562,7 +565,7 @@ struct FinancialSummaryCard: View {
                 Divider()
                 
                 HStack {
-                    Text("Profit Margin")
+                    Text(LocalizationKey.Project.profitMargin)
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                     Spacer()
@@ -630,10 +633,10 @@ struct InvoiceRowView: View {
         return .orange
     }
     
-    private var statusText: String {
-        if invoice.isPaid { return "Paid" }
-        if invoice.isOverdue { return "Overdue" }
-        return "Pending"
+    private var statusText: LocalizedStringKey {
+        if invoice.isPaid { return LocalizationKey.Invoice.paid }
+        if invoice.isOverdue { return LocalizationKey.Invoice.overdue }
+        return LocalizationKey.Invoice.pending
     }
     
     var body: some View {
@@ -647,7 +650,7 @@ struct InvoiceRowView: View {
             .frame(width: 32)
             
             VStack(alignment: .leading, spacing: 4) {
-                Text("Invoice to \(invoice.clientName)")
+                Text(String(format: LocalizationKey.Project.invoiceToFormat, invoice.clientName))
                     .font(.subheadline)
                     .fontWeight(.medium)
                 HStack(spacing: 8) {
@@ -657,7 +660,7 @@ struct InvoiceRowView: View {
                     Text("•")
                         .font(.caption)
                         .foregroundStyle(.secondary)
-                    Text("Due \(invoice.dueDate, style: .date)")
+                    Text(String(format: LocalizationKey.Project.dueFormat, invoice.dueDate.formatted(date: .abbreviated, time: .omitted)))
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }

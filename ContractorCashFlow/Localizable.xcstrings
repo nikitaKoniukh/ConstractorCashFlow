@@ -61,6 +61,24 @@
     "• %@" : {
 
     },
+    "$ USD" : {
+
+    },
+    "£ GBP" : {
+
+    },
+    "¥ JPY" : {
+
+    },
+    "₪ ILS" : {
+
+    },
+    "€ EUR" : {
+
+    },
+    "₽ RUB" : {
+
+    },
     "0.0" : {
 
     },
@@ -110,6 +128,9 @@
           }
         }
       }
+    },
+    "A$ AUD" : {
+
     },
     "action.add" : {
       "localizations" : {
@@ -266,6 +287,7 @@
       }
     },
     "Active" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -464,6 +486,7 @@
       }
     },
     "Add Project" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -508,6 +531,7 @@
       }
     },
     "Add your first project to get started tracking expenses and invoices" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -528,6 +552,9 @@
           }
         }
       }
+    },
+    "All" : {
+
     },
     "All Categories" : {
       "localizations" : {
@@ -550,6 +577,9 @@
           }
         }
       }
+    },
+    "An unexpected error occurred" : {
+
     },
     "analytics.averageUtilization" : {
       "localizations" : {
@@ -991,6 +1021,9 @@
         }
       }
     },
+    "Budget Alert: 100%" : {
+
+    },
     "Budget Utilization" : {
       "localizations" : {
         "en" : {
@@ -1012,6 +1045,9 @@
           }
         }
       }
+    },
+    "Budget Warning: 80%" : {
+
     },
     "Budget Warnings" : {
       "extractionState" : "stale",
@@ -1035,6 +1071,9 @@
           }
         }
       }
+    },
+    "C$ CAD" : {
+
     },
     "Cancel" : {
       "localizations" : {
@@ -1478,6 +1517,9 @@
         }
       }
     },
+    "ContractorCashFlow" : {
+
+    },
     "Create Project at 85% Budget" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -1856,6 +1898,9 @@
           }
         }
       }
+    },
+    "English" : {
+
     },
     "Enter Name" : {
       "localizations" : {
@@ -2298,6 +2343,7 @@
       }
     },
     "Expenses" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2320,6 +2366,7 @@
       }
     },
     "Expenses by Category" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2406,6 +2453,48 @@
           }
         }
       }
+    },
+    "Failed to delete client: %@" : {
+
+    },
+    "Failed to delete expense: %@" : {
+
+    },
+    "Failed to delete invoice: %@" : {
+
+    },
+    "Failed to delete project: %@" : {
+
+    },
+    "Failed to delete worker: %@" : {
+
+    },
+    "Failed to load products: %@" : {
+
+    },
+    "Failed to restore purchases: %@" : {
+
+    },
+    "Failed to save client: %@" : {
+
+    },
+    "Failed to save expense: %@" : {
+
+    },
+    "Failed to save invoice: %@" : {
+
+    },
+    "Failed to save worker: %@" : {
+
+    },
+    "Failed to update client: %@" : {
+
+    },
+    "Failed to update invoice: %@" : {
+
+    },
+    "Failed to update worker: %@" : {
+
     },
     "Filter" : {
       "localizations" : {
@@ -2716,6 +2805,7 @@
       }
     },
     "Income" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2759,6 +2849,32 @@
           }
         }
       }
+    },
+    "Invoice Due Soon" : {
+
+    },
+    "Invoice for %@ ($%@) is due in 3 days" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Invoice for %1$@ ($%2$@) is due in 3 days"
+          }
+        }
+      }
+    },
+    "Invoice for %@ ($%@) is now overdue" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Invoice for %1$@ ($%2$@) is now overdue"
+          }
+        }
+      }
+    },
+    "Invoice Overdue" : {
+
     },
     "Invoice Reminders" : {
       "extractionState" : "stale",
@@ -3266,6 +3382,9 @@
           }
         }
       }
+    },
+    "Labor: %@" : {
+
     },
     "labor.activeProjects" : {
       "localizations" : {
@@ -5629,7 +5748,14 @@
         }
       }
     },
+    "No matching expenses" : {
+
+    },
+    "No matching invoices" : {
+
+    },
     "No Projects" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -5742,6 +5868,9 @@
         }
       }
     },
+    "Overdue" : {
+
+    },
     "Overdue Alerts" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -5766,7 +5895,6 @@
       }
     },
     "Paid" : {
-      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -5897,6 +6025,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Маржа прибыли"
+          }
+        }
+      }
+    },
+    "Project '%@' has exceeded budget! Spent $%@ of $%@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Project '%1$@' has exceeded budget! Spent $%2$@ of $%3$@"
+          }
+        }
+      }
+    },
+    "Project '%@' has reached 80%% of budget ($%@ of $%@)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Project '%1$@' has reached 80%% of budget ($%2$@ of $%3$@)"
           }
         }
       }
@@ -7862,6 +8010,15 @@
           }
         }
       }
+    },
+    "Unpaid" : {
+
+    },
+    "Русский" : {
+
+    },
+    "עברית" : {
+
     }
   },
   "version" : "1.0"

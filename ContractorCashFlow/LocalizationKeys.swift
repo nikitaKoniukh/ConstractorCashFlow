@@ -35,6 +35,26 @@ enum LocalizationKey {
         static let emptyDescription = LocalizedStringKey("project.emptyDescription")
         static let balance = LocalizedStringKey("project.balance")
         static let balanceString = String(localized: "project.balance.label")
+        static let searchPrompt = LocalizedStringKey("Search by name or client")
+        static let status = LocalizedStringKey("Status")
+        static let inactive = LocalizedStringKey("Inactive")
+        static let created = LocalizedStringKey("Created")
+        static let budgetUtilizationTitle = LocalizedStringKey("Budget Utilization")
+        static let spent = LocalizedStringKey("Spent")
+        static let remaining = LocalizedStringKey("Remaining")
+        static let noExpensesRecorded = LocalizedStringKey("No expenses recorded")
+        static let addFirstExpense = LocalizedStringKey("Add First Expense")
+        static let noInvoicesCreated = LocalizedStringKey("No invoices created")
+        static let addFirstInvoice = LocalizedStringKey("Add First Invoice")
+        static let budgetUsedFormat = String(localized: "%@%% of budget")
+        static let invoices = LocalizedStringKey("Invoices")
+        static let editProject = LocalizedStringKey("Edit Project")
+        static let exportAndShare = LocalizedStringKey("Export & Share")
+        static let netBalance = LocalizedStringKey("Net Balance")
+        static let profitMargin = LocalizedStringKey("Profit Margin")
+        static let invoiceToFormat = String(localized: "Invoice to %@")
+        static let dueFormat = String(localized: "Due %@")
+        static let paidCountFormat = String(localized: "%lld/%lld paid")
     }
     
     // MARK: - Expenses
@@ -52,8 +72,23 @@ enum LocalizationKey {
         static let newTitle = LocalizedStringKey("expense.newTitle")
         static let empty = LocalizedStringKey("expense.empty")
         static let emptyDescription = LocalizedStringKey("expense.emptyDescription")
-        
-        // Categories
+        static let searchPrompt = LocalizedStringKey("Search expenses")
+        static let filters = LocalizedStringKey("Filters")
+        static let noMatchingExpenses = LocalizedStringKey("No matching expenses")
+        static let filterCategorySection = LocalizedStringKey("Category")
+        static let filterByCategory = LocalizedStringKey("Filter by Category")
+        static let allCategories = LocalizedStringKey("All Categories")
+        static let dateRange = LocalizedStringKey("Date Range")
+        static let startDate = LocalizedStringKey("Start Date")
+        static let from = LocalizedStringKey("From")
+        static let endDate = LocalizedStringKey("End Date")
+        static let to = LocalizedStringKey("To")
+        static let clearAllFilters = LocalizedStringKey("Clear All Filters")
+        static let filterExpensesTitle = LocalizedStringKey("Filter Expenses")
+        static let noResultsSearchFallback = String(localized: "No matching expenses")
+        static let decimalPlaceholder = String(localized: "0.00")
+        static let editTitle = LocalizedStringKey("Edit Expense")
+        static let laborDescriptionFormat = String(localized: "Labor: %@")
         static let materials = LocalizedStringKey("expense.category.materials")
         static let labor = LocalizedStringKey("expense.category.labor")
         static let equipment = LocalizedStringKey("expense.category.equipment")
@@ -75,15 +110,27 @@ enum LocalizationKey {
         static let newTitle = LocalizedStringKey("invoice.newTitle")
         static let editTitle = LocalizedStringKey("invoice.editTitle")
         static let pending = LocalizedStringKey("invoice.status.pending")
+        static let paid = LocalizedStringKey("invoice.status.paid")
+        static let unpaid = LocalizedStringKey("invoice.status.unpaid")
+        static let overdue = LocalizedStringKey("invoice.status.overdue")
         static let duePrefix = LocalizedStringKey("invoice.duePrefix")
         static let duePrefixString = String(localized: "invoice.duePrefix.label")
         static let empty = LocalizedStringKey("invoice.empty")
         static let emptyDescription = LocalizedStringKey("invoice.emptyDescription")
-        
-        // Status
-        static let paid = LocalizedStringKey("invoice.status.paid")
-        static let unpaid = LocalizedStringKey("invoice.status.unpaid")
-        static let overdue = LocalizedStringKey("invoice.status.overdue")
+        static let searchPrompt = LocalizedStringKey("Search invoices")
+        static let filter = LocalizedStringKey("Filter")
+        static let filterAll = LocalizedStringKey("All")
+        static let noMatchingInvoices = LocalizedStringKey("No matching invoices")
+        static let clientSource = LocalizedStringKey("Client Source")
+        static let enterName = LocalizedStringKey("Enter Name")
+        static let selectExisting = LocalizedStringKey("Select Existing")
+        static let selectClient = LocalizedStringKey("Select a client")
+        static let existingClientWarning = LocalizedStringKey("A client with this name already exists. Consider selecting from existing clients.")
+        static let decimalPlaceholder = String(localized: "0.00")
+        static let allLabel = String(localized: "All")
+        static let paidLabel = String(localized: "Paid")
+        static let unpaidLabel = String(localized: "Unpaid")
+        static let overdueLabel = String(localized: "Overdue")
     }
     
     // MARK: - Clients
@@ -100,6 +147,7 @@ enum LocalizationKey {
         static let editTitle = LocalizedStringKey("client.editTitle")
         static let empty = LocalizedStringKey("client.empty")
         static let emptyDescription = LocalizedStringKey("client.emptyDescription")
+        static let searchPrompt = LocalizedStringKey("Search by name, email, or phone")
     }
     
     // MARK: - Settings
@@ -122,6 +170,18 @@ enum LocalizationKey {
         static let aboutSection = LocalizedStringKey("settings.aboutSection")
         static let about = LocalizedStringKey("settings.about")
         static let appVersion = LocalizedStringKey("settings.appVersion")
+        static let languageEnglish = LocalizedStringKey("English")
+        static let languageHebrew = LocalizedStringKey("עברית")
+        static let languageRussian = LocalizedStringKey("Русский")
+        static let currencyUSD = LocalizedStringKey("$ USD")
+        static let currencyEUR = LocalizedStringKey("€ EUR")
+        static let currencyGBP = LocalizedStringKey("£ GBP")
+        static let currencyILS = LocalizedStringKey("₪ ILS")
+        static let currencyRUB = LocalizedStringKey("₽ RUB")
+        static let currencyJPY = LocalizedStringKey("¥ JPY")
+        static let currencyCAD = LocalizedStringKey("C$ CAD")
+        static let currencyAUD = LocalizedStringKey("A$ AUD")
+        static let appNameFallback = String(localized: "ContractorCashFlow")
     }
     
     // MARK: - Labor (Workers)
@@ -214,6 +274,11 @@ enum LocalizationKey {
         static let rateSuffixDaily = String(localized: "labor.rateSuffix.daily")
         static let unitHours = String(localized: "labor.unit.hours")
         static let unitDays = String(localized: "labor.unit.days")
+        static let duplicateWorkerWarning = LocalizedStringKey("A worker with this name already exists")
+        static let deleteWorkerTitle = LocalizedStringKey("Delete Worker")
+        static let deleteWorkerConfirmation = LocalizedStringKey("Are you sure you want to delete this worker?")
+        static let decimalPlaceholder = String(localized: "0.00")
+        static let linkedExpensesMessage = String(localized: "This worker has %lld linked expense(s). The expenses will remain but won't be linked to a worker.")
     }
     
     // MARK: - Common Actions
@@ -238,6 +303,21 @@ enum LocalizationKey {
         static let error = LocalizedStringKey("general.error")
         static let ok = LocalizedStringKey("general.ok")
         static let genericError = LocalizedStringKey("general.genericError")
+        static let unexpectedError = LocalizedStringKey("An unexpected error occurred")
+        static let failedToLoadProducts = String(localized: "Failed to load products: %@")
+        static let failedToRestorePurchases = String(localized: "Failed to restore purchases: %@")
+        static let failedToDeleteProject = String(localized: "Failed to delete project: %@")
+        static let failedToDeleteInvoice = String(localized: "Failed to delete invoice: %@")
+        static let failedToDeleteClient = String(localized: "Failed to delete client: %@")
+        static let failedToUpdateClient = String(localized: "Failed to update client: %@")
+        static let failedToSaveWorker = String(localized: "Failed to save worker: %@")
+        static let failedToUpdateWorker = String(localized: "Failed to update worker: %@")
+        static let failedToDeleteWorker = String(localized: "Failed to delete worker: %@")
+        static let failedToDeleteExpense = String(localized: "Failed to delete expense: %@")
+        static let failedToSaveExpense = String(localized: "Failed to save expense: %@")
+        static let failedToUpdateInvoice = String(localized: "Failed to update invoice: %@")
+        static let failedToSaveInvoice = String(localized: "Failed to save invoice: %@")
+        static let failedToSaveClient = String(localized: "Failed to save client: %@")
     }
     
     // MARK: - Analytics
@@ -301,6 +381,26 @@ enum LocalizationKey {
         static let termsOfService = LocalizedStringKey("subscription.termsOfService")
         static let privacyPolicy = LocalizedStringKey("subscription.privacyPolicy")
         static let subscriptionSection = LocalizedStringKey("subscription.section")
+        static let freeLimitFormat = String(localized: "Free: %@")
+    }
+    
+    // MARK: - Notification
+    enum Notification {
+        static let invoiceDueSoonTitle = String(localized: "Invoice Due Soon")
+        static let invoiceDueSoonBody = String(localized: "Invoice for %@ ($%@) is due in 3 days")
+        static let invoiceOverdueTitle = String(localized: "Invoice Overdue")
+        static let invoiceOverdueBody = String(localized: "Invoice for %@ ($%@) is now overdue")
+        static let budgetWarning80Title = String(localized: "Budget Warning: 80%")
+        static let budgetWarning80Body = String(localized: "Project '%@' has reached 80%% of budget ($%@ of $%@)")
+        static let budgetWarning100Title = String(localized: "Budget Alert: 100%")
+        static let budgetWarning100Body = String(localized: "Project '%@' has exceeded budget! Spent $%@ of $%@")
+    }
+    
+    // MARK: - Content
+    enum Content {
+        static let itemAt = String(localized: "Item at %@")
+        static let addItem = LocalizedStringKey("Add Item")
+        static let selectItem = LocalizedStringKey("Select an item")
     }
     
     // MARK: - Tab Bar
@@ -327,4 +427,3 @@ enum StorageKey {
         static let budgetWarnings = "settings.notifications.budgetWarnings"
     }
 }
-

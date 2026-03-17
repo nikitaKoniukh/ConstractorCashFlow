@@ -161,7 +161,11 @@ struct PaywallView: View {
             .alert(LocalizationKey.General.error, isPresented: $showError) {
                 Button(LocalizationKey.General.ok, role: .cancel) { }
             } message: {
-                Text(purchaseManager.errorMessage ?? "An unexpected error occurred")
+                if let errorMessage = purchaseManager.errorMessage {
+                    Text(errorMessage)
+                } else {
+                    Text(LocalizationKey.General.unexpectedError)
+                }
             }
             .onAppear {
                 // Pre-select yearly (best value)
@@ -208,7 +212,7 @@ private struct PaywallFeatureRow: View {
                     .font(.caption)
                     .fontWeight(.semibold)
                     .foregroundStyle(.green)
-                Text("Free: \(freeLimit)")
+                Text(String(format: LocalizationKey.Subscription.freeLimitFormat, freeLimit))
                     .font(.caption2)
                     .foregroundStyle(.secondary)
             }

@@ -28,11 +28,11 @@ final class LanguageManager {
         
         var id: String { rawValue }
         
-        var displayName: String {
+        var displayName: LocalizedStringKey {
             switch self {
-            case .english: return "English"
-            case .hebrew: return "עברית"
-            case .russian: return "Русский"
+            case .english: return LocalizationKey.Settings.languageEnglish
+            case .hebrew: return LocalizationKey.Settings.languageHebrew
+            case .russian: return LocalizationKey.Settings.languageRussian
             }
         }
         

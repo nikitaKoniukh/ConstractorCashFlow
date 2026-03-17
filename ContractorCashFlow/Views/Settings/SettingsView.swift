@@ -184,7 +184,7 @@ struct SettingsView: View {
     private var appDisplayName: String {
         Bundle.main.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String
         ?? Bundle.main.object(forInfoDictionaryKey: "CFBundleName") as? String
-        ?? "ContractorCashFlow"
+        ?? LocalizationKey.Settings.appNameFallback
     }
 
     private var appVersionDescription: String {
@@ -252,16 +252,16 @@ private enum CurrencyOption: String, CaseIterable, Identifiable {
     var id: String { rawValue }
     var code: String { rawValue }
 
-    var displayName: String {
+    var displayName: LocalizedStringKey {
         switch self {
-        case .usd: return "$ USD"
-        case .eur: return "€ EUR"
-        case .gbp: return "£ GBP"
-        case .ils: return "₪ ILS"
-        case .rub: return "₽ RUB"
-        case .jpy: return "¥ JPY"
-        case .cad: return "C$ CAD"
-        case .aud: return "A$ AUD"
+        case .usd: return LocalizationKey.Settings.currencyUSD
+        case .eur: return LocalizationKey.Settings.currencyEUR
+        case .gbp: return LocalizationKey.Settings.currencyGBP
+        case .ils: return LocalizationKey.Settings.currencyILS
+        case .rub: return LocalizationKey.Settings.currencyRUB
+        case .jpy: return LocalizationKey.Settings.currencyJPY
+        case .cad: return LocalizationKey.Settings.currencyCAD
+        case .aud: return LocalizationKey.Settings.currencyAUD
         }
     }
 }
@@ -276,14 +276,14 @@ private enum AppLanguageOption: String, CaseIterable, Identifiable {
 
     var id: String { rawValue }
 
-    var displayName: String {
+    var displayName: LocalizedStringKey {
         switch self {
         case .english:
-            return "English"
+            return LocalizationKey.Settings.languageEnglish
         case .hebrew:
-            return "עברית"
+            return LocalizationKey.Settings.languageHebrew
         case .russian:
-            return "Русский"
+            return LocalizationKey.Settings.languageRussian
         }
     }
 }

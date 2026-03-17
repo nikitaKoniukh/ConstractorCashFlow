@@ -81,7 +81,7 @@ final class PurchaseManager {
                 p1.id == SubscriptionProduct.monthlyID
             }
         } catch {
-            errorMessage = "Failed to load products: \(error.localizedDescription)"
+            errorMessage = String(format: LocalizationKey.General.failedToLoadProducts, error.localizedDescription)
             print("StoreKit: Failed to load products: \(error)")
         }
     }
@@ -118,7 +118,7 @@ final class PurchaseManager {
             try await AppStore.sync()
             await checkCurrentEntitlements()
         } catch {
-            errorMessage = "Failed to restore purchases: \(error.localizedDescription)"
+            errorMessage = String(format: LocalizationKey.General.failedToRestorePurchases, error.localizedDescription)
             print("StoreKit: Failed to restore: \(error)")
         }
     }
