@@ -20,7 +20,7 @@ struct ClientsListView: View {
             .navigationDestination(for: Client.self) { client in
                 ClientDetailView(client: client)
             }
-            .searchable(text: $searchText, prompt: "Search by name, email, or phone")
+            .searchable(text: $searchText, prompt: LocalizationKey.ClientS.searchPrompt)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     EditButton()
@@ -39,13 +39,13 @@ struct ClientsListView: View {
             )) {
                 NewClientView()
             }
-            .alert("Error", isPresented: Binding(
+            .alert(LocalizationKey.General.error, isPresented: Binding(
                 get: { appState.isShowingError },
                 set: { appState.isShowingError = $0 }
             )) {
-                Button("OK", role: .cancel) { }
+                Button(LocalizationKey.General.ok, role: .cancel) { }
             } message: {
-                Text(appState.errorMessage ?? "An error occurred")
+                Text(appState.errorMessage ?? String(localized: "An error occurred"))
             }
         }
     }

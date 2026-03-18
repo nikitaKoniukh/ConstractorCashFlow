@@ -43,7 +43,7 @@ struct AddLaborView: View {
                         .focused($focusedField, equals: .workerName)
                     
                     if duplicateWarning {
-                        Label("A worker with this name already exists", systemImage: "exclamationmark.triangle.fill")
+                        Label(LocalizationKey.Labor.duplicateWorkerWarning, systemImage: "exclamationmark.triangle.fill")
                             .font(.caption)
                             .foregroundStyle(.orange)
                     }
@@ -125,7 +125,7 @@ struct AddLaborView: View {
             try modelContext.save()
             dismiss()
         } catch {
-            appState.showError("Failed to save worker: \(error.localizedDescription)")
+            appState.showError(String(format: LocalizationKey.General.failedToSaveWorker, error.localizedDescription))
         }
     }
 }

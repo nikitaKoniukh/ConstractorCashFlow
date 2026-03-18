@@ -91,7 +91,7 @@ struct EditExpenseView: View {
                                 HStack {
                                     Text(worker.laborType.quantityLabel)
                                     Spacer()
-                                    TextField("0.0", text: $unitsWorked)
+                                    TextField(LocalizationKey.Expense.decimalPlaceholder, text: $unitsWorked)
                                         .keyboardType(.decimalPad)
                                         .multilineTextAlignment(.trailing)
                                         .focused($isAmountFieldFocused)
@@ -149,7 +149,7 @@ struct EditExpenseView: View {
                     Text(LocalizationKey.Expense.project)
                 }
             }
-            .navigationTitle("Edit Expense")
+            .navigationTitle(LocalizationKey.Expense.editTitle)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -183,7 +183,7 @@ struct EditExpenseView: View {
     
     private func updateFromWorkerSelection() {
         if let worker = selectedWorker {
-            descriptionText = "Labor: \(worker.workerName)"
+            descriptionText = String(format: LocalizationKey.Expense.laborDescriptionFormat, worker.workerName)
             unitsWorked = ""
             if !worker.laborType.usesQuantity, let rate = worker.rate {
                 amount = rate
@@ -213,7 +213,7 @@ struct EditExpenseView: View {
             
             dismiss()
         } catch {
-            appState.showError("Failed to save expense: \(error.localizedDescription)")
+            appState.showError(String(format: LocalizationKey.General.failedToSaveExpense, error.localizedDescription))
             isSaving = false
         }
     }
