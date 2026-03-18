@@ -204,7 +204,6 @@ enum LocalizationKey {
         // Labor Types
         static let hourly = LocalizedStringKey("labor.type.hourly")
         static let daily = LocalizedStringKey("labor.type.daily")
-        static let contract = LocalizedStringKey("labor.type.contract")
         static let subcontractor = LocalizedStringKey("labor.type.subcontractor")
         
         // Rate (type-specific)

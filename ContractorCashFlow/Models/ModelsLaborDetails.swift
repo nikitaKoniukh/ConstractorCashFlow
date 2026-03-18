@@ -12,7 +12,6 @@ import SwiftData
 enum LaborType: String, Codable, CaseIterable {
     case hourly = "Hourly"
     case daily = "Daily"
-    case contract = "Contract"
     case subcontractor = "Subcontractor"
     
     var displayName: String {
@@ -21,8 +20,6 @@ enum LaborType: String, Codable, CaseIterable {
             return LocalizationKey.Labor.hourlyString
         case .daily:
             return LocalizationKey.Labor.dailyString
-        case .contract:
-            return LocalizationKey.Labor.contractString
         case .subcontractor:
             return LocalizationKey.Labor.subcontractorString
         }
@@ -34,8 +31,6 @@ enum LaborType: String, Codable, CaseIterable {
             return LocalizationKey.Labor.hourly
         case .daily:
             return LocalizationKey.Labor.daily
-        case .contract:
-            return LocalizationKey.Labor.contract
         case .subcontractor:
             return LocalizationKey.Labor.subcontractor
         }
@@ -45,7 +40,7 @@ enum LaborType: String, Codable, CaseIterable {
     var usesQuantity: Bool {
         switch self {
         case .hourly, .daily: return true
-        case .contract, .subcontractor: return false
+        case .subcontractor: return false
         }
     }
     
@@ -54,7 +49,6 @@ enum LaborType: String, Codable, CaseIterable {
         switch self {
         case .hourly: return LocalizationKey.Labor.ratePerHour
         case .daily: return LocalizationKey.Labor.ratePerDay
-        case .contract: return LocalizationKey.Labor.contractPrice
         case .subcontractor: return LocalizationKey.Labor.contractPrice
         }
     }
@@ -64,7 +58,7 @@ enum LaborType: String, Codable, CaseIterable {
         switch self {
         case .hourly: return LocalizationKey.Labor.rateSuffixHourly
         case .daily: return LocalizationKey.Labor.rateSuffixDaily
-        case .contract, .subcontractor: return ""
+        case .subcontractor: return ""
         }
     }
     
@@ -73,7 +67,7 @@ enum LaborType: String, Codable, CaseIterable {
         switch self {
         case .hourly: return LocalizationKey.Labor.hoursWorkedLabel
         case .daily: return LocalizationKey.Labor.daysWorkedLabel
-        case .contract, .subcontractor: return LocalizationKey.Labor.hoursWorkedLabel // unused
+        case .subcontractor: return LocalizationKey.Labor.hoursWorkedLabel // unused
         }
     }
     
@@ -82,7 +76,7 @@ enum LaborType: String, Codable, CaseIterable {
         switch self {
         case .hourly: return LocalizationKey.Labor.unitHours
         case .daily: return LocalizationKey.Labor.unitDays
-        case .contract, .subcontractor: return ""
+        case .subcontractor: return ""
         }
     }
 }
