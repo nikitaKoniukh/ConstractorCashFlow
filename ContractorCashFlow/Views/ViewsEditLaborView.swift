@@ -88,13 +88,6 @@ struct EditLaborView: View {
                             }
                         }
                         
-                        HStack {
-                            Text(LocalizationKey.Labor.totalDaysWorked)
-                            Spacer()
-                            Text("\(labor.totalDaysWorked)")
-                                .foregroundStyle(.secondary)
-                        }
-                        
                         if !labor.associatedProjects.isEmpty {
                             VStack(alignment: .leading, spacing: 4) {
                                 Text(LocalizationKey.Labor.associatedProjects)

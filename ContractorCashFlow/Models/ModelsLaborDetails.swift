@@ -133,13 +133,6 @@ final class LaborDetails {
         safeExpenses.compactMap { $0.unitsWorked }.reduce(0, +)
     }
     
-    /// Total number of distinct work days
-    var totalDaysWorked: Int {
-        let calendar = Calendar.current
-        let uniqueDays = Set(safeExpenses.map { calendar.startOfDay(for: $0.date) })
-        return uniqueDays.count
-    }
-    
     /// Projects this worker is associated with (derived from expenses)
     var associatedProjects: [Project] {
         let projects = safeExpenses.compactMap { $0.project }

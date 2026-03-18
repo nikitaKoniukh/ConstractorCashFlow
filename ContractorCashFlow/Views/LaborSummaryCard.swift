@@ -1,5 +1,5 @@
 //
-//  WorkerSummaryCard.swift
+//  LaborSummaryCard.swift
 //  ContractorCashFlow
 //
 //  Created by Nikita Koniukh on 18/03/2026.
@@ -8,7 +8,7 @@
 
 import SwiftUI
 
-struct WorkerSummaryCard: View {
+struct LaborSummaryCard: View {
     let workers: [LaborDetails]
     let selectedMonth: Date?
     @AppStorage(StorageKey.selectedCurrencyCode) private var currencyCode = StorageKey.defaultCurrencyCode
@@ -26,18 +26,18 @@ struct WorkerSummaryCard: View {
         relevantExpenses.reduce(0) { $0 + $1.amount }
     }
     
-    private var totalDaysWorked: Int {
-        let calendar = Calendar.current
-        let uniqueDays = Set(relevantExpenses.map { calendar.startOfDay(for: $0.date) })
-        return uniqueDays.count
-    }
-    
     private var totalHoursWorked: Double {
-        relevantExpenses.compactMap { $0.unitsWorked }.reduce(0, +)
+        relevantExpenses
+            .filter { $0.worker?.laborType == .hourly }
+            .compactMap { $0.unitsWorked }
+            .reduce(0, +)
     }
     
-    private var averageDailyCost: Double {
-        totalDaysWorked > 0 ? totalLaborCost / Double(totalDaysWorked) : 0
+    private var totalDaysWorked: Double {
+        relevantExpenses
+            .filter { $0.worker?.laborType == .daily }
+            .compactMap { $0.unitsWorked }
+            .reduce(0, +)
     }
     
     var body: some View {
@@ -49,10 +49,12 @@ struct WorkerSummaryCard: View {
                     Text(LocalizationKey.Labor.summaryAllTime)
                 }
             }
-            .font(.subheadline)
+            .font(.caption)
+            .fontWeight(.medium)
             .foregroundStyle(.secondary)
+            .textCase(.uppercase)
             
-            HStack {
+            HStack(spacing: 10) {
                 StatCardView(
                     title: LocalizationKey.Labor.totalLaborCost,
                     value: totalLaborCost.formatted(.currency(code: currencyCode)),
@@ -68,32 +70,31 @@ struct WorkerSummaryCard: View {
                 )
             }
             
-            HStack {
-                StatCardView(
-                    title: LocalizationKey.Labor.totalDaysWorked,
-                    value: "\(totalDaysWorked)",
-                    systemImage: "calendar",
-                    color: .orange
-                )
-                
-                StatCardView(
-                    title: LocalizationKey.Labor.avgDailyCost,
-                    value: averageDailyCost.formatted(.currency(code: currencyCode)),
-                    systemImage: "chart.line.uptrend.xyaxis",
-                    color: .green
-                )
-            }
-            
-            if totalHoursWorked > 0 {
-                HStack {
-                    StatCardView(
-                        title: LocalizationKey.Labor.totalHours,
-                        value: String(format: "%.1f", totalHoursWorked),
-                        systemImage: "clock.fill",
-                        color: .teal
-                    )
+            if totalDaysWorked > 0 || totalHoursWorked > 0 {
+                HStack(spacing: 10) {
+                    if totalDaysWorked > 0 {
+                        StatCardView(
+                            title: LocalizationKey.Labor.totalDaysLabel,
+                            value: "\(Int(totalDaysWorked))",
+                            systemImage: "calendar",
+                            color: .orange
+                        )
+                    }
                     
-                    Spacer()
+                    if totalHoursWorked > 0 {
+                        StatCardView(
+                            title: LocalizationKey.Labor.totalHours,
+                            value: "\(Int(totalHoursWorked))",
+                            systemImage: "clock.fill",
+                            color: .teal
+                        )
+                    }
+                    
+                    // Fill remaining space if only one card is shown
+                    if (totalDaysWorked > 0) != (totalHoursWorked > 0) {
+                        Spacer()
+                            .frame(maxWidth: .infinity)
+                    }
                 }
             }
         }

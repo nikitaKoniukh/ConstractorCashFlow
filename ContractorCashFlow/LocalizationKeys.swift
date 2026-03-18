@@ -262,6 +262,7 @@ enum LocalizationKey {
         static let filterByMonthToggle = LocalizedStringKey("labor.filterByMonthToggle")
         static let selectMonth = LocalizedStringKey("labor.selectMonth")
         static let totalLaborCost = LocalizedStringKey("labor.totalLaborCost")
+        static let totalAmount = LocalizedStringKey("labor.totalAmount")
         static let avgDailyCost = LocalizedStringKey("labor.avgDailyCost")
         static let summaryAllTime = LocalizedStringKey("labor.summaryAllTime")
         
