@@ -277,37 +277,48 @@ struct ExpenseRow: View {
     @AppStorage(StorageKey.selectedCurrencyCode) private var currencyCode = StorageKey.defaultCurrencyCode
     
     var body: some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: 8) {
+            // Description and category badge
+            HStack(alignment: .center) {
                 Text(expense.descriptionText)
                     .font(.headline)
-                
-                HStack {
-                    Text(expense.category.displayName)
-                        .font(.caption)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 2)
-                        .background(Color.blue.opacity(0.2))
-                        .foregroundStyle(.blue)
-                        .clipShape(Capsule())
-                    
-                    if let project = expense.project {
-                        Text(project.name)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                }
-                
-                Text(expense.date, format: .dateTime.month().day().year())
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .lineLimit(2)
+                Spacer()
+                Text(expense.category.displayName)
+                    .font(.caption2)
+                    .fontWeight(.medium)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 3)
+                    .background(Color.blue.opacity(0.15))
+                    .foregroundStyle(.blue)
+                    .clipShape(Capsule())
             }
             
-            Spacer()
+            // Project name
+            if let project = expense.project {
+                Label(project.name, systemImage: "folder")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+            }
             
-            Text(expense.amount, format: .currency(code: currencyCode))
-                .font(.headline)
-                .foregroundStyle(.red)
+            // Date and amount
+            HStack {
+                Label {
+                    Text(expense.date, format: .dateTime.month().day().year())
+                } icon: {
+                    Image(systemName: "calendar")
+                }
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                
+                Spacer()
+                
+                Text(expense.amount, format: .currency(code: currencyCode))
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(.red)
+            }
         }
         .padding(.vertical, 4)
     }

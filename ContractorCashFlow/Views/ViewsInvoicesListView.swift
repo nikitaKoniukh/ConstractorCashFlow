@@ -192,44 +192,67 @@ struct InvoiceRow: View {
     let invoice: Invoice
     @AppStorage(StorageKey.selectedCurrencyCode) private var currencyCode = StorageKey.defaultCurrencyCode
     
+    private var statusColor: Color {
+        if invoice.isPaid { return .green }
+        if invoice.isOverdue { return .red }
+        return .orange
+    }
+    
+    private var statusText: LocalizedStringKey {
+        if invoice.isPaid { return LocalizationKey.Invoice.paid }
+        if invoice.isOverdue { return LocalizationKey.Invoice.overdue }
+        return LocalizationKey.Invoice.pending
+    }
+    
+    private var statusIcon: String {
+        if invoice.isPaid { return "checkmark.circle.fill" }
+        if invoice.isOverdue { return "exclamationmark.triangle.fill" }
+        return "clock.fill"
+    }
+    
     var body: some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: 8) {
+            // Client name and status badge
+            HStack(alignment: .center) {
                 Text(invoice.clientName)
                     .font(.headline)
-                
-                HStack {
-                    if invoice.isPaid {
-                        Label(LocalizationKey.Invoice.paid, systemImage: "checkmark.circle.fill")
-                            .font(.caption)
-                            .foregroundStyle(.green)
-                    } else if invoice.isOverdue {
-                        Label(LocalizationKey.Invoice.overdue, systemImage: "exclamationmark.triangle.fill")
-                            .font(.caption)
-                            .foregroundStyle(.red)
-                    } else {
-                        Label(LocalizationKey.Invoice.pending, systemImage: "clock.fill")
-                            .font(.caption)
-                            .foregroundStyle(.orange)
-                    }
-                    
-                    if let project = invoice.project {
-                        Text("• \(project.name)")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                }
-                
-                Text("\(LocalizationKey.Invoice.duePrefixString): \(invoice.dueDate, format: .dateTime.month().day().year())")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .lineLimit(2)
+                Spacer()
+                Label(statusText, systemImage: statusIcon)
+                    .font(.caption2)
+                    .fontWeight(.medium)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 3)
+                    .background(statusColor.opacity(0.15))
+                    .foregroundStyle(statusColor)
+                    .clipShape(Capsule())
             }
             
-            Spacer()
+            // Project name
+            if let project = invoice.project {
+                Label(project.name, systemImage: "folder")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+            }
             
-            Text(invoice.amount, format: .currency(code: currencyCode))
-                .font(.headline)
-                .foregroundStyle(invoice.isPaid ? .green : .primary)
+            // Due date and amount
+            HStack {
+                Label {
+                    Text(invoice.dueDate, format: .dateTime.month().day().year())
+                } icon: {
+                    Image(systemName: "calendar")
+                }
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                
+                Spacer()
+                
+                Text(invoice.amount, format: .currency(code: currencyCode))
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(invoice.isPaid ? .green : .primary)
+            }
         }
         .padding(.vertical, 4)
     }
