@@ -72,3 +72,15 @@ final class Expense {
         self.unitsWorked = unitsWorked
     }
 }
+
+extension ExpenseCategory {
+    var iconName: String {
+        switch self {
+        case .materials: return "hammer.fill"
+        case .labor: return "person.fill"
+        case .equipment: return "wrench.and.screwdriver.fill"
+        case .subcontractor: return "person.2.badge.gearshape.fill"
+        case .misc: return "ellipsis.circle.fill"
+        }
+    }
+}

@@ -1,0 +1,222 @@
+//
+//  NewExpenseView.swift
+//  ContractorCashFlow
+//
+//  Created by Nikita Koniukh on 18/03/2026.
+//
+
+import SwiftUI
+import SwiftData
+
+struct NewExpenseView: View {
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var modelContext
+    @Environment(AppState.self) private var appState
+    @AppStorage(StorageKey.selectedCurrencyCode) private var currencyCode = StorageKey.defaultCurrencyCode
+    @Query private var projects: [Project]
+    @Query(sort: \LaborDetails.workerName) private var allWorkers: [LaborDetails]
+    
+    @State private var category: ExpenseCategory = .materials
+    @State private var amount: Double?
+    @State private var descriptionText: String = ""
+    @State private var date: Date = Date()
+    @State private var selectedProject: Project?
+    @State private var isSaving: Bool = false
+    
+    // Labor-specific fields
+    @State private var selectedWorker: LaborDetails?
+    @State private var unitsWorked: String = ""
+    @FocusState private var isAmountFieldFocused: Bool
+    
+    private var isValid: Bool {
+        !descriptionText.isEmpty && (amount ?? 0) > 0
+    }
+    
+    /// Auto-calculated amount from worker rate * units (hours or days)
+    private var calculatedAmount: Double? {
+        guard let worker = selectedWorker,
+              let rate = worker.rate,
+              rate > 0 else { return nil }
+        
+        if worker.laborType.usesQuantity {
+            // Hourly or Daily: rate × units
+            guard let units = Double(unitsWorked), units > 0 else { return nil }
+            return rate * units
+        } else {
+            // Contract / Subcontractor: fixed price
+            return rate
+        }
+    }
+    
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section {
+                    Picker(LocalizationKey.Expense.category, selection: $category) {
+                        ForEach(ExpenseCategory.allCases, id: \.self) { category in
+                            Text(category.localizedDisplayName).tag(category)
+                        }
+                    }
+                    
+                    // Show worker picker when labor category is chosen
+                    if category == .labor && !allWorkers.isEmpty {
+                        Picker(LocalizationKey.Labor.selectWorker, selection: $selectedWorker) {
+                            Text(LocalizationKey.Labor.selectWorkerPrompt).tag(nil as LaborDetails?)
+                            ForEach(allWorkers) { worker in
+                                HStack {
+                                    Text(worker.workerName)
+                                    if let rate = worker.rate {
+                                        Text("(\(rate.formatted(.currency(code: currencyCode)))\(worker.laborType.rateSuffix))")
+                                            .foregroundStyle(.secondary)
+                                    }
+                                }
+                                .tag(worker as LaborDetails?)
+                            }
+                        }
+                        .onChange(of: selectedWorker) {
+                            updateFromWorkerSelection()
+                        }
+                        
+                        if let worker = selectedWorker {
+                            if worker.laborType.usesQuantity {
+                                // Hourly / Daily: show quantity input
+                                HStack {
+                                    Text(worker.laborType.quantityLabel)
+                                    Spacer()
+                                    TextField("0.0", text: $unitsWorked)
+                                        .keyboardType(.decimalPad)
+                                        .multilineTextAlignment(.trailing)
+                                        .focused($isAmountFieldFocused)
+                                        .onChange(of: unitsWorked) {
+                                            if let calc = calculatedAmount {
+                                                amount = calc
+                                            }
+                                        }
+                                }
+                                
+                                if let calc = calculatedAmount {
+                                    HStack {
+                                        Text(LocalizationKey.Labor.calculatedTotal)
+                                            .foregroundStyle(.secondary)
+                                        Spacer()
+                                        Text(calc.formatted(.currency(code: currencyCode)))
+                                            .fontWeight(.semibold)
+                                            .foregroundStyle(.secondary)
+                                    }
+                                    .font(.subheadline)
+                                }
+                            } else {
+                                // Contract / Subcontractor: show the fixed price
+                                if let rate = worker.rate {
+                                    HStack {
+                                        Text(LocalizationKey.Labor.contractPrice)
+                                            .foregroundStyle(.secondary)
+                                        Spacer()
+                                        Text(rate.formatted(.currency(code: currencyCode)))
+                                            .fontWeight(.semibold)
+                                            .foregroundStyle(.secondary)
+                                    }
+                                    .font(.subheadline)
+                                }
+                            }
+                        }
+                    }
+                    
+                    CurrencyTextField(LocalizationKey.Expense.amount, value: $amount, currencyCode: currencyCode)
+                    
+                    TextField(LocalizationKey.Expense.description, text: $descriptionText)
+                    
+                    DatePicker(LocalizationKey.Expense.date, selection: $date, displayedComponents: .date)
+                } header: {
+                    Text(LocalizationKey.Expense.details)
+                }
+                
+                Section {
+                    Picker(LocalizationKey.Expense.projectOptional, selection: $selectedProject) {
+                        Text(LocalizationKey.Expense.none).tag(nil as Project?)
+                        ForEach(projects.filter { $0.isActive }) { project in
+                            Text(project.name).tag(project as Project?)
+                        }
+                    }
+                } header: {
+                    Text(LocalizationKey.Expense.project)
+                }
+            }
+            .navigationTitle(LocalizationKey.Expense.newTitle)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button(LocalizationKey.Action.cancel) {
+                        dismiss()
+                    }
+                    .disabled(isSaving)
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button(LocalizationKey.Action.save) {
+                        saveExpense()
+                    }
+                    .disabled(!isValid || isSaving)
+                }
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    Button(LocalizationKey.Action.done) {
+                        isAmountFieldFocused = false
+                        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                    }
+                }
+            }
+            .onChange(of: category) {
+                // Reset labor fields when switching away from labor category
+                if category != .labor {
+                    selectedWorker = nil
+                    unitsWorked = ""
+                }
+            }
+        }
+    }
+    
+    /// Updates description and amount when a worker is selected
+    private func updateFromWorkerSelection() {
+        if let worker = selectedWorker {
+            descriptionText = "Labor: \(worker.workerName)"
+            unitsWorked = ""
+            // For contract/subcontractor, auto-fill the amount from the fixed rate
+            if !worker.laborType.usesQuantity, let rate = worker.rate {
+                amount = rate
+            }
+        }
+    }
+    
+    private func saveExpense() {
+        isSaving = true
+        
+        let units = Double(unitsWorked)
+        
+        let expense = Expense(
+            category: category,
+            amount: amount ?? 0,
+            descriptionText: descriptionText,
+            date: date,
+            project: selectedProject,
+            worker: category == .labor ? selectedWorker : nil,
+            unitsWorked: category == .labor ? units : nil
+        )
+        
+        do {
+            modelContext.insert(expense)
+            try modelContext.save()
+            
+            // Check budget notifications if associated with a project
+            if let project = selectedProject {
+                Task {
+                    await NotificationService.shared.checkBudgetAndScheduleNotifications(for: project)
+                }
+            }
+            
+            dismiss()
+        } catch {
+            appState.showError("Failed to save expense: \(error.localizedDescription)")
+            isSaving = false
+        }
+    }
+}
