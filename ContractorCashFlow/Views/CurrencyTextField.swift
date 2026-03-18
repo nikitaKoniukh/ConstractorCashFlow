@@ -45,6 +45,7 @@ struct CurrencyTextField: View {
                 .foregroundStyle(.secondary)
             TextField(title, text: $text)
                 .keyboardType(.decimalPad)
+                .accessibilityLabel(title)
                 .onChange(of: text) { oldValue, newValue in
                     handleTextChange(oldValue: oldValue, newValue: newValue)
                 }

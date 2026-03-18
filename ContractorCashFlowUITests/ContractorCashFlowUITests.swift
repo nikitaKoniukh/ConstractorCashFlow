@@ -63,6 +63,19 @@ final class ContractorCashFlowUITests: XCTestCase {
         element.waitForExistence(timeout: timeout)
     }
     
+    /// Taps an element only after confirming it exists, skipping if not found.
+    private func tapIfExists(_ element: XCUIElement, timeout: TimeInterval = 5) {
+        guard element.waitForExistence(timeout: timeout) else { return }
+        element.tap()
+    }
+    
+    /// Types text into a field, waiting for it to exist first.
+    private func typeInField(_ element: XCUIElement, text: String, timeout: TimeInterval = 5) {
+        guard element.waitForExistence(timeout: timeout) else { return }
+        element.tap()
+        element.typeText(text)
+    }
+    
     // MARK: - Tab Navigation Tests
     
     @MainActor
@@ -150,31 +163,30 @@ final class ContractorCashFlowUITests: XCTestCase {
     @MainActor
     func testCreateNewProject() throws {
         tapTab("Projects")
-        app.navigationBars.buttons["Add Project"].tap()
+        XCTAssertTrue(app.navigationBars["Projects"].waitForExistence(timeout: 5))
+        tapIfExists(app.navigationBars.buttons["Add Project"])
         
-        XCTAssertTrue(app.navigationBars["New Project"].waitForExistence(timeout: 3))
+        XCTAssertTrue(app.navigationBars["New Project"].waitForExistence(timeout: 5))
         
         // Fill in form fields
-        let nameField = app.textFields["Project Name"]
-        nameField.tap()
-        nameField.typeText("Test Project")
+        typeInField(app.textFields["Project Name"], text: "Test Project")
         
         // Enter client name — might be a text field or picker
         let clientField = app.textFields["Client Name"]
-        if clientField.exists {
+        if clientField.waitForExistence(timeout: 2) {
             clientField.tap()
             clientField.typeText("Test Client")
         }
         
         // Enter budget (required for save to be enabled)
         let budgetField = app.textFields["Budget"]
-        if budgetField.exists {
+        if budgetField.waitForExistence(timeout: 2) {
             budgetField.tap()
             budgetField.typeText("10000")
         }
         
         // Save the project
-        app.buttons["Save"].tap()
+        tapIfExists(app.buttons["Save"])
         
         // Verify the project appears in the list
         XCTAssertTrue(app.staticTexts["Test Project"].waitForExistence(timeout: 5), "Created project should appear in the list")
@@ -184,26 +196,25 @@ final class ContractorCashFlowUITests: XCTestCase {
     func testProjectDetailView() throws {
         // First create a project
         tapTab("Projects")
-        app.navigationBars.buttons["Add Project"].tap()
-        XCTAssertTrue(app.navigationBars["New Project"].waitForExistence(timeout: 3))
+        XCTAssertTrue(app.navigationBars["Projects"].waitForExistence(timeout: 5))
+        tapIfExists(app.navigationBars.buttons["Add Project"])
+        XCTAssertTrue(app.navigationBars["New Project"].waitForExistence(timeout: 5))
         
-        let nameField = app.textFields["Project Name"]
-        nameField.tap()
-        nameField.typeText("Detail Test Project")
+        typeInField(app.textFields["Project Name"], text: "Detail Test Project")
         
         let clientField = app.textFields["Client Name"]
-        if clientField.exists {
+        if clientField.waitForExistence(timeout: 2) {
             clientField.tap()
             clientField.typeText("Detail Client")
         }
         
         let budgetField = app.textFields["Budget"]
-        if budgetField.exists {
+        if budgetField.waitForExistence(timeout: 2) {
             budgetField.tap()
             budgetField.typeText("5000")
         }
         
-        app.buttons["Save"].tap()
+        tapIfExists(app.buttons["Save"])
         
         // Wait for project to appear and tap it
         let projectCell = app.staticTexts["Detail Test Project"]
@@ -251,26 +262,27 @@ final class ContractorCashFlowUITests: XCTestCase {
     @MainActor
     func testCreateNewExpense() throws {
         tapTab("Expenses")
-        app.navigationBars.buttons["Add Expense"].tap()
+        XCTAssertTrue(app.navigationBars["Expenses"].waitForExistence(timeout: 5))
+        tapIfExists(app.navigationBars.buttons["Add Expense"])
         
-        XCTAssertTrue(app.navigationBars["New Expense"].waitForExistence(timeout: 3))
+        XCTAssertTrue(app.navigationBars["New Expense"].waitForExistence(timeout: 5))
         
         // Fill in amount
         let amountField = app.textFields["Amount"]
-        if amountField.exists {
+        if amountField.waitForExistence(timeout: 3) {
             amountField.tap()
             amountField.typeText("500")
         }
         
         // Fill in description
         let descriptionField = app.textFields["Description"]
-        if descriptionField.exists {
+        if descriptionField.waitForExistence(timeout: 3) {
             descriptionField.tap()
             descriptionField.typeText("Test Materials")
         }
         
         // Save
-        app.buttons["Save"].tap()
+        tapIfExists(app.buttons["Save"])
         
         // Verify the expense appears
         XCTAssertTrue(app.staticTexts["Test Materials"].waitForExistence(timeout: 5), "Created expense should appear in the list")
@@ -312,26 +324,27 @@ final class ContractorCashFlowUITests: XCTestCase {
     @MainActor
     func testCreateNewInvoice() throws {
         tapTab("Invoices")
-        app.navigationBars.buttons["Add Invoice"].tap()
+        XCTAssertTrue(app.navigationBars["Invoices"].waitForExistence(timeout: 5))
+        tapIfExists(app.navigationBars.buttons["Add Invoice"])
         
-        XCTAssertTrue(app.navigationBars["New Invoice"].waitForExistence(timeout: 3))
+        XCTAssertTrue(app.navigationBars["New Invoice"].waitForExistence(timeout: 5))
         
         // Enter client name
         let clientField = app.textFields["Client Name"]
-        if clientField.exists {
+        if clientField.waitForExistence(timeout: 3) {
             clientField.tap()
             clientField.typeText("Invoice Client")
         }
         
         // Enter amount
         let amountField = app.textFields["Amount"]
-        if amountField.exists {
+        if amountField.waitForExistence(timeout: 3) {
             amountField.tap()
             amountField.typeText("1000")
         }
         
         // Save
-        app.buttons["Save"].tap()
+        tapIfExists(app.buttons["Save"])
         
         // Verify the invoice appears
         XCTAssertTrue(app.staticTexts["Invoice Client"].waitForExistence(timeout: 5), "Created invoice should appear in the list")
@@ -460,17 +473,16 @@ final class ContractorCashFlowUITests: XCTestCase {
     @MainActor
     func testCreateNewWorker() throws {
         tapTab("Labor")
-        app.navigationBars.buttons["Add Labor"].tap()
+        XCTAssertTrue(app.navigationBars["Labor"].waitForExistence(timeout: 5))
+        tapIfExists(app.navigationBars.buttons["Add Labor"])
         
-        XCTAssertTrue(app.navigationBars["New Labor Entry"].waitForExistence(timeout: 3))
+        XCTAssertTrue(app.navigationBars["New Labor Entry"].waitForExistence(timeout: 5))
         
         // Fill in worker name
-        let nameField = app.textFields["Worker Name"]
-        nameField.tap()
-        nameField.typeText("Mike Builder")
+        typeInField(app.textFields["Worker Name"], text: "Mike Builder")
         
         // Save
-        app.buttons["Save"].tap()
+        tapIfExists(app.buttons["Save"])
         
         // Verify the worker appears
         XCTAssertTrue(app.staticTexts["Mike Builder"].waitForExistence(timeout: 5), "Created worker should appear in the list")
@@ -586,26 +598,25 @@ final class ContractorCashFlowUITests: XCTestCase {
     func testDeleteProject() throws {
         // Create a project first
         tapTab("Projects")
-        app.navigationBars.buttons["Add Project"].tap()
-        XCTAssertTrue(app.navigationBars["New Project"].waitForExistence(timeout: 3))
+        XCTAssertTrue(app.navigationBars["Projects"].waitForExistence(timeout: 5))
+        tapIfExists(app.navigationBars.buttons["Add Project"])
+        XCTAssertTrue(app.navigationBars["New Project"].waitForExistence(timeout: 5))
         
-        let nameField = app.textFields["Project Name"]
-        nameField.tap()
-        nameField.typeText("Delete Me Project")
+        typeInField(app.textFields["Project Name"], text: "Delete Me Project")
         
         let clientField = app.textFields["Client Name"]
-        if clientField.exists {
+        if clientField.waitForExistence(timeout: 2) {
             clientField.tap()
             clientField.typeText("Delete Client")
         }
         
         let budgetField = app.textFields["Budget"]
-        if budgetField.exists {
+        if budgetField.waitForExistence(timeout: 2) {
             budgetField.tap()
             budgetField.typeText("8000")
         }
         
-        app.buttons["Save"].tap()
+        tapIfExists(app.buttons["Save"])
         
         // Verify it was created
         let projectCell = app.staticTexts["Delete Me Project"]

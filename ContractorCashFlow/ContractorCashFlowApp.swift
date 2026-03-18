@@ -23,6 +23,16 @@ struct ContractorCashFlowApp: App {
             LaborDetails.self
         ])
         
+        // Use an in-memory store during UI testing so each test run starts clean.
+        if ProcessInfo.processInfo.arguments.contains("-UITesting") {
+            let testConfig = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
+            do {
+                return try ModelContainer(for: schema, configurations: [testConfig])
+            } catch {
+                fatalError("Could not create in-memory ModelContainer for UI tests: \(error)")
+            }
+        }
+        
         // Try CloudKit first; fall back to local-only if it fails.
         // IMPORTANT: Never delete the store on failure — that would wipe user data.
         do {
