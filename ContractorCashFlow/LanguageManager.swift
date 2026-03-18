@@ -66,6 +66,12 @@ final class LanguageManager {
     }
     
     private init() {
+        // When running UI tests, force English so test strings match
+        if ProcessInfo.processInfo.arguments.contains("-UITesting") {
+            self.currentLocale = SupportedLanguage.english.locale
+            return
+        }
+        
         // Load saved locale from UserDefaults or use system default
         if let savedLanguageCode = UserDefaults.standard.string(forKey: StorageKey.appLanguage),
            let language = SupportedLanguage(rawValue: savedLanguageCode) {

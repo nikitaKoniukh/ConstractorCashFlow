@@ -14,6 +14,10 @@ final class ContractorCashFlowUITests: XCTestCase {
     override func setUpWithError() throws {
         continueAfterFailure = false
         app = XCUIApplication()
+        // Tell the app's LanguageManager to force English (bypasses saved UserDefaults locale)
+        app.launchArguments += ["-UITesting"]
+        // Also set the Apple locale so system-level date/number formatting is English
+        app.launchArguments += ["-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
         app.launch()
     }
     
@@ -24,8 +28,33 @@ final class ContractorCashFlowUITests: XCTestCase {
     // MARK: - Helper Methods
     
     /// Taps a tab bar button by its label text.
+    /// Handles the iOS "More" overflow tab for tabs beyond the visible 4-5 slots.
     private func tapTab(_ name: String) {
-        app.tabBars.buttons[name].tap()
+        let tabBar = app.tabBars
+        let tabButton = tabBar.buttons[name]
+        if tabButton.exists {
+            tabButton.tap()
+        } else {
+            // Tab is hidden under "More" — tap More to get to the More list,
+            // then select the row for the desired tab.
+            let moreButton = tabBar.buttons["More"]
+            if moreButton.exists {
+                moreButton.tap()
+                
+                // If we're already inside a More sub-view, tapping More pops
+                // back to the More list. Wait for the table to appear.
+                let row = app.tables.staticTexts[name]
+                if row.waitForExistence(timeout: 3) {
+                    row.tap()
+                } else {
+                    // May need a second tap if first tap only popped the nav stack
+                    moreButton.tap()
+                    if row.waitForExistence(timeout: 3) {
+                        row.tap()
+                    }
+                }
+            }
+        }
     }
     
     /// Waits for an element to exist within a timeout.
@@ -39,13 +68,22 @@ final class ContractorCashFlowUITests: XCTestCase {
     @MainActor
     func testAllTabsExist() throws {
         let tabBar = app.tabBars
+        // First 4 tabs are visible directly in the tab bar
         XCTAssertTrue(tabBar.buttons["Projects"].exists, "Projects tab should exist")
         XCTAssertTrue(tabBar.buttons["Expenses"].exists, "Expenses tab should exist")
         XCTAssertTrue(tabBar.buttons["Invoices"].exists, "Invoices tab should exist")
         XCTAssertTrue(tabBar.buttons["Labor"].exists, "Labor tab should exist")
-        XCTAssertTrue(tabBar.buttons["Clients"].exists, "Clients tab should exist")
-        XCTAssertTrue(tabBar.buttons["Analytics"].exists, "Analytics tab should exist")
-        XCTAssertTrue(tabBar.buttons["Settings"].exists, "Settings tab should exist")
+        
+        // Remaining tabs are behind "More" on iPhone
+        let moreButton = tabBar.buttons["More"]
+        XCTAssertTrue(moreButton.exists, "More tab should exist for overflow tabs")
+        moreButton.tap()
+        
+        let moreTable = app.tables.firstMatch
+        XCTAssertTrue(moreTable.waitForExistence(timeout: 3), "More list should appear")
+        XCTAssertTrue(moreTable.staticTexts["Clients"].exists, "Clients should be in More list")
+        XCTAssertTrue(moreTable.staticTexts["Analytics"].exists, "Analytics should be in More list")
+        XCTAssertTrue(moreTable.staticTexts["Settings"].exists, "Settings should be in More list")
     }
     
     @MainActor
@@ -88,14 +126,14 @@ final class ContractorCashFlowUITests: XCTestCase {
     @MainActor
     func testProjectsTabHasAddButton() throws {
         tapTab("Projects")
-        let addButton = app.navigationBars.buttons["Add"]
-        XCTAssertTrue(waitForElement(addButton), "Projects tab should have an Add (+) button")
+        let addButton = app.navigationBars.buttons["Add Project"]
+        XCTAssertTrue(waitForElement(addButton), "Projects tab should have an Add Project button")
     }
     
     @MainActor
     func testNewProjectFormOpensAndDismisses() throws {
         tapTab("Projects")
-        app.navigationBars.buttons["Add"].tap()
+        app.navigationBars.buttons["Add Project"].tap()
         
         // Verify the New Project sheet appeared
         XCTAssertTrue(app.navigationBars["New Project"].waitForExistence(timeout: 3), "New Project form should appear")
@@ -112,7 +150,7 @@ final class ContractorCashFlowUITests: XCTestCase {
     @MainActor
     func testCreateNewProject() throws {
         tapTab("Projects")
-        app.navigationBars.buttons["Add"].tap()
+        app.navigationBars.buttons["Add Project"].tap()
         
         XCTAssertTrue(app.navigationBars["New Project"].waitForExistence(timeout: 3))
         
@@ -128,6 +166,13 @@ final class ContractorCashFlowUITests: XCTestCase {
             clientField.typeText("Test Client")
         }
         
+        // Enter budget (required for save to be enabled)
+        let budgetField = app.textFields["Budget"]
+        if budgetField.exists {
+            budgetField.tap()
+            budgetField.typeText("10000")
+        }
+        
         // Save the project
         app.buttons["Save"].tap()
         
@@ -139,7 +184,7 @@ final class ContractorCashFlowUITests: XCTestCase {
     func testProjectDetailView() throws {
         // First create a project
         tapTab("Projects")
-        app.navigationBars.buttons["Add"].tap()
+        app.navigationBars.buttons["Add Project"].tap()
         XCTAssertTrue(app.navigationBars["New Project"].waitForExistence(timeout: 3))
         
         let nameField = app.textFields["Project Name"]
@@ -150,6 +195,12 @@ final class ContractorCashFlowUITests: XCTestCase {
         if clientField.exists {
             clientField.tap()
             clientField.typeText("Detail Client")
+        }
+        
+        let budgetField = app.textFields["Budget"]
+        if budgetField.exists {
+            budgetField.tap()
+            budgetField.typeText("5000")
         }
         
         app.buttons["Save"].tap()
@@ -178,14 +229,14 @@ final class ContractorCashFlowUITests: XCTestCase {
     @MainActor
     func testExpensesTabHasAddButton() throws {
         tapTab("Expenses")
-        let addButton = app.navigationBars.buttons["Add"]
-        XCTAssertTrue(waitForElement(addButton), "Expenses tab should have an Add (+) button")
+        let addButton = app.navigationBars.buttons["Add Expense"]
+        XCTAssertTrue(waitForElement(addButton), "Expenses tab should have an Add Expense button")
     }
     
     @MainActor
     func testNewExpenseFormOpensAndDismisses() throws {
         tapTab("Expenses")
-        app.navigationBars.buttons["Add"].tap()
+        app.navigationBars.buttons["Add Expense"].tap()
         
         XCTAssertTrue(app.navigationBars["New Expense"].waitForExistence(timeout: 3), "New Expense form should appear")
         
@@ -200,7 +251,7 @@ final class ContractorCashFlowUITests: XCTestCase {
     @MainActor
     func testCreateNewExpense() throws {
         tapTab("Expenses")
-        app.navigationBars.buttons["Add"].tap()
+        app.navigationBars.buttons["Add Expense"].tap()
         
         XCTAssertTrue(app.navigationBars["New Expense"].waitForExistence(timeout: 3))
         
@@ -239,14 +290,14 @@ final class ContractorCashFlowUITests: XCTestCase {
     @MainActor
     func testInvoicesTabHasAddButton() throws {
         tapTab("Invoices")
-        let addButton = app.navigationBars.buttons["Add"]
-        XCTAssertTrue(waitForElement(addButton), "Invoices tab should have an Add (+) button")
+        let addButton = app.navigationBars.buttons["Add Invoice"]
+        XCTAssertTrue(waitForElement(addButton), "Invoices tab should have an Add Invoice button")
     }
     
     @MainActor
     func testNewInvoiceFormOpensAndDismisses() throws {
         tapTab("Invoices")
-        app.navigationBars.buttons["Add"].tap()
+        app.navigationBars.buttons["Add Invoice"].tap()
         
         XCTAssertTrue(app.navigationBars["New Invoice"].waitForExistence(timeout: 3), "New Invoice form should appear")
         
@@ -261,7 +312,7 @@ final class ContractorCashFlowUITests: XCTestCase {
     @MainActor
     func testCreateNewInvoice() throws {
         tapTab("Invoices")
-        app.navigationBars.buttons["Add"].tap()
+        app.navigationBars.buttons["Add Invoice"].tap()
         
         XCTAssertTrue(app.navigationBars["New Invoice"].waitForExistence(timeout: 3))
         
@@ -300,14 +351,14 @@ final class ContractorCashFlowUITests: XCTestCase {
     @MainActor
     func testClientsTabHasAddButton() throws {
         tapTab("Clients")
-        let addButton = app.navigationBars.buttons["Add"]
-        XCTAssertTrue(waitForElement(addButton), "Clients tab should have an Add (+) button")
+        let addButton = app.navigationBars.buttons["Add Client"]
+        XCTAssertTrue(waitForElement(addButton), "Clients tab should have an Add Client button")
     }
     
     @MainActor
     func testNewClientFormOpensAndDismisses() throws {
         tapTab("Clients")
-        app.navigationBars.buttons["Add"].tap()
+        app.navigationBars.buttons["Add Client"].tap()
         
         XCTAssertTrue(app.navigationBars["New Client"].waitForExistence(timeout: 3), "New Client form should appear")
         
@@ -324,7 +375,7 @@ final class ContractorCashFlowUITests: XCTestCase {
     @MainActor
     func testCreateNewClient() throws {
         tapTab("Clients")
-        app.navigationBars.buttons["Add"].tap()
+        app.navigationBars.buttons["Add Client"].tap()
         
         XCTAssertTrue(app.navigationBars["New Client"].waitForExistence(timeout: 3))
         
@@ -354,7 +405,7 @@ final class ContractorCashFlowUITests: XCTestCase {
     func testClientDetailView() throws {
         // Create a client first
         tapTab("Clients")
-        app.navigationBars.buttons["Add"].tap()
+        app.navigationBars.buttons["Add Client"].tap()
         XCTAssertTrue(app.navigationBars["New Client"].waitForExistence(timeout: 3))
         
         let nameField = app.textFields["Name"]
@@ -377,7 +428,7 @@ final class ContractorCashFlowUITests: XCTestCase {
     @MainActor
     func testLaborTabShowsEmptyState() throws {
         tapTab("Labor")
-        let emptyLabel = app.staticTexts["No Workers"]
+        let emptyLabel = app.staticTexts["No Labor Entries"]
         if emptyLabel.waitForExistence(timeout: 3) {
             XCTAssertTrue(emptyLabel.exists)
         }
@@ -386,14 +437,14 @@ final class ContractorCashFlowUITests: XCTestCase {
     @MainActor
     func testLaborTabHasAddButton() throws {
         tapTab("Labor")
-        let addButton = app.navigationBars.buttons["Add"]
-        XCTAssertTrue(waitForElement(addButton), "Labor tab should have an Add (+) button")
+        let addButton = app.navigationBars.buttons["Add Labor"]
+        XCTAssertTrue(waitForElement(addButton), "Labor tab should have an Add Labor button")
     }
     
     @MainActor
     func testNewWorkerFormOpensAndDismisses() throws {
         tapTab("Labor")
-        app.navigationBars.buttons["Add"].tap()
+        app.navigationBars.buttons["Add Labor"].tap()
         
         let navBar = app.navigationBars["New Labor Entry"]
         XCTAssertTrue(navBar.waitForExistence(timeout: 3), "New Worker form should appear")
@@ -409,7 +460,7 @@ final class ContractorCashFlowUITests: XCTestCase {
     @MainActor
     func testCreateNewWorker() throws {
         tapTab("Labor")
-        app.navigationBars.buttons["Add"].tap()
+        app.navigationBars.buttons["Add Labor"].tap()
         
         XCTAssertTrue(app.navigationBars["New Labor Entry"].waitForExistence(timeout: 3))
         
@@ -486,8 +537,8 @@ final class ContractorCashFlowUITests: XCTestCase {
         let settingsList = app.collectionViews.firstMatch
         settingsList.swipeUp()
         
-        let exportButton = app.buttons["Export Data"]
-        XCTAssertTrue(exportButton.waitForExistence(timeout: 3), "Export Data button should exist")
+        let exportButton = app.buttons["Export Data (JSON)"]
+        XCTAssertTrue(exportButton.waitForExistence(timeout: 3), "Export Data (JSON) button should exist")
     }
     
     // MARK: - Search Tests
@@ -535,7 +586,7 @@ final class ContractorCashFlowUITests: XCTestCase {
     func testDeleteProject() throws {
         // Create a project first
         tapTab("Projects")
-        app.navigationBars.buttons["Add"].tap()
+        app.navigationBars.buttons["Add Project"].tap()
         XCTAssertTrue(app.navigationBars["New Project"].waitForExistence(timeout: 3))
         
         let nameField = app.textFields["Project Name"]
@@ -546,6 +597,12 @@ final class ContractorCashFlowUITests: XCTestCase {
         if clientField.exists {
             clientField.tap()
             clientField.typeText("Delete Client")
+        }
+        
+        let budgetField = app.textFields["Budget"]
+        if budgetField.exists {
+            budgetField.tap()
+            budgetField.typeText("8000")
         }
         
         app.buttons["Save"].tap()
@@ -580,7 +637,7 @@ final class ContractorCashFlowUITests: XCTestCase {
     func testDeleteClient() throws {
         // Create a client first
         tapTab("Clients")
-        app.navigationBars.buttons["Add"].tap()
+        app.navigationBars.buttons["Add Client"].tap()
         XCTAssertTrue(app.navigationBars["New Client"].waitForExistence(timeout: 3))
         
         let nameField = app.textFields["Name"]
@@ -616,7 +673,9 @@ final class ContractorCashFlowUITests: XCTestCase {
     @MainActor
     func testLaunchPerformance() throws {
         measure(metrics: [XCTApplicationLaunchMetric()]) {
-            XCUIApplication().launch()
+            let perfApp = XCUIApplication()
+            perfApp.launchArguments += ["-UITesting", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+            perfApp.launch()
         }
     }
 }
