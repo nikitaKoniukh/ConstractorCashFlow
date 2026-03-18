@@ -23,7 +23,7 @@ struct LaborFiltersView: View {
         let calendar = Calendar.current
         var months: [Date] = []
         let now = Date()
-        for i in (0..<12).reversed() {
+        for i in (0..<12) {
             if let date = calendar.date(byAdding: .month, value: -i, to: now) {
                 let startOfMonth = calendar.date(from: calendar.dateComponents([.year, .month], from: date))!
                 months.append(startOfMonth)

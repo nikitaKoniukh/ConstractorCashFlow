@@ -9,7 +9,30 @@ import SwiftUI
 
 struct LaborCardRow: View {
     let worker: LaborDetails
+    var selectedMonth: Date? = nil
     @AppStorage(StorageKey.selectedCurrencyCode) private var currencyCode = StorageKey.defaultCurrencyCode
+    
+    private var relevantExpenses: [Expense] {
+        guard let month = selectedMonth else { return worker.safeExpenses }
+        let calendar = Calendar.current
+        let startOfMonth = calendar.date(from: calendar.dateComponents([.year, .month], from: month))!
+        let endOfMonth = calendar.date(byAdding: .month, value: 1, to: startOfMonth)!
+        return worker.safeExpenses.filter { $0.date >= startOfMonth && $0.date < endOfMonth }
+    }
+    
+    private var totalUnitsWorked: Double {
+        relevantExpenses.compactMap { $0.unitsWorked }.reduce(0, +)
+    }
+    
+    private var totalAmountEarned: Double {
+        relevantExpenses.reduce(0) { $0 + $1.amount }
+    }
+    
+    private var relevantProjects: [Project] {
+        let projects = relevantExpenses.compactMap { $0.project }
+        var seen = Set<UUID>()
+        return projects.filter { seen.insert($0.id).inserted }
+    }
     
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -37,10 +60,10 @@ struct LaborCardRow: View {
             }
             
             // Stats row
-            if worker.laborType.usesQuantity && worker.totalUnitsWorked > 0 {
+            if worker.laborType.usesQuantity && totalUnitsWorked > 0 {
                 HStack(spacing: 16) {
                     Label {
-                        Text("\(Int(worker.totalUnitsWorked)) \(worker.laborType.unitName)")
+                        Text("\(Int(totalUnitsWorked)) \(worker.laborType.unitName)")
                             .fontWeight(.medium)
                     } icon: {
                         Image(systemName: worker.laborType == .hourly ? "clock.fill" : "calendar")
@@ -54,9 +77,9 @@ struct LaborCardRow: View {
             }
             
             // Cost per project
-            if !worker.associatedProjects.isEmpty {
-                let expensesByProject = Dictionary(grouping: worker.safeExpenses.filter { $0.project != nil }, by: { $0.project!.id })
-                ForEach(worker.associatedProjects, id: \.id) { project in
+            if !relevantProjects.isEmpty {
+                let expensesByProject = Dictionary(grouping: relevantExpenses.filter { $0.project != nil }, by: { $0.project!.id })
+                ForEach(relevantProjects, id: \.id) { project in
                     let projectCost = expensesByProject[project.id]?.reduce(0) { $0 + $1.amount } ?? 0
                     HStack {
                         Label(project.name, systemImage: "folder")
@@ -80,10 +103,10 @@ struct LaborCardRow: View {
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                 Spacer()
-                Text(worker.totalAmountEarned, format: .currency(code: currencyCode))
+                Text(totalAmountEarned, format: .currency(code: currencyCode))
                     .font(.subheadline)
                     .fontWeight(.bold)
-                    .foregroundStyle(worker.totalAmountEarned > 0 ? .primary : .secondary)
+                    .foregroundStyle(totalAmountEarned > 0 ? .primary : .secondary)
             }
             
         }

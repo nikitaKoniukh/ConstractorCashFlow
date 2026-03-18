@@ -84,7 +84,7 @@ struct LaborListContentView: View {
                     
                     Section {
                         ForEach(filteredAndSortedWorkers) { worker in
-                            LaborCardRow(worker: worker)
+                            LaborCardRow(worker: worker, selectedMonth: selectedMonth)
                                 .contentShape(Rectangle())
                                 .onTapGesture {
                                     selectedWorker = worker
