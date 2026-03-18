@@ -27,6 +27,7 @@ struct EditExpenseView: View {
     
     // Labor-specific fields
     @State private var selectedWorker: LaborDetails?
+    @State private var selectedLaborType: LaborType
     @State private var unitsWorked: String
     @FocusState private var isAmountFieldFocused: Bool
     
@@ -38,6 +39,7 @@ struct EditExpenseView: View {
         _date = State(initialValue: expense.date)
         _selectedProject = State(initialValue: expense.project)
         _selectedWorker = State(initialValue: expense.worker)
+        _selectedLaborType = State(initialValue: expense.laborTypeSnapshot ?? expense.worker?.laborType ?? .hourly)
         _unitsWorked = State(initialValue: expense.unitsWorked.map { String($0) } ?? "")
     }
     
@@ -46,16 +48,15 @@ struct EditExpenseView: View {
     }
     
     private var calculatedAmount: Double? {
-        guard let worker = selectedWorker,
-              let rate = worker.rate,
-              rate > 0 else { return nil }
+        guard let worker = selectedWorker else { return nil }
         
-        if worker.laborType.usesQuantity {
-            guard let units = Double(unitsWorked), units > 0 else { return nil }
-            return rate * units
-        } else {
-            return rate
+        if selectedLaborType == .subcontractor {
+            return worker.rate
         }
+        
+        guard let rate = worker.effectiveRate(for: selectedLaborType), rate > 0 else { return nil }
+        guard let units = Double(unitsWorked), units > 0 else { return nil }
+        return rate * units
     }
     
     var body: some View {
@@ -87,9 +88,21 @@ struct EditExpenseView: View {
                         }
                         
                         if let worker = selectedWorker {
-                            if worker.laborType.usesQuantity {
+                            // Show type picker when worker supports both hourly and daily
+                            if worker.supportsHourly && worker.supportsDaily {
+                                Picker(LocalizationKey.Labor.typeLabel, selection: $selectedLaborType) {
+                                    Text(LaborType.hourly.localizedDisplayName).tag(LaborType.hourly)
+                                    Text(LaborType.daily.localizedDisplayName).tag(LaborType.daily)
+                                }
+                                .onChange(of: selectedLaborType) {
+                                    unitsWorked = ""
+                                    amount = nil
+                                }
+                            }
+                            
+                            if selectedLaborType.usesQuantity {
                                 HStack {
-                                    Text(worker.laborType.quantityLabel)
+                                    Text(selectedLaborType.quantityLabel)
                                     Spacer()
                                     TextField(LocalizationKey.Expense.decimalPlaceholder, text: $unitsWorked)
                                         .keyboardType(.decimalPad)
@@ -182,12 +195,13 @@ struct EditExpenseView: View {
     }
     
     private func updateFromWorkerSelection() {
-        if let worker = selectedWorker {
-            descriptionText = String(format: LocalizationKey.Expense.laborDescriptionFormat, worker.workerName)
-            unitsWorked = ""
-            if !worker.laborType.usesQuantity, let rate = worker.rate {
-                amount = rate
-            }
+        guard let worker = selectedWorker else { return }
+        descriptionText = String(format: LocalizationKey.Expense.laborDescriptionFormat, worker.workerName)
+        unitsWorked = ""
+        amount = nil
+        selectedLaborType = worker.laborType
+        if worker.laborType == .subcontractor, let rate = worker.rate {
+            amount = rate
         }
     }
     
@@ -201,6 +215,7 @@ struct EditExpenseView: View {
         expense.project = selectedProject
         expense.worker = category == .labor ? selectedWorker : nil
         expense.unitsWorked = category == .labor ? Double(unitsWorked) : nil
+        expense.laborTypeSnapshot = category == .labor ? selectedLaborType : nil
         
         do {
             try modelContext.save()

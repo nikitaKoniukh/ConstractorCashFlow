@@ -20,8 +20,23 @@ struct LaborCardRow: View {
         return worker.safeExpenses.filter { $0.date >= startOfMonth && $0.date < endOfMonth }
     }
     
-    private var totalUnitsWorked: Double {
-        relevantExpenses.compactMap { $0.unitsWorked }.reduce(0, +)
+    // Helper: effective labor type for an expense (snapshot or fallback to worker's current type)
+    private func effectiveType(for expense: Expense) -> LaborType {
+        expense.laborTypeSnapshot ?? worker.laborType
+    }
+    
+    private var totalHoursWorked: Double {
+        relevantExpenses
+            .filter { effectiveType(for: $0) == .hourly }
+            .compactMap { $0.unitsWorked }
+            .reduce(0, +)
+    }
+    
+    private var totalDaysWorked: Double {
+        relevantExpenses
+            .filter { effectiveType(for: $0) == .daily }
+            .compactMap { $0.unitsWorked }
+            .reduce(0, +)
     }
     
     private var totalAmountEarned: Double {
@@ -36,7 +51,7 @@ struct LaborCardRow: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            // Name and labor type badge
+            // Name and labor type badge (current type)
             HStack(alignment: .center) {
                 Text(worker.workerName)
                     .font(.headline)
@@ -59,19 +74,33 @@ struct LaborCardRow: View {
                     .foregroundStyle(.primary)
             }
             
-            // Stats row
-            if worker.laborType.usesQuantity && totalUnitsWorked > 0 {
+            // Stats rows — separate line per type
+            if totalHoursWorked > 0 {
                 HStack(spacing: 16) {
                     Label {
-                        Text("\(Int(totalUnitsWorked)) \(worker.laborType.unitName)")
+                        Text("\(Int(totalHoursWorked)) \(LaborType.hourly.unitName)")
                             .fontWeight(.medium)
                     } icon: {
-                        Image(systemName: worker.laborType == .hourly ? "clock.fill" : "calendar")
-                            .foregroundStyle(worker.laborType == .hourly ? .teal : .orange)
+                        Image(systemName: "clock.fill")
+                            .foregroundStyle(.teal)
                     }
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
-                    
+                    Spacer()
+                }
+            }
+            
+            if totalDaysWorked > 0 {
+                HStack(spacing: 16) {
+                    Label {
+                        Text("\(Int(totalDaysWorked)) \(LaborType.daily.unitName)")
+                            .fontWeight(.medium)
+                    } icon: {
+                        Image(systemName: "calendar")
+                            .foregroundStyle(.orange)
+                    }
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
                     Spacer()
                 }
             }

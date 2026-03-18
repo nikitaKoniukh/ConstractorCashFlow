@@ -209,6 +209,7 @@ enum LocalizationKey {
         // Rate (type-specific)
         static let defaultRate = LocalizedStringKey("labor.defaultRate")
         static let defaultRateHint = LocalizedStringKey("labor.defaultRateHint")
+        static let ratesHeader = LocalizedStringKey("labor.ratesHeader")
         static let ratePerHour = LocalizedStringKey("labor.ratePerHour")
         static let ratePerDay = LocalizedStringKey("labor.ratePerDay")
         static let contractPrice = LocalizedStringKey("labor.contractPrice")

@@ -25,6 +25,7 @@ struct NewExpenseView: View {
     
     // Labor-specific fields
     @State private var selectedWorker: LaborDetails?
+    @State private var selectedLaborType: LaborType = .hourly
     @State private var unitsWorked: String = ""
     @FocusState private var isAmountFieldFocused: Bool
     
@@ -32,20 +33,17 @@ struct NewExpenseView: View {
         !descriptionText.isEmpty && (amount ?? 0) > 0
     }
     
-    /// Auto-calculated amount from worker rate * units (hours or days)
+    /// Auto-calculated amount from worker rate * units
     private var calculatedAmount: Double? {
-        guard let worker = selectedWorker,
-              let rate = worker.rate,
-              rate > 0 else { return nil }
+        guard let worker = selectedWorker else { return nil }
         
-        if worker.laborType.usesQuantity {
-            // Hourly or Daily: rate × units
-            guard let units = Double(unitsWorked), units > 0 else { return nil }
-            return rate * units
-        } else {
-            // Contract / Subcontractor: fixed price
-            return rate
+        if selectedLaborType == .subcontractor {
+            return worker.rate
         }
+        
+        guard let rate = worker.effectiveRate(for: selectedLaborType), rate > 0 else { return nil }
+        guard let units = Double(unitsWorked), units > 0 else { return nil }
+        return rate * units
     }
     
     var body: some View {
@@ -78,10 +76,22 @@ struct NewExpenseView: View {
                         }
                         
                         if let worker = selectedWorker {
-                            if worker.laborType.usesQuantity {
+                            // Show type picker when worker supports both hourly and daily
+                            if worker.supportsHourly && worker.supportsDaily {
+                                Picker(LocalizationKey.Labor.typeLabel, selection: $selectedLaborType) {
+                                    Text(LaborType.hourly.localizedDisplayName).tag(LaborType.hourly)
+                                    Text(LaborType.daily.localizedDisplayName).tag(LaborType.daily)
+                                }
+                                .onChange(of: selectedLaborType) {
+                                    unitsWorked = ""
+                                    amount = nil
+                                }
+                            }
+                            
+                            if selectedLaborType.usesQuantity {
                                 // Hourly / Daily: show quantity input
                                 HStack {
-                                    Text(worker.laborType.quantityLabel)
+                                    Text(selectedLaborType.quantityLabel)
                                     Spacer()
                                     TextField("0.0", text: $unitsWorked)
                                         .keyboardType(.decimalPad)
@@ -175,15 +185,17 @@ struct NewExpenseView: View {
         }
     }
     
-    /// Updates description and amount when a worker is selected
+    /// Updates description and type when a worker is selected
     private func updateFromWorkerSelection() {
-        if let worker = selectedWorker {
-            descriptionText = "Labor: \(worker.workerName)"
-            unitsWorked = ""
-            // For contract/subcontractor, auto-fill the amount from the fixed rate
-            if !worker.laborType.usesQuantity, let rate = worker.rate {
-                amount = rate
-            }
+        guard let worker = selectedWorker else { return }
+        descriptionText = "Labor: \(worker.workerName)"
+        unitsWorked = ""
+        amount = nil
+        // Default to the worker's primary type
+        selectedLaborType = worker.laborType
+        // For subcontractor, auto-fill the fixed rate
+        if worker.laborType == .subcontractor, let rate = worker.rate {
+            amount = rate
         }
     }
     
@@ -199,7 +211,8 @@ struct NewExpenseView: View {
             date: date,
             project: selectedProject,
             worker: category == .labor ? selectedWorker : nil,
-            unitsWorked: category == .labor ? units : nil
+            unitsWorked: category == .labor ? units : nil,
+            laborTypeSnapshot: category == .labor ? selectedLaborType : nil
         )
         
         do {

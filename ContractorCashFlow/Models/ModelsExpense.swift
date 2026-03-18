@@ -52,6 +52,9 @@ final class Expense {
     // Units worked: hours for hourly, days for daily (nil for contract/subcontractor)
     var unitsWorked: Double?
     
+    // Labor type at the time this expense was created (preserved even if worker type changes later)
+    var laborTypeSnapshot: LaborType?
+    
     init(
         id: UUID = UUID(),
         category: ExpenseCategory,
@@ -60,7 +63,8 @@ final class Expense {
         date: Date = Date(),
         project: Project? = nil,
         worker: LaborDetails? = nil,
-        unitsWorked: Double? = nil
+        unitsWorked: Double? = nil,
+        laborTypeSnapshot: LaborType? = nil
     ) {
         self.id = id
         self.category = category
@@ -70,6 +74,7 @@ final class Expense {
         self.project = project
         self.worker = worker
         self.unitsWorked = unitsWorked
+        self.laborTypeSnapshot = laborTypeSnapshot
     }
 }
 

@@ -20,6 +20,8 @@ struct AddLaborView: View {
     @State private var workerName: String = ""
     @State private var laborType: LaborType = .hourly
     @State private var rate: Double?
+    @State private var hourlyRate: Double?
+    @State private var dailyRate: Double?
     @State private var notes: String = ""
     
     @FocusState private var focusedField: Field?
@@ -55,13 +57,28 @@ struct AddLaborView: View {
                     }
                 }
                 
-                // Rate Section (adapts to labor type)
-                Section(header: Text(laborType.rateLabel)) {
-                    HStack {
-                        Text(laborType.rateLabel)
-                        Spacer()
-                        CurrencyTextField("0.00", value: $rate, currencyCode: currencyCode)
-                            .multilineTextAlignment(.trailing)
+                // Rate Section
+                Section(header: Text(LocalizationKey.Labor.ratesHeader)) {
+                    if laborType == .subcontractor {
+                        HStack {
+                            Text(LocalizationKey.Labor.contractPrice)
+                            Spacer()
+                            CurrencyTextField("0.00", value: $rate, currencyCode: currencyCode)
+                                .multilineTextAlignment(.trailing)
+                        }
+                    } else {
+                        HStack {
+                            Text(LocalizationKey.Labor.ratePerHour)
+                            Spacer()
+                            CurrencyTextField("0.00", value: $hourlyRate, currencyCode: currencyCode)
+                                .multilineTextAlignment(.trailing)
+                        }
+                        HStack {
+                            Text(LocalizationKey.Labor.ratePerDay)
+                            Spacer()
+                            CurrencyTextField("0.00", value: $dailyRate, currencyCode: currencyCode)
+                                .multilineTextAlignment(.trailing)
+                        }
                     }
                     
                     Text(LocalizationKey.Labor.defaultRateHint)
@@ -115,7 +132,9 @@ struct AddLaborView: View {
         let worker = LaborDetails(
             workerName: workerName.trimmingCharacters(in: .whitespaces),
             laborType: laborType,
-            rate: rate,
+            rate: laborType == .subcontractor ? rate : nil,
+            hourlyRate: laborType != .subcontractor ? hourlyRate : nil,
+            dailyRate: laborType != .subcontractor ? dailyRate : nil,
             notes: notes.isEmpty ? nil : notes
         )
         

@@ -87,7 +87,9 @@ final class LaborDetails {
     var id: UUID = UUID()
     var workerName: String = ""
     var laborType: LaborType = LaborType.hourly
-    var rate: Double?
+    var rate: Double?           // legacy / default rate
+    var hourlyRate: Double?     // rate per hour (if worker supports hourly billing)
+    var dailyRate: Double?      // rate per day (if worker supports daily billing)
     var notes: String?
     var createdDate: Date = Date()
     
@@ -100,6 +102,8 @@ final class LaborDetails {
         workerName: String,
         laborType: LaborType,
         rate: Double? = nil,
+        hourlyRate: Double? = nil,
+        dailyRate: Double? = nil,
         notes: String? = nil,
         createdDate: Date = Date()
     ) {
@@ -107,9 +111,26 @@ final class LaborDetails {
         self.workerName = workerName
         self.laborType = laborType
         self.rate = rate
+        self.hourlyRate = hourlyRate
+        self.dailyRate = dailyRate
         self.notes = notes
         self.createdDate = createdDate
     }
+    
+    /// Effective rate for a given labor type
+    func effectiveRate(for type: LaborType) -> Double? {
+        switch type {
+        case .hourly: return hourlyRate ?? (laborType == .hourly ? rate : nil)
+        case .daily: return dailyRate ?? (laborType == .daily ? rate : nil)
+        case .subcontractor: return rate
+        }
+    }
+    
+    /// Whether this worker can bill by the hour
+    var supportsHourly: Bool { hourlyRate != nil || laborType == .hourly }
+    
+    /// Whether this worker can bill by the day
+    var supportsDaily: Bool { dailyRate != nil || laborType == .daily }
     
     // MARK: - Safe Accessor
     

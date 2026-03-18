@@ -28,14 +28,14 @@ struct LaborSummaryCard: View {
     
     private var totalHoursWorked: Double {
         relevantExpenses
-            .filter { $0.worker?.laborType == .hourly }
+            .filter { ($0.laborTypeSnapshot ?? $0.worker?.laborType) == .hourly }
             .compactMap { $0.unitsWorked }
             .reduce(0, +)
     }
     
     private var totalDaysWorked: Double {
         relevantExpenses
-            .filter { $0.worker?.laborType == .daily }
+            .filter { ($0.laborTypeSnapshot ?? $0.worker?.laborType) == .daily }
             .compactMap { $0.unitsWorked }
             .reduce(0, +)
     }

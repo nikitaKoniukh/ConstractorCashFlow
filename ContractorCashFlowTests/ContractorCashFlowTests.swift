@@ -855,6 +855,241 @@ struct AllAppTests {
         }
     }
     
+    // MARK: - LaborDetails Model Tests
+
+    @Suite("LaborDetails Model Tests")
+    struct LaborDetailsModelTests {
+
+        // MARK: Initialization
+
+        @Test("Worker initialization with hourly type")
+        func testHourlyWorkerInit() {
+            let worker = LaborDetails(
+                workerName: "Alice",
+                laborType: .hourly,
+                hourlyRate: 25.0
+            )
+
+            #expect(worker.workerName == "Alice")
+            #expect(worker.laborType == .hourly)
+            #expect(worker.hourlyRate == 25.0)
+            #expect(worker.dailyRate == nil)
+            #expect(worker.rate == nil)
+        }
+
+        @Test("Worker initialization with daily type")
+        func testDailyWorkerInit() {
+            let worker = LaborDetails(
+                workerName: "Bob",
+                laborType: .daily,
+                dailyRate: 200.0
+            )
+
+            #expect(worker.laborType == .daily)
+            #expect(worker.dailyRate == 200.0)
+            #expect(worker.hourlyRate == nil)
+        }
+
+        @Test("Worker initialization with both hourly and daily rates")
+        func testWorkerWithBothRates() {
+            let worker = LaborDetails(
+                workerName: "Carol",
+                laborType: .hourly,
+                hourlyRate: 30.0,
+                dailyRate: 200.0
+            )
+
+            #expect(worker.hourlyRate == 30.0)
+            #expect(worker.dailyRate == 200.0)
+        }
+
+        @Test("Worker initialization as subcontractor")
+        func testSubcontractorInit() {
+            let worker = LaborDetails(
+                workerName: "Dave",
+                laborType: .subcontractor,
+                rate: 5000.0
+            )
+
+            #expect(worker.laborType == .subcontractor)
+            #expect(worker.rate == 5000.0)
+            #expect(worker.hourlyRate == nil)
+            #expect(worker.dailyRate == nil)
+        }
+
+        // MARK: supportsHourly / supportsDaily
+
+        @Test("supportsHourly true when laborType is hourly")
+        func testSupportsHourlyFromType() {
+            let worker = LaborDetails(workerName: "W", laborType: .hourly)
+            #expect(worker.supportsHourly == true)
+            #expect(worker.supportsDaily == false)
+        }
+
+        @Test("supportsDaily true when laborType is daily")
+        func testSupportsDailyFromType() {
+            let worker = LaborDetails(workerName: "W", laborType: .daily)
+            #expect(worker.supportsDaily == true)
+            #expect(worker.supportsHourly == false)
+        }
+
+        @Test("supportsHourly true when hourlyRate is set regardless of default type")
+        func testSupportsHourlyFromRate() {
+            let worker = LaborDetails(workerName: "W", laborType: .daily, hourlyRate: 20.0)
+            #expect(worker.supportsHourly == true)
+            #expect(worker.supportsDaily == true)
+        }
+
+        @Test("supportsDaily true when dailyRate is set regardless of default type")
+        func testSupportsDailyFromRate() {
+            let worker = LaborDetails(workerName: "W", laborType: .hourly, dailyRate: 150.0)
+            #expect(worker.supportsHourly == true)
+            #expect(worker.supportsDaily == true)
+        }
+
+        @Test("Subcontractor supports neither hourly nor daily")
+        func testSubcontractorSupportsNeither() {
+            let worker = LaborDetails(workerName: "W", laborType: .subcontractor, rate: 1000.0)
+            #expect(worker.supportsHourly == false)
+            #expect(worker.supportsDaily == false)
+        }
+
+        // MARK: effectiveRate(for:)
+
+        @Test("effectiveRate returns hourlyRate for hourly type")
+        func testEffectiveRateHourly() {
+            let worker = LaborDetails(workerName: "W", laborType: .hourly, hourlyRate: 40.0)
+            #expect(worker.effectiveRate(for: .hourly) == 40.0)
+        }
+
+        @Test("effectiveRate returns dailyRate for daily type")
+        func testEffectiveRateDaily() {
+            let worker = LaborDetails(workerName: "W", laborType: .daily, dailyRate: 300.0)
+            #expect(worker.effectiveRate(for: .daily) == 300.0)
+        }
+
+        @Test("effectiveRate falls back to legacy rate when hourlyRate is nil and type matches")
+        func testEffectiveRateFallbackToLegacyRate() {
+            let worker = LaborDetails(workerName: "W", laborType: .hourly, rate: 35.0)
+            #expect(worker.effectiveRate(for: .hourly) == 35.0)
+        }
+
+        @Test("effectiveRate returns nil when type doesn't match and no dedicated rate set")
+        func testEffectiveRateNilWhenNoMatch() {
+            let worker = LaborDetails(workerName: "W", laborType: .hourly, rate: 35.0)
+            #expect(worker.effectiveRate(for: .daily) == nil)
+        }
+
+        @Test("effectiveRate prefers dedicated rate over legacy rate")
+        func testEffectiveRatePrefersHourlyRateOverLegacy() {
+            let worker = LaborDetails(workerName: "W", laborType: .hourly, rate: 20.0, hourlyRate: 50.0)
+            #expect(worker.effectiveRate(for: .hourly) == 50.0)
+        }
+
+        @Test("effectiveRate returns fixed rate for subcontractor")
+        func testEffectiveRateSubcontractor() {
+            let worker = LaborDetails(workerName: "W", laborType: .subcontractor, rate: 2500.0)
+            #expect(worker.effectiveRate(for: .subcontractor) == 2500.0)
+        }
+
+        // MARK: totalAmountEarned
+
+        @Test("totalAmountEarned sums all linked expenses")
+        func testTotalAmountEarned() {
+            let worker = LaborDetails(workerName: "W", laborType: .hourly, hourlyRate: 30.0)
+
+            let e1 = Expense(category: .labor, amount: 300.0, descriptionText: "Week 1",
+                             worker: worker, unitsWorked: 10, laborTypeSnapshot: .hourly)
+            let e2 = Expense(category: .labor, amount: 240.0, descriptionText: "Week 2",
+                             worker: worker, unitsWorked: 8, laborTypeSnapshot: .hourly)
+            worker.expenses = [e1, e2]
+
+            #expect(worker.totalAmountEarned == 540.0)
+        }
+
+        @Test("totalAmountEarned is zero with no expenses")
+        func testTotalAmountEarnedEmpty() {
+            let worker = LaborDetails(workerName: "W", laborType: .hourly)
+            #expect(worker.totalAmountEarned == 0.0)
+        }
+
+        // MARK: laborTypeSnapshot on Expense
+
+        @Test("Expense stores laborTypeSnapshot correctly")
+        func testExpenseLaborTypeSnapshot() {
+            let worker = LaborDetails(workerName: "W", laborType: .hourly, hourlyRate: 25.0, dailyRate: 180.0)
+
+            let hourlyExpense = Expense(category: .labor, amount: 200.0, descriptionText: "Hours",
+                                        worker: worker, unitsWorked: 8, laborTypeSnapshot: .hourly)
+            let dailyExpense = Expense(category: .labor, amount: 360.0, descriptionText: "Days",
+                                       worker: worker, unitsWorked: 2, laborTypeSnapshot: .daily)
+
+            #expect(hourlyExpense.laborTypeSnapshot == .hourly)
+            #expect(dailyExpense.laborTypeSnapshot == .daily)
+        }
+
+        @Test("Expense laborTypeSnapshot is preserved independently of worker type change")
+        func testExpenseLaborTypeSnapshotPreservedAfterWorkerTypeChange() {
+            let worker = LaborDetails(workerName: "W", laborType: .hourly, hourlyRate: 25.0)
+
+            let oldExpense = Expense(category: .labor, amount: 200.0, descriptionText: "Before change",
+                                     worker: worker, unitsWorked: 8, laborTypeSnapshot: .hourly)
+            worker.expenses = [oldExpense]
+
+            // Simulate type change
+            worker.laborType = .daily
+            worker.dailyRate = 200.0
+            worker.hourlyRate = nil
+
+            // Old expense snapshot must still say hourly
+            #expect(oldExpense.laborTypeSnapshot == .hourly)
+            #expect(worker.laborType == .daily)
+        }
+
+        // MARK: Mixed type totals
+
+        @Test("Worker with mixed hourly and daily expenses tracks both correctly")
+        func testMixedTypeExpenseTotals() {
+            let worker = LaborDetails(workerName: "W", laborType: .hourly, hourlyRate: 25.0, dailyRate: 200.0)
+
+            let hourlyExpense = Expense(category: .labor, amount: 200.0, descriptionText: "Hours",
+                                        worker: worker, unitsWorked: 8, laborTypeSnapshot: .hourly)
+            let dailyExpense = Expense(category: .labor, amount: 400.0, descriptionText: "Days",
+                                       worker: worker, unitsWorked: 2, laborTypeSnapshot: .daily)
+            worker.expenses = [hourlyExpense, dailyExpense]
+
+            let hourlyTotal = worker.safeExpenses
+                .filter { ($0.laborTypeSnapshot ?? worker.laborType) == .hourly }
+                .compactMap { $0.unitsWorked }
+                .reduce(0, +)
+
+            let dailyTotal = worker.safeExpenses
+                .filter { ($0.laborTypeSnapshot ?? worker.laborType) == .daily }
+                .compactMap { $0.unitsWorked }
+                .reduce(0, +)
+
+            #expect(hourlyTotal == 8.0)
+            #expect(dailyTotal == 2.0)
+            #expect(worker.totalAmountEarned == 600.0)
+        }
+
+        // MARK: LaborType helpers
+
+        @Test("LaborType usesQuantity is true for hourly and daily")
+        func testUsesQuantity() {
+            #expect(LaborType.hourly.usesQuantity == true)
+            #expect(LaborType.daily.usesQuantity == true)
+            #expect(LaborType.subcontractor.usesQuantity == false)
+        }
+
+        @Test("LaborType unitName returns correct strings")
+        func testUnitName() {
+            #expect(LaborType.hourly.unitName == "hours")
+            #expect(LaborType.daily.unitName == "days")
+            #expect(LaborType.subcontractor.unitName == "")
+        }
+    }
+
     // MARK: - Performance Tests
     
     @Suite("Performance Tests")

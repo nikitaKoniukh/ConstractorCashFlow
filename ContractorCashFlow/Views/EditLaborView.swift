@@ -20,6 +20,8 @@ struct EditLaborView: View {
     @State private var workerName: String
     @State private var laborType: LaborType
     @State private var rate: Double?
+    @State private var hourlyRate: Double?
+    @State private var dailyRate: Double?
     @State private var notes: String
     @State private var showDeleteConfirmation = false
     
@@ -34,6 +36,8 @@ struct EditLaborView: View {
         _workerName = State(initialValue: labor.workerName)
         _laborType = State(initialValue: labor.laborType)
         _rate = State(initialValue: labor.rate)
+        _hourlyRate = State(initialValue: labor.hourlyRate)
+        _dailyRate = State(initialValue: labor.dailyRate)
         _notes = State(initialValue: labor.notes ?? "")
     }
     
@@ -52,13 +56,28 @@ struct EditLaborView: View {
                     }
                 }
                 
-                // Rate Section (adapts to labor type)
-                Section(header: Text(laborType.rateLabel)) {
-                    HStack {
-                        Text(laborType.rateLabel)
-                        Spacer()
-                        CurrencyTextField("0.00", value: $rate, currencyCode: currencyCode)
-                            .multilineTextAlignment(.trailing)
+                // Rate Section
+                Section(header: Text(LocalizationKey.Labor.ratesHeader)) {
+                    if laborType == .subcontractor {
+                        HStack {
+                            Text(LocalizationKey.Labor.contractPrice)
+                            Spacer()
+                            CurrencyTextField("0.00", value: $rate, currencyCode: currencyCode)
+                                .multilineTextAlignment(.trailing)
+                        }
+                    } else {
+                        HStack {
+                            Text(LocalizationKey.Labor.ratePerHour)
+                            Spacer()
+                            CurrencyTextField("0.00", value: $hourlyRate, currencyCode: currencyCode)
+                                .multilineTextAlignment(.trailing)
+                        }
+                        HStack {
+                            Text(LocalizationKey.Labor.ratePerDay)
+                            Spacer()
+                            CurrencyTextField("0.00", value: $dailyRate, currencyCode: currencyCode)
+                                .multilineTextAlignment(.trailing)
+                        }
                     }
                 }
                 
@@ -179,7 +198,9 @@ struct EditLaborView: View {
         
         labor.workerName = workerName.trimmingCharacters(in: .whitespaces)
         labor.laborType = laborType
-        labor.rate = rate
+        labor.rate = laborType == .subcontractor ? rate : nil
+        labor.hourlyRate = laborType != .subcontractor ? hourlyRate : nil
+        labor.dailyRate = laborType != .subcontractor ? dailyRate : nil
         labor.notes = notes.isEmpty ? nil : notes
         
         do {
