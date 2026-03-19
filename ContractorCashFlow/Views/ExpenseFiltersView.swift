@@ -100,17 +100,24 @@ struct ExpenseFiltersView: View {
     
     // Fill all days between min and max to keep selection contiguous
     private func fillContiguousRange(from dates: Set<DateComponents>) {
-        let resolved = dates.compactMap { Calendar.current.date(from: $0) }
-        guard let min = resolved.min(), let max = resolved.max(), min < max else { return }
+        if let filled = Self.contiguousRange(from: dates), filled != selectedDates {
+            selectedDates = filled
+        }
+    }
+
+    /// Returns the filled contiguous set of DateComponents between the min and max of the input,
+    /// or nil if the input has fewer than 2 distinct dates.
+    static func contiguousRange(from dates: Set<DateComponents>) -> Set<DateComponents>? {
+        let calendar = Calendar.current
+        let resolved = dates.compactMap { calendar.date(from: $0) }
+        guard let min = resolved.min(), let max = resolved.max(), min < max else { return nil }
         var filled: Set<DateComponents> = []
         var current = min
         while current <= max {
-            filled.insert(Calendar.current.dateComponents([.year, .month, .day], from: current))
-            current = Calendar.current.date(byAdding: .day, value: 1, to: current)!
+            filled.insert(calendar.dateComponents([.year, .month, .day], from: current))
+            current = calendar.date(byAdding: .day, value: 1, to: current)!
         }
-        if filled != selectedDates {
-            selectedDates = filled
-        }
+        return filled
     }
 
     // Earliest selected date

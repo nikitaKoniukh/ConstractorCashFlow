@@ -39,7 +39,7 @@ struct InvoiceOCRService {
 
     // MARK: - Parsing
 
-    private static func parse(lines: [String]) -> ScannedInvoiceData {
+    static func parse(lines: [String]) -> ScannedInvoiceData {
         var date: Date? = nil
         var descriptionCandidates: [String] = []
 
@@ -64,7 +64,7 @@ struct InvoiceOCRService {
     // MARK: - Total amount extraction
 
     /// Keywords that appear on or near the "total to pay" line in Hebrew, Russian, and English invoices.
-    private static let totalKeywords: [String] = [
+    static let totalKeywords: [String] = [
         // Hebrew
         "סה\"כ לתשלום", "לתשלום", "סכום לתשלום", "סה\"כ",
         // Russian
@@ -74,7 +74,7 @@ struct InvoiceOCRService {
         "grand total", "total", "amount payable", "pay this amount"
     ]
 
-    private static func extractTotalAmount(from lines: [String]) -> Double? {
+    static func extractTotalAmount(from lines: [String]) -> Double? {
         // Strategy 1: line contains a "total" keyword AND a decimal number on the same line
         for line in lines {
             let lower = line.lowercased()
@@ -120,7 +120,7 @@ struct InvoiceOCRService {
 
     /// Extracts a monetary amount. Requires a decimal point (e.g. 670.10) OR a currency symbol
     /// to avoid picking up plain integers like codes, IDs, and reference numbers.
-    private static func extractAmount(from line: String, requireDecimal: Bool = false) -> Double? {
+    static func extractAmount(from line: String, requireDecimal: Bool = false) -> Double? {
         // Match: ₪670.10 | $1,234.56 | 670.10 | ILS 670
         let pattern = #"(?:[$€£₪]|USD|EUR|GBP|ILS)?\s*(\d{1,3}(?:[,\s]\d{3})*(?:\.\d{1,2})?|\d+\.\d{1,2})"#
         guard let regex = try? NSRegularExpression(pattern: pattern, options: .caseInsensitive) else { return nil }
@@ -140,7 +140,7 @@ struct InvoiceOCRService {
 
     // MARK: - Date extraction
 
-    private static func extractDate(from line: String) -> Date? {
+    static func extractDate(from line: String) -> Date? {
         let formatters: [DateFormatter] = {
             let formats = [
                 "MM/dd/yyyy", "dd/MM/yyyy", "yyyy-MM-dd",
@@ -173,12 +173,12 @@ struct InvoiceOCRService {
 
     // MARK: - Description
 
-    private static func isNumericLine(_ line: String) -> Bool {
+    static func isNumericLine(_ line: String) -> Bool {
         let stripped = line.replacingOccurrences(of: "[$€£₪,. ]", with: "", options: .regularExpression)
         return stripped.allSatisfy { $0.isNumber } && !stripped.isEmpty
     }
 
-    private static func bestDescription(from candidates: [String]) -> String {
+    static func bestDescription(from candidates: [String]) -> String {
         let keywords = [
             // English
             "invoice", "receipt", "bill", "services", "materials", "labor", "supply",

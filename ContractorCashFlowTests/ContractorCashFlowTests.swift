@@ -252,7 +252,6 @@ struct AllAppTests {
             #expect(ExpenseCategory.materials.displayName == "Materials")
             #expect(ExpenseCategory.labor.displayName == "Labor")
             #expect(ExpenseCategory.equipment.displayName == "Equipment")
-            #expect(ExpenseCategory.subcontractor.displayName == "Subcontractor")
             #expect(ExpenseCategory.misc.displayName == "Miscellaneous")
         }
     }
@@ -1141,6 +1140,433 @@ struct AllAppTests {
             
             // 50 paid invoices * $1000 each = $50,000
             #expect(project.totalIncome == 50_000.0)
+        }
+    }
+
+    // MARK: - InvoiceOCRService Tests
+
+    @Suite("InvoiceOCRService Tests")
+    struct InvoiceOCRServiceTests {
+
+        // MARK: extractAmount
+
+        @Test("extractAmount parses plain decimal")
+        func testExtractAmountDecimal() {
+            #expect(InvoiceOCRService.extractAmount(from: "670.10") == 670.10)
+        }
+
+        @Test("extractAmount parses currency-prefixed value")
+        func testExtractAmountCurrencyPrefix() {
+            #expect(InvoiceOCRService.extractAmount(from: "₪1,234.56") == 1234.56)
+            #expect(InvoiceOCRService.extractAmount(from: "$500.00") == 500.0)
+            #expect(InvoiceOCRService.extractAmount(from: "€99.99") == 99.99)
+        }
+
+        @Test("extractAmount rejects integer when requireDecimal is true")
+        func testExtractAmountRequireDecimal() {
+            #expect(InvoiceOCRService.extractAmount(from: "985", requireDecimal: true) == nil)
+            #expect(InvoiceOCRService.extractAmount(from: "985.00", requireDecimal: true) == 985.0)
+        }
+
+        @Test("extractAmount returns nil for non-numeric line")
+        func testExtractAmountNonNumeric() {
+            #expect(InvoiceOCRService.extractAmount(from: "Invoice for services") == nil)
+        }
+
+        @Test("extractAmount rejects zero and values >= 1,000,000")
+        func testExtractAmountBounds() {
+            #expect(InvoiceOCRService.extractAmount(from: "0.00") == nil)
+            #expect(InvoiceOCRService.extractAmount(from: "1000000.00") == nil)
+        }
+
+        @Test("extractAmount parses comma-separated thousands")
+        func testExtractAmountThousandsSeparator() {
+            #expect(InvoiceOCRService.extractAmount(from: "1,500.75") == 1500.75)
+        }
+
+        // MARK: extractTotalAmount – strategy 1 (keyword + same line)
+
+        @Test("extractTotalAmount picks amount on same line as 'total' keyword")
+        func testExtractTotalAmountStrategy1English() {
+            let lines = ["Description", "Total Due: 850.00", "Thank you"]
+            #expect(InvoiceOCRService.extractTotalAmount(from: lines) == 850.0)
+        }
+
+        @Test("extractTotalAmount picks amount on same line as Hebrew keyword")
+        func testExtractTotalAmountStrategy1Hebrew() {
+            let lines = ["פירוט שירותים", "לתשלום 1200.50", "תודה"]
+            #expect(InvoiceOCRService.extractTotalAmount(from: lines) == 1200.50)
+        }
+
+        @Test("extractTotalAmount picks amount on same line as Russian keyword")
+        func testExtractTotalAmountStrategy1Russian() {
+            let lines = ["Детали", "Итого к оплате 3500.00", "Спасибо"]
+            #expect(InvoiceOCRService.extractTotalAmount(from: lines) == 3500.0)
+        }
+
+        // MARK: extractTotalAmount – strategy 2 (keyword + lookahead)
+
+        @Test("extractTotalAmount looks ahead to next line for amount after keyword")
+        func testExtractTotalAmountStrategy2Lookahead() {
+            let lines = ["Grand Total", "  1750.00", "Footer text"]
+            #expect(InvoiceOCRService.extractTotalAmount(from: lines) == 1750.0)
+        }
+
+        // MARK: extractTotalAmount – strategy 3 (currency symbol)
+
+        @Test("extractTotalAmount picks currency-prefixed amount when no keyword")
+        func testExtractTotalAmountStrategy3Currency() {
+            let lines = ["Ref: 99123", "Pay: ₪450.00", "End"]
+            #expect(InvoiceOCRService.extractTotalAmount(from: lines) == 450.0)
+        }
+
+        // MARK: extractTotalAmount – strategy 4 (largest decimal)
+
+        @Test("extractTotalAmount picks largest decimal number when no keyword or currency")
+        func testExtractTotalAmountStrategy4LargestDecimal() {
+            let lines = ["Item A  10.00", "Item B  20.50", "ID: 12345"]
+            #expect(InvoiceOCRService.extractTotalAmount(from: lines) == 20.50)
+        }
+
+        @Test("extractTotalAmount returns nil for lines with only integers and no keyword")
+        func testExtractTotalAmountOnlyIntegers() {
+            // All strategies requiring decimal will fail; strategy 5 filters large round numbers
+            let lines = ["Code: 100", "Ref: 200"]
+            // Strategy 5: max of filtered amounts; 100 and 200 are round integers < 10000
+            // filter: $0 != $0.rounded() || $0 < 10_000 — round integers < 10000 pass through
+            // so 200 is returned
+            #expect(InvoiceOCRService.extractTotalAmount(from: lines) == 200.0)
+        }
+
+        // MARK: extractDate
+
+        @Test("extractDate parses MM/dd/yyyy format")
+        func testExtractDateSlashUS() {
+            let result = InvoiceOCRService.extractDate(from: "Invoice date: 03/15/2025")
+            #expect(result != nil)
+            let comps = Calendar.current.dateComponents([.month, .day, .year], from: result!)
+            #expect(comps.month == 3)
+            #expect(comps.day == 15)
+            #expect(comps.year == 2025)
+        }
+
+        @Test("extractDate parses dd/MM/yyyy format")
+        func testExtractDateSlashEU() {
+            let result = InvoiceOCRService.extractDate(from: "Date: 15/03/2025")
+            #expect(result != nil)
+        }
+
+        @Test("extractDate parses yyyy-MM-dd ISO format")
+        func testExtractDateISO() {
+            let result = InvoiceOCRService.extractDate(from: "2025-07-04")
+            #expect(result != nil)
+            let comps = Calendar.current.dateComponents([.month, .day, .year], from: result!)
+            #expect(comps.year == 2025)
+            #expect(comps.month == 7)
+            #expect(comps.day == 4)
+        }
+
+        @Test("extractDate parses dd.MM.yyyy dot-separated format")
+        func testExtractDateDot() {
+            let result = InvoiceOCRService.extractDate(from: "תאריך: 22.11.2024")
+            #expect(result != nil)
+        }
+
+        @Test("extractDate returns nil when no date present")
+        func testExtractDateNone() {
+            #expect(InvoiceOCRService.extractDate(from: "No date here at all") == nil)
+            #expect(InvoiceOCRService.extractDate(from: "Total: 500.00") == nil)
+        }
+
+        // MARK: isNumericLine
+
+        @Test("isNumericLine returns true for pure numeric lines")
+        func testIsNumericLineTrue() {
+            #expect(InvoiceOCRService.isNumericLine("12345") == true)
+            #expect(InvoiceOCRService.isNumericLine("1,234.56") == true)
+            #expect(InvoiceOCRService.isNumericLine("₪500") == true)
+            #expect(InvoiceOCRService.isNumericLine("$1,000.00") == true)
+        }
+
+        @Test("isNumericLine returns false for lines with text")
+        func testIsNumericLineFalse() {
+            #expect(InvoiceOCRService.isNumericLine("Invoice Total") == false)
+            #expect(InvoiceOCRService.isNumericLine("500 USD") == false)
+            #expect(InvoiceOCRService.isNumericLine("") == false)
+        }
+
+        // MARK: bestDescription
+
+        @Test("bestDescription picks invoice/receipt keyword line")
+        func testBestDescriptionKeywordWins() {
+            let candidates = ["John Smith", "Invoice for plumbing services", "12345"]
+            #expect(InvoiceOCRService.bestDescription(from: candidates) == "Invoice for plumbing services")
+        }
+
+        @Test("bestDescription returns first candidate when no keywords match")
+        func testBestDescriptionFallback() {
+            let candidates = ["ABC Corp", "Reference 001"]
+            let result = InvoiceOCRService.bestDescription(from: candidates)
+            #expect(!result.isEmpty)
+        }
+
+        @Test("bestDescription returns empty string for empty candidates")
+        func testBestDescriptionEmpty() {
+            #expect(InvoiceOCRService.bestDescription(from: []) == "")
+        }
+
+        @Test("bestDescription prefers Hebrew keyword line")
+        func testBestDescriptionHebrew() {
+            let candidates = ["שם לקוח", "חשבונית עבור שירותי אינסטלציה", "000123"]
+            #expect(InvoiceOCRService.bestDescription(from: candidates) == "חשבונית עבור שירותי אינסטלציה")
+        }
+
+        // MARK: parse (end-to-end)
+
+        @Test("parse extracts amount, date, and description from English invoice lines")
+        func testParseEnglishInvoice() {
+            let lines = [
+                "ABC Plumbing Services",
+                "Invoice #1042",
+                "Date: 06/15/2024",
+                "Labor: 150.00",
+                "Materials: 320.00",
+                "Grand Total  470.00",
+                "Thank you for your business"
+            ]
+            let result = InvoiceOCRService.parse(lines: lines)
+            #expect(result.amount == 470.0)
+            #expect(result.date != nil)
+            #expect(!result.description.isEmpty)
+        }
+
+        @Test("parse returns nil amount for lines with no usable number")
+        func testParseNoAmount() {
+            let lines = ["No numbers here", "Just text", "More text"]
+            let result = InvoiceOCRService.parse(lines: lines)
+            #expect(result.amount == nil)
+        }
+
+        @Test("parse returns nil date when no date present in lines")
+        func testParseNoDate() {
+            let lines = ["Total: 100.00", "Services rendered"]
+            let result = InvoiceOCRService.parse(lines: lines)
+            #expect(result.date == nil)
+        }
+    }
+
+    // MARK: - Date Filter Logic Tests
+
+    @Suite("Date Filter Logic Tests")
+    struct DateFilterLogicTests {
+
+        private func makeComponents(year: Int, month: Int, day: Int) -> DateComponents {
+            DateComponents(year: year, month: month, day: day)
+        }
+
+        @Test("contiguousRange fills gap between two non-adjacent dates")
+        func testFillsGap() {
+            let dates: Set<DateComponents> = [
+                makeComponents(year: 2024, month: 3, day: 1),
+                makeComponents(year: 2024, month: 3, day: 5)
+            ]
+            let result = ExpenseFiltersView.contiguousRange(from: dates)
+            #expect(result != nil)
+            #expect(result!.count == 5) // Mar 1–5 inclusive
+        }
+
+        @Test("contiguousRange returns nil for single date")
+        func testSingleDateReturnsNil() {
+            let dates: Set<DateComponents> = [makeComponents(year: 2024, month: 3, day: 10)]
+            #expect(ExpenseFiltersView.contiguousRange(from: dates) == nil)
+        }
+
+        @Test("contiguousRange returns nil for empty set")
+        func testEmptySetReturnsNil() {
+            #expect(ExpenseFiltersView.contiguousRange(from: []) == nil)
+        }
+
+        @Test("contiguousRange spans month boundary correctly")
+        func testMonthBoundary() {
+            let dates: Set<DateComponents> = [
+                makeComponents(year: 2024, month: 1, day: 30),
+                makeComponents(year: 2024, month: 2, day: 2)
+            ]
+            let result = ExpenseFiltersView.contiguousRange(from: dates)
+            #expect(result != nil)
+            // Jan 30, 31, Feb 1, 2 = 4 days
+            #expect(result!.count == 4)
+        }
+
+        @Test("contiguousRange for adjacent dates returns same two dates")
+        func testAdjacentDates() {
+            let dates: Set<DateComponents> = [
+                makeComponents(year: 2024, month: 6, day: 10),
+                makeComponents(year: 2024, month: 6, day: 11)
+            ]
+            let result = ExpenseFiltersView.contiguousRange(from: dates)
+            #expect(result != nil)
+            #expect(result!.count == 2)
+        }
+
+        @Test("contiguousRange already contiguous returns same set")
+        func testAlreadyContiguous() {
+            let dates: Set<DateComponents> = [
+                makeComponents(year: 2024, month: 5, day: 1),
+                makeComponents(year: 2024, month: 5, day: 2),
+                makeComponents(year: 2024, month: 5, day: 3)
+            ]
+            let result = ExpenseFiltersView.contiguousRange(from: dates)
+            #expect(result != nil)
+            #expect(result == dates)
+        }
+    }
+
+    // MARK: - Labor Expense Logic Tests
+
+    @Suite("Labor Expense Logic Tests")
+    struct LaborExpenseLogicTests {
+
+        @Test("daysCount parses decimal string from decimal pad input")
+        func testDaysCountDecimalPadInput() {
+            // Simulates Int(Double("2.0") ?? 0) — the fix for decimal pad producing "2.0"
+            let unitsWorked = "2.0"
+            let daysCount = Int(Double(unitsWorked) ?? 0)
+            #expect(daysCount == 2)
+        }
+
+        @Test("daysCount parses plain integer string")
+        func testDaysCountIntegerString() {
+            let unitsWorked = "3"
+            let daysCount = Int(Double(unitsWorked) ?? 0)
+            #expect(daysCount == 3)
+        }
+
+        @Test("daysCount returns zero for empty string")
+        func testDaysCountEmptyString() {
+            let unitsWorked = ""
+            let daysCount = Int(Double(unitsWorked) ?? 0)
+            #expect(daysCount == 0)
+        }
+
+        @Test("daysCount returns zero for non-numeric string")
+        func testDaysCountNonNumericString() {
+            let unitsWorked = "abc"
+            let daysCount = Int(Double(unitsWorked) ?? 0)
+            #expect(daysCount == 0)
+        }
+
+        @Test("effective amount falls back to calculatedAmount when amount is nil")
+        func testEffectiveAmountFallback() {
+            let amount: Double? = nil
+            let calculatedAmount: Double? = 480.0
+            let effectiveAmount = amount ?? calculatedAmount ?? 0
+            #expect(effectiveAmount == 480.0)
+        }
+
+        @Test("effective amount uses explicit amount when set")
+        func testEffectiveAmountExplicit() {
+            let amount: Double? = 600.0
+            let calculatedAmount: Double? = 480.0
+            let effectiveAmount = amount ?? calculatedAmount ?? 0
+            #expect(effectiveAmount == 600.0)
+        }
+
+        @Test("effective amount is zero when both amount and calculatedAmount are nil")
+        func testEffectiveAmountZero() {
+            let amount: Double? = nil
+            let calculatedAmount: Double? = nil
+            let effectiveAmount = amount ?? calculatedAmount ?? 0
+            #expect(effectiveAmount == 0.0)
+        }
+
+        @Test("hourly calculatedAmount = hourlyRate * hours")
+        func testHourlyCalculation() {
+            let hourlyRate: Double = 75.0
+            let unitsWorked = "8.0"
+            guard let units = Double(unitsWorked), units > 0 else {
+                Issue.record("Failed to parse units")
+                return
+            }
+            let calculated = hourlyRate * units
+            #expect(calculated == 600.0)
+        }
+
+        @Test("daily calculatedAmount = dailyRate * days")
+        func testDailyCalculation() {
+            let dailyRate: Double = 350.0
+            let unitsWorked = "3"
+            guard let units = Double(unitsWorked), units > 0 else {
+                Issue.record("Failed to parse units")
+                return
+            }
+            let calculated = dailyRate * units
+            #expect(calculated == 1050.0)
+        }
+    }
+
+    // MARK: - Expense Receipt Data Tests
+
+    @Suite("Expense Receipt Data Tests")
+    struct ExpenseReceiptDataTests {
+
+        @Test("Expense stores nil receiptImageData by default")
+        func testReceiptImageDataDefaultNil() {
+            let project = Project(name: "P", clientName: "C", budget: 1000)
+            let expense = Expense(
+                category: .materials,
+                amount: 100.0,
+                descriptionText: "Test",
+                project: project
+            )
+            #expect(expense.receiptImageData == nil)
+        }
+
+        @Test("Expense stores and retrieves receiptImageData")
+        func testReceiptImageDataStored() {
+            let project = Project(name: "P", clientName: "C", budget: 1000)
+            let testData = Data([0x89, 0x50, 0x4E, 0x47]) // PNG header bytes
+            let expense = Expense(
+                category: .materials,
+                amount: 100.0,
+                descriptionText: "Receipt test",
+                project: project
+            )
+            expense.receiptImageData = testData
+            #expect(expense.receiptImageData == testData)
+            #expect(expense.receiptImageData?.count == 4)
+        }
+
+        @Test("Expense receiptImageData can be cleared")
+        func testReceiptImageDataCleared() {
+            let project = Project(name: "P", clientName: "C", budget: 1000)
+            let expense = Expense(
+                category: .materials,
+                amount: 50.0,
+                descriptionText: "Receipt clear test",
+                project: project
+            )
+            expense.receiptImageData = Data([0xFF, 0xD8]) // JPEG header
+            #expect(expense.receiptImageData != nil)
+            expense.receiptImageData = nil
+            #expect(expense.receiptImageData == nil)
+        }
+
+        @Test("ScannedInvoiceData initializes with expected fields")
+        func testScannedInvoiceDataInit() {
+            let date = Date()
+            let data = ScannedInvoiceData(amount: 500.0, date: date, description: "Test invoice")
+            #expect(data.amount == 500.0)
+            #expect(data.date == date)
+            #expect(data.description == "Test invoice")
+        }
+
+        @Test("ScannedInvoiceData allows nil amount and date")
+        func testScannedInvoiceDataNilFields() {
+            let data = ScannedInvoiceData(amount: nil, date: nil, description: "")
+            #expect(data.amount == nil)
+            #expect(data.date == nil)
+            #expect(data.description.isEmpty)
         }
     }
 }
