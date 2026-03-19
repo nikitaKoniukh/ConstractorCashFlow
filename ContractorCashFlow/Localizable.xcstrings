@@ -499,6 +499,9 @@
         }
       }
     },
+    "Add Manually" : {
+
+    },
     "Add Project" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -591,6 +594,9 @@
           }
         }
       }
+    },
+    "Amount" : {
+
     },
     "An error occurred" : {
 
@@ -1424,6 +1430,9 @@
         }
       }
     },
+    "Choose from Photos" : {
+
+    },
     "Clear All Filters" : {
       "localizations" : {
         "en" : {
@@ -2004,6 +2013,9 @@
         }
       }
     },
+    "Date" : {
+
+    },
     "Date Range" : {
       "localizations" : {
         "en" : {
@@ -2069,6 +2081,12 @@
           }
         }
       }
+    },
+    "Description" : {
+
+    },
+    "Done" : {
+
     },
     "Due %@" : {
       "localizations" : {
@@ -2975,6 +2993,9 @@
         }
       }
     },
+    "Import Invoice or Receipt" : {
+
+    },
     "Inactive" : {
       "localizations" : {
         "en" : {
@@ -3157,6 +3178,9 @@
           }
         }
       }
+    },
+    "Invoice scanned" : {
+
     },
     "Invoice to %@" : {
       "localizations" : {
@@ -6045,6 +6069,9 @@
         }
       }
     },
+    "None" : {
+
+    },
     "Notification Status" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -6297,6 +6324,9 @@
         }
       }
     },
+    "Project" : {
+
+    },
     "Project '%@' has exceeded budget! Spent $%@ of $%@" : {
       "localizations" : {
         "en" : {
@@ -6316,6 +6346,9 @@
           }
         }
       }
+    },
+    "Project (optional)" : {
+
     },
     "Project Information" : {
       "localizations" : {
@@ -6759,6 +6792,12 @@
         }
       }
     },
+    "Review and correct the fields below before saving." : {
+
+    },
+    "Review Expense" : {
+
+    },
     "Save" : {
       "localizations" : {
         "en" : {
@@ -6780,6 +6819,15 @@
           }
         }
       }
+    },
+    "Scan Document (Camera)" : {
+
+    },
+    "Scan Invoice" : {
+
+    },
+    "Scanning invoice…" : {
+
     },
     "Search by name or client" : {
       "localizations" : {
@@ -8203,6 +8251,9 @@
           }
         }
       }
+    },
+    "The app will scan the document and automatically fill in the amount, date, and description." : {
+
     },
     "This worker has %lld linked expense(s). The expenses will remain but won't be linked to a worker." : {
       "localizations" : {

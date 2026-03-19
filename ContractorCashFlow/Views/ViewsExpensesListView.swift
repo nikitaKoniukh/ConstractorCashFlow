@@ -20,6 +20,7 @@ struct ExpensesListView: View {
     @State private var startDate: Date?
     @State private var endDate: Date?
     @State private var isShowingFilters = false
+    @State private var isShowingScanInvoice = false
     
     var body: some View {
         NavigationStack(path: appState.navigationPath(for: .expenses)) {
@@ -44,11 +45,25 @@ struct ExpensesListView: View {
                     EditButton()
                 }
                 ToolbarItem(placement: .primaryAction) {
-                    Button {
-                        if purchaseManager.canCreateExpense(currentCount: allExpensesForCount.count) {
-                            appState.isShowingNewExpense = true
-                        } else {
-                            isShowingPaywall = true
+                    Menu {
+                        Button {
+                            if purchaseManager.canCreateExpense(currentCount: allExpensesForCount.count) {
+                                appState.isShowingNewExpense = true
+                            } else {
+                                isShowingPaywall = true
+                            }
+                        } label: {
+                            Label("Add Manually", systemImage: "square.and.pencil")
+                        }
+
+                        Button {
+                            if purchaseManager.canCreateExpense(currentCount: allExpensesForCount.count) {
+                                isShowingScanInvoice = true
+                            } else {
+                                isShowingPaywall = true
+                            }
+                        } label: {
+                            Label("Scan Invoice", systemImage: "doc.viewfinder")
                         }
                     } label: {
                         Label(LocalizationKey.Expense.add, systemImage: "plus")
@@ -70,6 +85,9 @@ struct ExpensesListView: View {
                     startDate: $startDate,
                     endDate: $endDate
                 )
+            }
+            .sheet(isPresented: $isShowingScanInvoice) {
+                ScanInvoiceView()
             }
             .alert("Error", isPresented: Binding(
                 get: { appState.isShowingError },
