@@ -13,6 +13,12 @@ struct ExpenseRowView: View {
     let expense: Expense
     @AppStorage(StorageKey.selectedCurrencyCode) private var currencyCode = StorageKey.defaultCurrencyCode
     
+    private var displayDescription: String {
+        expense.descriptionText.hasPrefix("Labor: ")
+            ? String(expense.descriptionText.dropFirst(7))
+            : expense.descriptionText
+    }
+
     var body: some View {
         HStack(spacing: 12) {
             // Category icon
@@ -22,19 +28,19 @@ struct ExpenseRowView: View {
                 .frame(width: 32)
             
             VStack(alignment: .leading, spacing: 4) {
-                Text(expense.descriptionText)
+                Text(displayDescription)
                     .font(.subheadline)
                     .fontWeight(.medium)
                 HStack(spacing: 8) {
-                    Text(expense.category.displayName)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                    Text("•")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
                     Text(expense.date, style: .date)
                         .font(.caption)
                         .foregroundStyle(.secondary)
+                }
+                if let project = expense.project {
+                    Label(project.name, systemImage: "folder")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
                 }
             }
             

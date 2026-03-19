@@ -11,11 +11,17 @@ struct ExpenseRow: View {
     let expense: Expense
     @AppStorage(StorageKey.selectedCurrencyCode) private var currencyCode = StorageKey.defaultCurrencyCode
     
+    private var displayDescription: String {
+        expense.descriptionText.hasPrefix("Labor: ")
+            ? String(expense.descriptionText.dropFirst(7))
+            : expense.descriptionText
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             // Description and category badge
             HStack(alignment: .center) {
-                Text(expense.descriptionText)
+                Text(displayDescription)
                     .font(.headline)
                     .lineLimit(2)
                 Spacer()

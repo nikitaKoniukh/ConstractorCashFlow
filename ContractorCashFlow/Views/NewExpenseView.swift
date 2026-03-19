@@ -231,7 +231,7 @@ struct NewExpenseView: View {
     /// Updates description and type when a worker is selected
     private func updateFromWorkerSelection() {
         guard let worker = selectedWorker else { return }
-        descriptionText = "Labor: \(worker.workerName)"
+        descriptionText = worker.workerName
         unitsWorked = ""
         amount = nil
         // Default to the worker's primary type

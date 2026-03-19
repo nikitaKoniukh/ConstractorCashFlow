@@ -196,7 +196,7 @@ struct EditExpenseView: View {
     
     private func updateFromWorkerSelection() {
         guard let worker = selectedWorker else { return }
-        descriptionText = String(format: LocalizationKey.Expense.laborDescriptionFormat, worker.workerName)
+        descriptionText = worker.workerName
         unitsWorked = ""
         amount = nil
         selectedLaborType = worker.laborType

@@ -102,6 +102,7 @@ private struct ExpensesListContent: View {
 
     @State private var expenseToEdit: Expense?
     @State private var isShowingPaywall = false
+    @AppStorage(StorageKey.selectedCurrencyCode) private var currencyCode = StorageKey.defaultCurrencyCode
 
     private var isIPad: Bool { horizontalSizeClass == .regular }
 
@@ -130,6 +131,31 @@ private struct ExpensesListContent: View {
         }
 
         return result
+    }
+
+    /// Expenses grouped by calendar day, sorted newest-first
+    private var groupedExpenses: [(day: Date, expenses: [Expense])] {
+        let cal = Calendar.current
+        let grouped = Dictionary(grouping: filteredExpenses) {
+            cal.startOfDay(for: $0.date)
+        }
+        return grouped
+            .map { (day: $0.key, expenses: $0.value.sorted { $0.date > $1.date }) }
+            .sorted { $0.day > $1.day }
+    }
+
+    private func dayHeader(_ date: Date) -> String {
+        let cal = Calendar.current
+        if cal.isDateInToday(date) { return String(localized: "Today") }
+        if cal.isDateInYesterday(date) { return String(localized: "Yesterday") }
+        if let daysAgo = cal.dateComponents([.day], from: date, to: Date()).day, daysAgo < 7 {
+            return date.formatted(.dateTime.weekday(.wide))
+        }
+        return date.formatted(.dateTime.month(.wide).day().year())
+    }
+
+    private func dayTotal(_ expenses: [Expense]) -> Double {
+        expenses.reduce(0) { $0 + $1.amount }
     }
 
     var body: some View {
@@ -172,40 +198,79 @@ private struct ExpensesListContent: View {
         }
     }
 
-    // MARK: iPhone – plain list
+    // MARK: iPhone – sectioned list by date
     private var iPhoneList: some View {
         List {
-            ForEach(filteredExpenses) { expense in
-                ExpenseRowView(expense: expense)
-                    .contentShape(Rectangle())
-                    .onTapGesture {
-                        expenseToEdit = expense
+            ForEach(groupedExpenses, id: \.day) { group in
+                Section {
+                    ForEach(group.expenses) { expense in
+                        ExpenseRowView(expense: expense)
+                            .contentShape(Rectangle())
+                            .onTapGesture {
+                                expenseToEdit = expense
+                            }
                     }
+                    .onDelete { offsets in
+                        deleteExpenses(offsets, from: group.expenses)
+                    }
+                } header: {
+                    HStack {
+                        Text(dayHeader(group.day))
+                            .font(.subheadline)
+                            .fontWeight(.semibold)
+                            .foregroundStyle(.primary)
+                        Spacer()
+                        Text(dayTotal(group.expenses), format: .currency(code: currencyCode))
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+                            .foregroundStyle(.secondary)
+                    }
+                }
             }
-            .onDelete(perform: deleteExpenses)
         }
     }
 
-    // MARK: iPad – card grid
+    // MARK: iPad - date-grouped card grid
     private var iPadGrid: some View {
         ScrollView {
-            LazyVGrid(
-                columns: [GridItem(.adaptive(minimum: 340, maximum: 480), spacing: 16)],
-                spacing: 16
-            ) {
-                ForEach(filteredExpenses) { expense in
-                    ExpenseCardView(expense: expense)
-                        .contentShape(Rectangle())
-                        .onTapGesture {
-                            expenseToEdit = expense
-                        }
-                        .contextMenu {
-                            Button(role: .destructive) {
-                                deleteExpense(expense)
-                            } label: {
-                                Label(LocalizationKey.General.delete, systemImage: "trash")
+            LazyVStack(alignment: .leading, spacing: 24, pinnedViews: .sectionHeaders) {
+                ForEach(groupedExpenses, id: \.day) { group in
+                    Section {
+                        LazyVGrid(
+                            columns: [GridItem(.adaptive(minimum: 340, maximum: 480), spacing: 16)],
+                            spacing: 16
+                        ) {
+                            ForEach(group.expenses) { expense in
+                                ExpenseCardView(expense: expense)
+                                    .contentShape(Rectangle())
+                                    .onTapGesture {
+                                        expenseToEdit = expense
+                                    }
+                                    .contextMenu {
+                                        Button(role: .destructive) {
+                                            deleteExpense(expense)
+                                        } label: {
+                                            Label(LocalizationKey.General.delete, systemImage: "trash")
+                                        }
+                                    }
                             }
                         }
+                    } header: {
+                        HStack {
+                            Text(dayHeader(group.day))
+                                .font(.subheadline)
+                                .fontWeight(.semibold)
+                                .foregroundStyle(.primary)
+                            Spacer()
+                            Text(dayTotal(group.expenses), format: .currency(code: currencyCode))
+                                .font(.subheadline)
+                                .fontWeight(.medium)
+                                .foregroundStyle(.secondary)
+                        }
+                        .padding(.horizontal, 4)
+                        .padding(.vertical, 6)
+                        .background(Color(.systemGroupedBackground))
+                    }
                 }
             }
             .padding()
@@ -213,10 +278,10 @@ private struct ExpensesListContent: View {
         .background(Color(.systemGroupedBackground))
     }
 
-    private func deleteExpenses(offsets: IndexSet) {
+    private func deleteExpenses(_ offsets: IndexSet, from group: [Expense]) {
         withAnimation {
             for index in offsets {
-                modelContext.delete(filteredExpenses[index])
+                modelContext.delete(group[index])
             }
             try? modelContext.save()
         }
@@ -232,6 +297,12 @@ private struct ExpenseCardView: View {
     let expense: Expense
     @AppStorage(StorageKey.selectedCurrencyCode) private var currencyCode = StorageKey.defaultCurrencyCode
 
+    private var displayDescription: String {
+        expense.descriptionText.hasPrefix("Labor: ")
+            ? String(expense.descriptionText.dropFirst(7))
+            : expense.descriptionText
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             // Header
@@ -244,7 +315,7 @@ private struct ExpenseCardView: View {
                     .clipShape(RoundedRectangle(cornerRadius: 10))
 
                 VStack(alignment: .leading, spacing: 3) {
-                    Text(expense.descriptionText)
+                    Text(displayDescription)
                         .font(.headline)
                         .lineLimit(2)
                     if let project = expense.project {
