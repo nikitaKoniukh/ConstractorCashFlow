@@ -290,29 +290,6 @@
         }
       }
     },
-    "Active" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Active"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "פעיל"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Активный"
-          }
-        }
-      }
-    },
     "Active Project" : {
       "localizations" : {
         "en" : {
@@ -492,29 +469,6 @@
     "Add Manually" : {
 
     },
-    "Add Project" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Add Project"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "הוסף פרויקט"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Добавить проект"
-          }
-        }
-      }
-    },
     "Add your first client to manage contacts and projects" : {
       "localizations" : {
         "en" : {
@@ -533,29 +487,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Добавьте первого клиента для управления контактами и проектами"
-          }
-        }
-      }
-    },
-    "Add your first project to get started tracking expenses and invoices" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Add your first project to get started tracking expenses and invoices"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "הוסף את הפרויקט הראשון שלך כדי להתחיל לעקוב אחר הוצאות וחשבוניות"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Добавьте первый проект, чтобы начать отслеживать расходы и счета"
           }
         }
       }
@@ -1301,29 +1232,6 @@
     "Budget Warning: 80%" : {
 
     },
-    "Budget Warnings" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Budget Warnings"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "אזהרות תקציב"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Предупреждения о бюджете"
-          }
-        }
-      }
-    },
     "C$ CAD" : {
 
     },
@@ -1349,29 +1257,6 @@
         }
       }
     },
-    "Cancel All" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cancel All"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "בטל הכל"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Отменить все"
-          }
-        }
-      }
-    },
     "Category" : {
       "localizations" : {
         "en" : {
@@ -1390,29 +1275,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Категория"
-          }
-        }
-      }
-    },
-    "Check Permission Status" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Check Permission Status"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "בדוק סטטוס הרשאה"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Проверить статус разрешений"
           }
         }
       }
@@ -1771,121 +1633,6 @@
     },
     "ContractorCashFlow" : {
 
-    },
-    "Create Project at 85% Budget" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Create Project at 85% Budget"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "צור פרויקט ב-85% תקציב"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Создать проект с 85% бюджета"
-          }
-        }
-      }
-    },
-    "Create Project at 105% Budget" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Create Project at 105% Budget"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "צור פרויקט ב-105% תקציב"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Создать проект с 105% бюджета"
-          }
-        }
-      }
-    },
-    "Create Test Invoice (Due in 2 days)" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Create Test Invoice (Due in 2 days)"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "צור חשבונית בדיקה (בעוד יומיים)"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Создать тестовый счёт (через 2 дня)"
-          }
-        }
-      }
-    },
-    "Create Test Invoice (Due in 4 days - will trigger reminder)" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Create Test Invoice (Due in 4 days - will trigger reminder)"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "צור חשבונית בדיקה (בעוד 4 ימים - יפעיל תזכורת)"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Создать тестовый счёт (через 4 дня — сработает напоминание)"
-          }
-        }
-      }
-    },
-    "Create Test Invoice (Overdue)" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Create Test Invoice (Overdue)"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "צור חשבונית בדיקה (באיחור)"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Создать тестовый счёт (просрочен)"
-          }
-        }
-      }
     },
     "Created" : {
       "localizations" : {
@@ -2594,52 +2341,6 @@
         }
       }
     },
-    "Expenses" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Expenses"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "הוצאות"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Расходы"
-          }
-        }
-      }
-    },
-    "Expenses by Category" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Expenses by Category"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "הוצאות לפי קטגוריה"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Расходы по категориям"
-          }
-        }
-      }
-    },
     "Export & Share" : {
       "localizations" : {
         "en" : {
@@ -3056,52 +2757,6 @@
         }
       }
     },
-    "Income" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Income"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "הכנסות"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Доход"
-          }
-        }
-      }
-    },
-    "Invoice" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Invoice"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "חשבונית"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Счёт"
-          }
-        }
-      }
-    },
     "Invoice Due Soon" : {
 
     },
@@ -3127,29 +2782,6 @@
     },
     "Invoice Overdue" : {
 
-    },
-    "Invoice Reminders" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Invoice Reminders"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "תזכורות לחשבוניות"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Напоминания о счетах"
-          }
-        }
-      }
     },
     "Invoice to %@" : {
       "localizations" : {
@@ -3635,9 +3267,6 @@
         }
       }
     },
-    "Worker: %@" : {
-
-    },
     "labor.activeProjects" : {
       "localizations" : {
         "en" : {
@@ -3744,29 +3373,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Все типы"
-          }
-        }
-      }
-    },
-    "labor.amount" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Amount"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "סכום"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Сумма"
           }
         }
       }
@@ -3881,52 +3487,6 @@
         }
       }
     },
-    "labor.completed" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Completed"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "הושלם"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Завершено"
-          }
-        }
-      }
-    },
-    "labor.completedJobs" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Completed Jobs"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "עבודות שהושלמו"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Завершённые работы"
-          }
-        }
-      }
-    },
     "labor.contractPrice" : {
       "localizations" : {
         "en" : {
@@ -3967,75 +3527,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Дата создания"
-          }
-        }
-      }
-    },
-    "labor.createExpenseHint" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "A matching labor expense will be created for the selected project."
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "תיווצר הוצאת עבודה תואמת עבור הפרויקט שנבחר."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Для выбранного проекта будет создана соответствующая трудовая расходная запись."
-          }
-        }
-      }
-    },
-    "labor.createExpenseToggle" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Create Linked Expense"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "צור הוצאה מקושרת"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Создать связанную расходную запись"
-          }
-        }
-      }
-    },
-    "labor.dateRange" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Date Range"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "טווח תאריכים"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Диапазон дат"
           }
         }
       }
@@ -4172,52 +3663,6 @@
         }
       }
     },
-    "labor.duration.hours" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "hours"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "שעות"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "часов"
-          }
-        }
-      }
-    },
-    "labor.duration.unavailable" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "N/A"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "לא זמין"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Н/Д"
-          }
-        }
-      }
-    },
     "labor.editTitle" : {
       "localizations" : {
         "en" : {
@@ -4236,75 +3681,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Редактировать сотрудника"
-          }
-        }
-      }
-    },
-    "labor.endDate" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "End Date"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "תאריך סיום"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Дата окончания"
-          }
-        }
-      }
-    },
-    "labor.expenseLinked" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Expense Linked"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "הוצאה מקושרת"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Расход связан"
-          }
-        }
-      }
-    },
-    "labor.filterByDate" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Date"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "תאריך"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Дата"
           }
         }
       }
@@ -4529,52 +3905,6 @@
         }
       }
     },
-    "labor.linkedToExpense" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Linked to an expense"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "מקושר להוצאה"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Связано с расходом"
-          }
-        }
-      }
-    },
-    "labor.manualOverrideHint" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "You can manually override the calculated total if needed."
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "אפשר לשנות ידנית את הסכום המחושב אם צריך."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "При необходимости можно вручную изменить рассчитанную сумму."
-          }
-        }
-      }
-    },
     "labor.noLabor" : {
       "localizations" : {
         "en" : {
@@ -4615,29 +3945,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Добавьте сотрудников и отслеживайте их стоимость здесь."
-          }
-        }
-      }
-    },
-    "labor.noProject" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No Project"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ללא פרויקט"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Без проекта"
           }
         }
       }
@@ -4708,52 +4015,6 @@
         }
       }
     },
-    "labor.project" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Project"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "פרויקט"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Проект"
-          }
-        }
-      }
-    },
-    "labor.projectAssociation" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Project Association"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "שיוך לפרויקט"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Связь с проектом"
-          }
-        }
-      }
-    },
     "labor.projectLabel" : {
       "localizations" : {
         "en" : {
@@ -4772,29 +4033,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Проект"
-          }
-        }
-      }
-    },
-    "labor.rateAndHours" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Rate and Hours"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "תעריף ושעות"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ставка и часы"
           }
         }
       }
@@ -4941,29 +4179,6 @@
         }
       }
     },
-    "labor.selectProject" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Select Project"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "בחר פרויקט"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Выберите проект"
-          }
-        }
-      }
-    },
     "labor.selectWorker" : {
       "localizations" : {
         "en" : {
@@ -5008,29 +4223,6 @@
         }
       }
     },
-    "labor.showCompletedOnly" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Show Completed Only"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "הצג רק שהושלמו"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Показывать только завершённые"
-          }
-        }
-      }
-    },
     "labor.sort.amountHighToLow" : {
       "localizations" : {
         "en" : {
@@ -5071,52 +4263,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Сумма (по возрастанию)"
-          }
-        }
-      }
-    },
-    "labor.sort.dateNewest" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Date (Newest)"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "תאריך (החדש ביותר)"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Дата (сначала новые)"
-          }
-        }
-      }
-    },
-    "labor.sort.dateOldest" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Date (Oldest)"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "תאריך (הישן ביותר)"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Дата (сначала старые)"
           }
         }
       }
@@ -5209,75 +4355,6 @@
         }
       }
     },
-    "labor.startDate" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Start Date"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "תאריך התחלה"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Дата начала"
-          }
-        }
-      }
-    },
-    "labor.status" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Status"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "סטטוס"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Статус"
-          }
-        }
-      }
-    },
-    "labor.status.completed" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Completed"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "הושלם"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Завершено"
-          }
-        }
-      }
-    },
     "labor.summaryAllTime" : {
       "localizations" : {
         "en" : {
@@ -5344,29 +4421,6 @@
         }
       }
     },
-    "labor.totalCost" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Total Cost"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "עלות כוללת"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Общая стоимость"
-          }
-        }
-      }
-    },
     "labor.totalDaysLabel" : {
       "localizations" : {
         "en" : {
@@ -5429,29 +4483,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Всего заработано"
-          }
-        }
-      }
-    },
-    "labor.totalEntries" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Entries"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "רשומות"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Записи"
           }
         }
       }
@@ -5672,75 +4703,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "часов"
-          }
-        }
-      }
-    },
-    "labor.useEndDate" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Use End Date"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "השתמש בתאריך סיום"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Использовать дату окончания"
-          }
-        }
-      }
-    },
-    "labor.useStartDate" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Use Start Date"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "השתמש בתאריך התחלה"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Использовать дату начала"
-          }
-        }
-      }
-    },
-    "labor.workDate" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Work Date"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "תאריך עבודה"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Дата работы"
           }
         }
       }
@@ -6015,98 +4977,6 @@
     "No matching invoices" : {
 
     },
-    "No Projects" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No Projects"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "אין פרויקטים"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Нет проектов"
-          }
-        }
-      }
-    },
-    "Notification Status" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Notification Status"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "סטטוס התראות"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Статус уведомлений"
-          }
-        }
-      }
-    },
-    "Notification Tests" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Notification Tests"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "בדיקות התראות"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Тесты уведомлений"
-          }
-        }
-      }
-    },
-    "Notifications" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Notifications"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "התראות"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Уведомления"
-          }
-        }
-      }
-    },
     "OK" : {
       "localizations" : {
         "en" : {
@@ -6132,29 +5002,6 @@
     "Overdue" : {
 
     },
-    "Overdue Alerts" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Overdue Alerts"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "התראות על איחור"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Оповещения о просрочке"
-          }
-        }
-      }
-    },
     "Paid" : {
       "localizations" : {
         "en" : {
@@ -6177,29 +5024,6 @@
         }
       }
     },
-    "Pending Notifications: %lld" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pending Notifications: %lld"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "התראות ממתינות: %lld"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ожидающие уведомления: %lld"
-          }
-        }
-      }
-    },
     "Preview" : {
       "localizations" : {
         "en" : {
@@ -6218,52 +5042,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Предпросмотр"
-          }
-        }
-      }
-    },
-    "Print All Notifications" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Print All Notifications"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "הדפס את כל ההתראות"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Распечатать все уведомления"
-          }
-        }
-      }
-    },
-    "Print All Pending" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Print All Pending"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "הדפס את כל הממתינים"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Распечатать все ожидающие"
           }
         }
       }
@@ -6552,29 +5330,6 @@
         }
       }
     },
-    "project.detailTitle.label" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Project Details"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "פרטי פרויקט"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Детали проекта"
-          }
-        }
-      }
-    },
     "project.empty" : {
       "localizations" : {
         "en" : {
@@ -6709,29 +5464,6 @@
     },
     "Receipt" : {
 
-    },
-    "Refresh Count" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Refresh Count"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "רענן מספר"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Обновить количество"
-          }
-        }
-      }
     },
     "Remaining" : {
       "localizations" : {
@@ -8414,52 +7146,6 @@
     "Tap to view full screen" : {
 
     },
-    "Test Budget Notifications" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Test Budget Notifications"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "בדוק התראות תקציב"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Тестировать уведомления о бюджете"
-          }
-        }
-      }
-    },
-    "Test Invoice Notifications" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Test Invoice Notifications"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "בדוק התראות חשבוניות"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Тестировать уведомления о счетах"
-          }
-        }
-      }
-    },
     "This worker has %lld linked expense(s). The expenses will remain but won't be linked to a worker." : {
       "localizations" : {
         "en" : {
@@ -8555,6 +7241,9 @@
 
     },
     "View Receipt" : {
+
+    },
+    "Worker: %@" : {
 
     },
     "Yesterday" : {
