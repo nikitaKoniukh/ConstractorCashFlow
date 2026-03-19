@@ -88,7 +88,7 @@ enum LocalizationKey {
         static let noResultsSearchFallback = String(localized: "No matching expenses")
         static let decimalPlaceholder = String(localized: "0.00")
         static let editTitle = LocalizedStringKey("Edit Expense")
-        static let laborDescriptionFormat = String(localized: "Labor: %@")
+        static let laborDescriptionFormat = String(localized: "Worker: %@")
         static let materials = LocalizedStringKey("expense.category.materials")
         static let labor = LocalizedStringKey("expense.category.labor")
         static let equipment = LocalizedStringKey("expense.category.equipment")

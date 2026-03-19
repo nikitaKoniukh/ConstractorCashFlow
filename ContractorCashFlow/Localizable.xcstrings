@@ -3635,7 +3635,7 @@
         }
       }
     },
-    "Labor: %@" : {
+    "Worker: %@" : {
 
     },
     "labor.activeProjects" : {
@@ -3665,19 +3665,19 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Add Labor"
+            "value" : "Add Worker"
           }
         },
         "he" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "הוסף עבודה"
+            "value" : "הוסף עובד"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Добавить работу"
+            "value" : "Добавить сотрудника"
           }
         }
       }
@@ -3687,19 +3687,19 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "New Labor Entry"
+            "value" : "New Worker"
           }
         },
         "he" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "רישום עבודה חדש"
+            "value" : "עובד חדש"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Новая запись работы"
+            "value" : "Новый сотрудник"
           }
         }
       }
@@ -4155,19 +4155,19 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Delete Labor Entry"
+            "value" : "Delete Worker"
           }
         },
         "he" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "מחק רישום עבודה"
+            "value" : "מחק עובד"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Удалить запись работы"
+            "value" : "Удалить сотрудника"
           }
         }
       }
@@ -4223,19 +4223,19 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Edit Labor Entry"
+            "value" : "Edit Worker"
           }
         },
         "he" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ערוך רישום עבודה"
+            "value" : "ערוך עובד"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Редактировать запись работы"
+            "value" : "Редактировать сотрудника"
           }
         }
       }
@@ -4380,19 +4380,19 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Labor Filters"
+            "value" : "Worker Filters"
           }
         },
         "he" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "מסנני עבודה"
+            "value" : "מסנני עובדים"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Фильтры работ"
+            "value" : "Фильтры сотрудников"
           }
         }
       }
@@ -4512,19 +4512,19 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Labor Type"
+            "value" : "Worker Type"
           }
         },
         "he" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "סוג עבודה"
+            "value" : "סוג עובד"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Тип работы"
+            "value" : "Тип сотрудника"
           }
         }
       }
@@ -4580,19 +4580,19 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "No Labor Entries"
+            "value" : "No Workers"
           }
         },
         "he" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "אין רישומי עבודה"
+            "value" : "אין עובדים"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Нет записей работы"
+            "value" : "Нет сотрудников"
           }
         }
       }
@@ -4602,19 +4602,19 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Track workers, subcontractors, and labor costs here."
+            "value" : "Add workers and track their costs here."
           }
         },
         "he" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "כאן ניתן לעקוב אחר עובדים, קבלני משנה ועלויות עבודה."
+            "value" : "הוסף עובדים ועקוב אחר עלויותיהם כאן."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Здесь можно отслеживать работников, субподрядчиков и затраты на труд."
+            "value" : "Добавьте сотрудников и отслеживайте их стоимость здесь."
           }
         }
       }
@@ -4653,13 +4653,13 @@
         "he" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "אין רישומי עבודה שתואמים למסננים הנוכחיים."
+            "value" : "אין עובדים שתואמים למסננים הנוכחיים."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Нет записей работы, соответствующих текущим фильтрам."
+            "value" : "Нет сотрудников, соответствующих текущим фильтрам."
           }
         }
       }
@@ -4908,13 +4908,13 @@
         "he" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "חפש לפי עובד או הערות"
+            "value" : "חיפוש לפי שם עובד"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Поиск по работнику или заметкам"
+            "value" : "Поиск по имени сотрудника"
           }
         }
       }
@@ -5305,19 +5305,19 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Labor"
+            "value" : "Workers"
           }
         },
         "he" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "עבודה"
+            "value" : "עובדים"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Работы"
+            "value" : "Сотрудники"
           }
         }
       }
@@ -5483,19 +5483,19 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Labor Cost"
+            "value" : "Worker Cost"
           }
         },
         "he" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "עלות עבודה"
+            "value" : "עלות עובדים"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Стоимость труда"
+            "value" : "Стоимость сотрудников"
           }
         }
       }
@@ -8350,19 +8350,19 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Labor"
+            "value" : "Workers"
           }
         },
         "he" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "עבודה"
+            "value" : "עובדים"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Работы"
+            "value" : "Сотрудники"
           }
         }
       }
