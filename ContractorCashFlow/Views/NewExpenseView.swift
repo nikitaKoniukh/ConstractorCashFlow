@@ -34,7 +34,8 @@ struct NewExpenseView: View {
 
     /// Number of days entered (integer) when daily labor is chosen
     private var daysCount: Int {
-        Int(unitsWorked) ?? 0
+        // Handle both integer and decimal input (e.g. "2" or "2.0")
+        Int(Double(unitsWorked) ?? 0)
     }
 
     /// True when the multi-date picker should appear
@@ -43,7 +44,9 @@ struct NewExpenseView: View {
     }
 
     private var isValid: Bool {
-        guard !descriptionText.isEmpty && (amount ?? 0) > 0 else { return false }
+        // For labor, use calculatedAmount as fallback when amount hasn't been set yet
+        let effectiveAmount = amount ?? calculatedAmount ?? 0
+        guard !descriptionText.isEmpty && effectiveAmount > 0 else { return false }
         if useMultiDatePicker {
             return selectedDates.count == daysCount
         }
@@ -223,6 +226,8 @@ struct NewExpenseView: View {
                 if category != .labor {
                     selectedWorker = nil
                     unitsWorked = ""
+                    amount = nil
+                    selectedDates = []
                 }
             }
         }
@@ -244,11 +249,13 @@ struct NewExpenseView: View {
     
     private func saveExpense() {
         isSaving = true
+        // Ensure we use the calculated amount if the user never manually edited the field
+        let finalAmount = amount ?? calculatedAmount ?? 0
 
         do {
             if useMultiDatePicker && !selectedDates.isEmpty {
                 // Create one expense per selected day
-                let dailyRate = (amount ?? 0) / Double(daysCount)
+                let dailyRate = finalAmount / Double(daysCount)
                 let cal = Calendar.current
                 for components in selectedDates {
                     let day = cal.date(from: components) ?? date
@@ -268,7 +275,7 @@ struct NewExpenseView: View {
                 let units = Double(unitsWorked)
                 let expense = Expense(
                     category: category,
-                    amount: amount ?? 0,
+                    amount: finalAmount,
                     descriptionText: descriptionText,
                     date: date,
                     project: selectedProject,
