@@ -41,9 +41,12 @@ struct AnalyticsView: View {
     @Query(sort: \Invoice.createdDate, order: .reverse) private var invoices: [Invoice]
 
     @Environment(AppState.self) private var appState
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @AppStorage(StorageKey.selectedCurrencyCode) private var currencyCode = StorageKey.defaultCurrencyCode
 
     @State private var selectedPeriod: AnalyticsPeriod = .month
+
+    private var isIPad: Bool { horizontalSizeClass == .regular }
 
     private var filteredExpenses: [Expense] {
         guard let start = selectedPeriod.startDate else { return expenses }
@@ -75,49 +78,96 @@ struct AnalyticsView: View {
         NavigationStack(path: appState.navigationPath(for: .analytics)) {
             ScrollView {
                 VStack(spacing: 20) {
-                    // Period filter
                     periodPicker
 
-                    // KPI summary row
-                    kpiRow
-
-                    // Income vs Expenses chart
-                    IncomeExpensesChartCard(
-                        totalIncome: totalIncome,
-                        totalExpenses: totalExpenses
-                    )
-
-                    // Monthly trend
-                    if selectedPeriod != .week {
-                        MonthlyTrendCard(
-                            expenses: filteredExpenses,
-                            invoices: filteredInvoices,
-                            period: selectedPeriod
-                        )
+                    if isIPad {
+                        iPadLayout
+                    } else {
+                        iPhoneLayout
                     }
-
-                    // Expense breakdown by category
-                    ExpenseByCategoryChartCard(expenses: filteredExpenses)
-
-                    // Invoice status breakdown
-                    InvoiceStatusCard(
-                        paid: totalIncome,
-                        pending: pendingIncome,
-                        overdue: overdueAmount
-                    )
-
-                    // Budget utilization per project
-                    if !projects.isEmpty {
-                        BudgetUtilizationChartCard(projects: projects)
-                    }
-
-                    // Top projects by revenue
-                    TopProjectsCard(projects: projects, period: selectedPeriod)
                 }
                 .padding()
             }
             .navigationTitle(LocalizationKey.Analytics.title)
             .background(Color(.systemGroupedBackground))
+        }
+    }
+
+    // MARK: - iPhone Layout
+
+    private var iPhoneLayout: some View {
+        VStack(spacing: 20) {
+            kpiRow
+
+            IncomeExpensesChartCard(
+                totalIncome: totalIncome,
+                totalExpenses: totalExpenses,
+                chartHeight: 160
+            )
+
+            if selectedPeriod != .week {
+                MonthlyTrendCard(
+                    expenses: filteredExpenses,
+                    invoices: filteredInvoices,
+                    period: selectedPeriod,
+                    chartHeight: 180
+                )
+            }
+
+            ExpenseByCategoryChartCard(expenses: filteredExpenses, rowHeight: 44)
+
+            InvoiceStatusCard(
+                paid: totalIncome,
+                pending: pendingIncome,
+                overdue: overdueAmount
+            )
+
+            if !projects.isEmpty {
+                BudgetUtilizationChartCard(projects: projects, rowHeight: 44)
+            }
+
+            TopProjectsCard(projects: projects, period: selectedPeriod)
+        }
+    }
+
+    // MARK: - iPad Layout (two-column grid)
+
+    private var iPadLayout: some View {
+        let columns = [GridItem(.flexible(), spacing: 20), GridItem(.flexible(), spacing: 20)]
+        return VStack(spacing: 20) {
+            iPadKpiRow
+
+            LazyVGrid(columns: columns, spacing: 20) {
+                IncomeExpensesChartCard(
+                    totalIncome: totalIncome,
+                    totalExpenses: totalExpenses,
+                    chartHeight: 200
+                )
+
+                InvoiceStatusCard(
+                    paid: totalIncome,
+                    pending: pendingIncome,
+                    overdue: overdueAmount
+                )
+
+                if selectedPeriod != .week {
+                    MonthlyTrendCard(
+                        expenses: filteredExpenses,
+                        invoices: filteredInvoices,
+                        period: selectedPeriod,
+                        chartHeight: 240
+                    )
+                    .gridCellColumns(2)
+                }
+
+                ExpenseByCategoryChartCard(expenses: filteredExpenses, rowHeight: 52)
+
+                if !projects.isEmpty {
+                    BudgetUtilizationChartCard(projects: projects, rowHeight: 52)
+                }
+            }
+
+            TopProjectsCard(projects: projects, period: selectedPeriod)
         }
     }
 
@@ -152,10 +202,41 @@ struct AnalyticsView: View {
         .shadow(color: .black.opacity(0.05), radius: 8, y: 2)
     }
 
-    // MARK: - KPI Row
+    // MARK: - KPI Rows
 
     private var kpiRow: some View {
         HStack(spacing: 12) {
+            KPICard(
+                title: LocalizationKey.Analytics.netBalance,
+                value: totalIncome - totalExpenses,
+                color: (totalIncome - totalExpenses) >= 0 ? .green : .red,
+                icon: "scalemass.fill"
+            )
+            KPICard(
+                title: LocalizationKey.Invoice.overdue,
+                value: overdueAmount,
+                color: overdueAmount > 0 ? .red : .secondary,
+                icon: "exclamationmark.circle.fill"
+            )
+        }
+        .frame(maxWidth: .infinity)
+    }
+
+    // iPad shows 4 KPI cards for richer at-a-glance info
+    private var iPadKpiRow: some View {
+        HStack(spacing: 16) {
+            KPICard(
+                title: LocalizationKey.Analytics.income,
+                value: totalIncome,
+                color: .green,
+                icon: "arrow.down.circle.fill"
+            )
+            KPICard(
+                title: LocalizationKey.Analytics.expenses,
+                value: totalExpenses,
+                color: .red,
+                icon: "arrow.up.circle.fill"
+            )
             KPICard(
                 title: LocalizationKey.Analytics.netBalance,
                 value: totalIncome - totalExpenses,
@@ -212,6 +293,7 @@ struct MonthlyTrendCard: View {
     let expenses: [Expense]
     let invoices: [Invoice]
     let period: AnalyticsPeriod
+    var chartHeight: CGFloat = 180
     @AppStorage(StorageKey.selectedCurrencyCode) private var currencyCode = StorageKey.defaultCurrencyCode
 
     struct MonthPoint: Identifiable {
@@ -291,7 +373,7 @@ struct MonthlyTrendCard: View {
                     LocalizationKey.Analytics.chartIncomeString: Color.green,
                     LocalizationKey.Analytics.chartExpensesString: Color.red
                 ])
-                .frame(height: 180)
+                .frame(height: chartHeight)
                 .chartYAxis {
                     AxisMarks(position: .leading) { value in
                         AxisValueLabel {
@@ -493,6 +575,7 @@ struct TopProjectsCard: View {
 struct IncomeExpensesChartCard: View {
     let totalIncome: Double
     let totalExpenses: Double
+    var chartHeight: CGFloat = 160
     @AppStorage(StorageKey.selectedCurrencyCode) private var currencyCode = StorageKey.defaultCurrencyCode
 
     private var netBalance: Double { totalIncome - totalExpenses }
@@ -522,7 +605,7 @@ struct IncomeExpensesChartCard: View {
                         .foregroundStyle(item.category.color)
                         .cornerRadius(4)
                     }
-                    .frame(height: 160)
+                    .frame(height: chartHeight)
 
                     VStack(alignment: .leading, spacing: 12) {
                         LegendItem(color: .green, label: LocalizationKey.Analytics.income, value: totalIncome)
@@ -561,6 +644,7 @@ struct IncomeExpensesChartCard: View {
 
 struct ExpenseByCategoryChartCard: View {
     let expenses: [Expense]
+    var rowHeight: CGFloat = 44
 
     private var categoryData: [ExpenseCategoryData] {
         let grouped = Dictionary(grouping: expenses) { $0.category }
@@ -599,7 +683,7 @@ struct ExpenseByCategoryChartCard: View {
                             .padding(.leading, 4)
                     }
                 }
-                .frame(height: CGFloat(categoryData.count * 44 + 20))
+                .frame(height: CGFloat(categoryData.count) * rowHeight + 20)
                 .chartXAxis(.hidden)
                 .chartYAxis {
                     AxisMarks { value in
@@ -641,6 +725,7 @@ struct ExpenseByCategoryChartCard: View {
 
 struct BudgetUtilizationChartCard: View {
     let projects: [Project]
+    var rowHeight: CGFloat = 44
     @AppStorage(StorageKey.selectedCurrencyCode) private var currencyCode = StorageKey.defaultCurrencyCode
 
     private var projectData: [ProjectBudgetData] {
@@ -669,7 +754,7 @@ struct BudgetUtilizationChartCard: View {
                         .cornerRadius(4)
                     }
                 }
-                .frame(height: CGFloat(projectData.count * 44 + 40))
+                .frame(height: CGFloat(projectData.count) * rowHeight + 40)
                 .chartXAxis {
                     AxisMarks(position: .bottom) { value in
                         AxisValueLabel {
