@@ -375,6 +375,12 @@ private struct ExpenseCardView: View {
                 }
                 .font(.caption)
                 .foregroundStyle(.secondary)
+
+                if expense.receiptImageData != nil {
+                    Image(systemName: "paperclip")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
             }
             .padding(.horizontal)
             .padding(.vertical, 10)

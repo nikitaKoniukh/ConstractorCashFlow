@@ -6747,6 +6747,9 @@
         }
       }
     },
+    "Receipt" : {
+
+    },
     "Refresh Count" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -8206,6 +8209,9 @@
         }
       }
     },
+    "Tap to view full screen" : {
+
+    },
     "Test Budget Notifications" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -8347,6 +8353,9 @@
       }
     },
     "Unpaid" : {
+
+    },
+    "View Receipt" : {
 
     },
     "Yesterday" : {

@@ -35,6 +35,11 @@ struct ExpenseRowView: View {
                     Text(expense.date, style: .date)
                         .font(.caption)
                         .foregroundStyle(.secondary)
+                    if expense.receiptImageData != nil {
+                        Image(systemName: "paperclip")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
                 }
                 if let project = expense.project {
                     Label(project.name, systemImage: "folder")

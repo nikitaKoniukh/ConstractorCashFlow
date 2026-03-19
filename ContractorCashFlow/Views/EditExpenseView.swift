@@ -24,7 +24,8 @@ struct EditExpenseView: View {
     @State private var date: Date
     @State private var selectedProject: Project?
     @State private var isSaving: Bool = false
-    
+    @State private var isShowingReceiptFullScreen = false
+
     // Labor-specific fields
     @State private var selectedWorker: LaborDetails?
     @State private var selectedLaborType: LaborType
@@ -160,6 +161,46 @@ struct EditExpenseView: View {
                     }
                 } header: {
                     Text(LocalizationKey.Expense.project)
+                }
+
+                if let imageData = expense.receiptImageData,
+                   let uiImage = UIImage(data: imageData) {
+                    Section("Receipt") {
+                        Button {
+                            isShowingReceiptFullScreen = true
+                        } label: {
+                            HStack(spacing: 12) {
+                                Image(uiImage: uiImage)
+                                    .resizable()
+                                    .scaledToFill()
+                                    .frame(width: 60, height: 60)
+                                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 8)
+                                            .stroke(Color.secondary.opacity(0.3), lineWidth: 1)
+                                    )
+                                VStack(alignment: .leading, spacing: 3) {
+                                    Text("View Receipt")
+                                        .font(.subheadline)
+                                        .foregroundStyle(.primary)
+                                    Text("Tap to view full screen")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+                                Spacer()
+                                Image(systemName: "chevron.right")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                            .padding(.vertical, 4)
+                        }
+                    }
+                }
+            }
+            .sheet(isPresented: $isShowingReceiptFullScreen) {
+                if let imageData = expense.receiptImageData,
+                   let uiImage = UIImage(data: imageData) {
+                    ReceiptFullScreenView(image: uiImage)
                 }
             }
             .navigationTitle(LocalizationKey.Expense.editTitle)

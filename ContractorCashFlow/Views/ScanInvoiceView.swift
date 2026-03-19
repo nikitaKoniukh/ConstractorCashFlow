@@ -25,7 +25,7 @@ struct ScanInvoiceView: View {
             if isProcessing {
                 processingView
             } else if let data = scannedData {
-                ScannedExpenseReviewView(scannedData: data) {
+                ScannedExpenseReviewView(scannedData: data, scannedImage: scannedImage) {
                     dismiss()
                 }
             } else {

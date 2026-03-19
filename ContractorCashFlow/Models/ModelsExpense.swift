@@ -51,7 +51,10 @@ final class Expense {
     
     // Labor type at the time this expense was created (preserved even if worker type changes later)
     var laborTypeSnapshot: LaborType?
-    
+
+    // Scanned receipt/invoice image stored as JPEG data
+    var receiptImageData: Data?
+
     init(
         id: UUID = UUID(),
         category: ExpenseCategory,
@@ -61,7 +64,8 @@ final class Expense {
         project: Project? = nil,
         worker: LaborDetails? = nil,
         unitsWorked: Double? = nil,
-        laborTypeSnapshot: LaborType? = nil
+        laborTypeSnapshot: LaborType? = nil,
+        receiptImageData: Data? = nil
     ) {
         self.id = id
         self.category = category
@@ -72,6 +76,7 @@ final class Expense {
         self.worker = worker
         self.unitsWorked = unitsWorked
         self.laborTypeSnapshot = laborTypeSnapshot
+        self.receiptImageData = receiptImageData
     }
 }
 
