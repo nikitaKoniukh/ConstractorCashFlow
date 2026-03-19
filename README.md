@@ -54,29 +54,38 @@ Built with **SwiftUI**, **SwiftData**, **CloudKit**, and **Swift Charts**. Suppo
 
 ### Labor & Worker Management
 - Register workers with type: Hourly, Daily, Contract, or Subcontractor
-- Set pay rates per type ($/hr, $/day, or fixed contract price)
+- Set **dual pay rates** — a worker can have both an hourly rate and a daily rate simultaneously
 - Link workers to labor expenses with automatic amount calculation
-- Summary dashboard: total labor cost, worker count, days worked, average daily cost, total hours
-- Filter workers by type, project, or month
+- `laborTypeSnapshot` stored on each expense preserves the pay-type context at the time of entry
+- Summary dashboard: total labor cost, worker count, days/hours worked, average daily cost
+- `WorkerSummaryCard` shows total days for daily workers and total hours for hourly workers (as integers)
+- `LaborCardRow` shows calendar icon for daily workers, clock icon for hourly; project costs broken out per project
+- Filter workers by type, project, or month — month filter scopes costs to only what was paid in that period
 - Sort by name, date added, or total earned
 - Delete workers with confirmation — linked expenses are preserved but unlinked
 
 ### Financial Analytics
-Three interactive charts powered by Swift Charts:
+Fully redesigned analytics dashboard powered by Swift Charts with **period filtering** (7D / 30D / 90D / 1Y / All):
 
-1. **Income vs. Expenses** — Donut chart with net balance displayed in the center
-2. **Expenses by Category** — Horizontal bar chart with percentage annotations per category
-3. **Budget Utilization per Project** — Grouped bar chart showing spent vs. remaining for up to 10 projects, with average utilization summary
+1. **KPI row** — Net Balance and Overdue amounts as quick-glance cards
+2. **Income vs. Expenses** — Donut chart; net balance shown in legend below the chart
+3. **Monthly Trend** — Multi-series line + area chart (income in green, expenses in red) with currency Y-axis; hidden for 7D period
+4. **Expenses by Category** — Horizontal bar chart with percentage annotations per category
+5. **Invoice Status** — Stacked bar showing Paid / Pending / Overdue with per-row percentages
+6. **Top Projects** — Ranked list of top 5 projects by revenue with balance delta
+7. **Budget Utilization** — Color-coded bars (blue < 80%, orange 80–100%, red > 100%) for up to 8 projects
 
-All charts handle empty states gracefully.
+All charts handle empty states gracefully. All strings fully localized (EN / HE / RU).
 
 ### Notifications
 Local push notifications for:
 - **Invoice reminders** — 3 days before due date
-- **Overdue alerts** — 1 day after due date (critical sound)
-- **Budget warnings** — Immediate alerts at 80% and 100% budget utilization
+- **Overdue alerts** — fires immediately (staggered 2 s delay) if invoice is already overdue at launch; scheduled for future overdue dates otherwise
+- **Budget warnings** — fires immediately at launch if a project is at 80% or 100% utilization; rescheduled on every launch
+- Multiple simultaneous notifications are staggered 3 seconds apart so iOS shows each as a separate banner
 - Each notification type can be toggled independently in Settings
-- Notifications are automatically rescheduled when settings change
+- Notifications are automatically rescheduled at app launch and when settings change
+- **Tap-to-navigate** — tapping a budget warning opens the relevant project detail; tapping an overdue alert opens the invoice edit sheet
 
 ### Data Export
 - **Full JSON export** — All projects, expenses, invoices, clients, and app preferences exported as a single `.json` file via the system file exporter
@@ -164,7 +173,7 @@ Every major list view supports search:
 | UI Framework | SwiftUI |
 | Persistence | SwiftData (`@Model`) |
 | Cloud Sync | CloudKit (via `ModelConfiguration.cloudKitDatabase`) |
-| Charts | Swift Charts (`SectorMark`, `BarMark`) |
+| Charts | Swift Charts (`SectorMark`, `BarMark`, `LineMark`, `AreaMark`) |
 | State Management | `@Observable` (Observation framework) |
 | Notifications | `UNUserNotificationCenter` |
 | In-App Purchases | StoreKit 2 (auto-renewable subscriptions) |
@@ -172,7 +181,7 @@ Every major list view supports search:
 
 ### Patterns
 - **Single-module architecture** — All code lives in one target with logical file grouping
-- **Observable state** — `AppState` is an `@Observable` class injected via SwiftUI's `@Environment`, managing tab selection, navigation paths, sheet presentation flags, search queries, and error display
+- **Observable state** — `AppState` is an `@Observable` class injected via SwiftUI's `@Environment`, managing tab selection, navigation paths, sheet presentation flags, search queries, error display, and pending deep-link IDs (`pendingProjectID`, `pendingInvoiceID`) for notification-tap navigation
 - **Per-tab NavigationPath** — Each tab maintains its own `NavigationPath` enabling pop-to-root on tab re-tap
 - **SwiftData `@Query`** — Views use `@Query` with `#Predicate` for reactive, filtered data fetching directly from the model store
 - **Singleton services** — `NotificationService`, `LanguageManager`, and `PurchaseManager` are `@MainActor` singletons
@@ -183,20 +192,20 @@ Every major list view supports search:
 ## Data Model
 
 ```
-┌─────────────┐       ┌─────────────┐       ┌──────────────┐
-│   Project    │───1:N─│   Expense   │───N:1─│ LaborDetails │
-│              │       │             │       │   (Worker)   │
-│  id          │       │  id         │       │              │
-│  name        │       │  category   │       │  id          │
-│  clientName  │       │  amount     │       │  workerName  │
-│  budget      │       │  description│       │  laborType   │
-│  createdDate │       │  date       │       │  rate        │
-│  isActive    │       │  unitsWorked│       │  notes       │
-│              │       │  project?   │       │  createdDate │
-│  expenses[]  │       │  worker?    │       │  expenses[]  │
-│  invoices[]  │       └─────────────┘       └──────────────┘
-└──────┬──────┘
-       │
+┌─────────────┐       ┌──────────────────┐       ┌──────────────┐
+│   Project    │───1:N─│     Expense      │───N:1─│ LaborDetails │
+│              │       │                  │       │   (Worker)   │
+│  id          │       │  id              │       │              │
+│  name        │       │  category        │       │  id          │
+│  clientName  │       │  amount          │       │  workerName  │
+│  budget      │       │  description     │       │  laborType   │
+│  createdDate │       │  date            │       │  hourlyRate? │
+│  isActive    │       │  unitsWorked     │       │  dailyRate?  │
+│              │       │  laborTypeSnapshot│      │  contractPrice?│
+│  expenses[]  │       │  project?        │       │  notes       │
+│  invoices[]  │       │  worker?         │       │  createdDate │
+└──────┬──────┘        └──────────────────┘       │  expenses[]  │
+       │                                          └──────────────┘
        │1:N
        │
 ┌──────┴──────┐       ┌─────────────┐
@@ -293,7 +302,7 @@ The app uses Apple's modern `Localizable.xcstrings` string catalog with type-saf
 
 The project includes a comprehensive test suite using the Swift Testing framework.
 
-### Test Suites (15 suites, 40+ tests)
+### Test Suites (16 suites, 60+ tests)
 
 | Suite | Tests | What It Covers |
 |-------|-------|----------------|
@@ -312,6 +321,7 @@ The project includes a comprehensive test suite using the Swift Testing framewor
 | EdgeCaseTests | 5 | Empty data, zero amounts, boundary dates, large values, special chars |
 | IntegrationTests | 2 | Full project lifecycle, multi-project client |
 | PerformanceTests | 2 | 1000-expense calculation, 100-invoice filtering |
+| LaborDetailsModelTests | 23 | Worker init, hourly/daily/contract rates, dual-rate support, `laborTypeSnapshot`, `totalCost` calculations, unit names |
 
 ### Running Tests
 
