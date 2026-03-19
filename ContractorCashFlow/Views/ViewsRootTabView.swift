@@ -10,6 +10,7 @@ import SwiftData
 
 struct RootTabView: View {
     @Environment(AppState.self) private var appState
+    @Environment(LanguageManager.self) private var languageManager
     @Environment(\.modelContext) private var modelContext
     @Query private var projects: [Project]
     @Query private var invoices: [Invoice]
@@ -31,19 +32,19 @@ struct RootTabView: View {
                     Label(AppTab.projects.displayNameKey, systemImage: AppTab.projects.iconName)
                 }
                 .tag(AppTab.projects)
-            
+
             ExpensesListView()
                 .tabItem {
                     Label(AppTab.expenses.displayNameKey, systemImage: AppTab.expenses.iconName)
                 }
                 .tag(AppTab.expenses)
-            
+
             InvoicesListView()
                 .tabItem {
                     Label(AppTab.invoices.displayNameKey, systemImage: AppTab.invoices.iconName)
                 }
                 .tag(AppTab.invoices)
-            
+
             LaborListView()
                 .tabItem {
                     Label(AppTab.labor.displayNameKey, systemImage: AppTab.labor.iconName)
@@ -55,7 +56,7 @@ struct RootTabView: View {
                     Label(AppTab.clients.displayNameKey, systemImage: AppTab.clients.iconName)
                 }
                 .tag(AppTab.clients)
-            
+
             AnalyticsView()
                 .tabItem {
                     Label(AppTab.analytics.displayNameKey, systemImage: AppTab.analytics.iconName)
@@ -98,5 +99,6 @@ struct RootTabView: View {
 #Preview {
     RootTabView()
         .environment(AppState())
+        .environment(LanguageManager.shared)
         .modelContainer(for: [Project.self, Expense.self, Invoice.self, Client.self, LaborDetails.self], inMemory: true)
 }

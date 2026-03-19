@@ -68,7 +68,7 @@ struct ContractorCashFlowApp: App {
                 .environment(purchaseManager)
                 .environment(\.locale, languageManager.currentLocale)
                 .environment(\.layoutDirection, languageManager.layoutDirection)
-                .id(languageManager.currentLanguage.rawValue) // Force view recreation on language change
+                .id(languageManager.currentLanguage.rawValue)
                 .task {
                     // Wire appState so notification taps can trigger navigation
                     NotificationService.shared.appState = appState

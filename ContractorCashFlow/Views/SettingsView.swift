@@ -200,7 +200,11 @@ struct SettingsView: View {
             get: { selectedLanguage },
             set: { newLanguage in
                 appLanguageCode = newLanguage.rawValue
-                if let language = LanguageManager.SupportedLanguage(rawValue: newLanguage.rawValue) {
+                guard let language = LanguageManager.SupportedLanguage(rawValue: newLanguage.rawValue) else { return }
+                // Pop all navigation stacks to root first so no NavigationStack has
+                // pushed views when the root view identity changes on language switch.
+                appState.popAllTabs()
+                DispatchQueue.main.async {
                     LanguageManager.shared.switchLanguage(to: language)
                 }
             }

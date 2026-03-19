@@ -39,6 +39,13 @@ final class AppState {
     func popToRoot(tab: AppTab) {
         navigationPaths[tab] = NavigationPath()
     }
+
+    /// Resets all tab navigation paths to root (used before language switch)
+    func popAllTabs() {
+        for tab in AppTab.allCases {
+            navigationPaths[tab] = NavigationPath()
+        }
+    }
     
     /// Returns a binding to the NavigationPath for the given tab
     func navigationPath(for tab: AppTab) -> Binding<NavigationPath> {
