@@ -90,24 +90,57 @@ struct LaborListContentView: View {
         }
     }
 
-    // MARK: iPhone – plain list
+    // MARK: iPhone – individual worker cards
     private var iPhoneList: some View {
-        List {
-            Section {
+        ScrollView {
+            VStack(spacing: 0) {
+                // Summary card
                 LaborSummaryCard(workers: filteredAndSortedWorkers, selectedMonth: selectedMonth)
-            }
+                    .padding(.horizontal, 16)
+                    .padding(.top, 16)
+                    .padding(.bottom, 8)
 
-            Section {
+                // Section header
+                HStack {
+                    Text(LocalizationKey.Labor.title)
+                        .font(.footnote)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(.secondary)
+                        .textCase(.uppercase)
+                    Spacer()
+                    Text("\(filteredAndSortedWorkers.count)")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                        .monospacedDigit()
+                }
+                .padding(.horizontal, 16)
+                .padding(.top, 16)
+                .padding(.bottom, 6)
+
+                // Individual worker cards with clear separation
                 ForEach(filteredAndSortedWorkers) { worker in
                     LaborCardRow(worker: worker, selectedMonth: selectedMonth)
+                        .padding(16)
+                        .background(Color(.systemBackground))
+                        .clipShape(RoundedRectangle(cornerRadius: 14))
+                        .shadow(color: .black.opacity(0.07), radius: 4, x: 0, y: 2)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 5)
                         .contentShape(Rectangle())
-                        .onTapGesture {
-                            selectedWorker = worker
+                        .onTapGesture { selectedWorker = worker }
+                        .contextMenu {
+                            Button(role: .destructive) {
+                                deleteWorker(worker)
+                            } label: {
+                                Label(LocalizationKey.General.delete, systemImage: "trash")
+                            }
                         }
                 }
-                .onDelete(perform: deleteWorker)
+
+                Spacer().frame(height: 24)
             }
         }
+        .background(Color(.systemGroupedBackground))
     }
 
     // MARK: iPad – summary bar + card grid

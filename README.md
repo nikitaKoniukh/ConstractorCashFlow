@@ -30,7 +30,7 @@ Built with **SwiftUI**, **SwiftData**, **CloudKit**, and **Swift Charts**. Suppo
 - Swipe-to-delete with cascade removal of related expenses and invoices
 
 ### Expense Tracking
-- Log expenses under 5 categories: Materials, Labor, Equipment, Subcontractor, Miscellaneous
+- Log expenses under 4 categories: Materials, Labor, Equipment, Miscellaneous
 - **Edit existing expenses** — tap any expense to modify category, amount, description, date, project, or worker assignment
 - Assign expenses to projects or track them as general overhead
 - Advanced filtering by category, date range, and search text
@@ -112,8 +112,20 @@ Every major list view supports search:
 - **Automatic CloudKit sync** — all data (projects, expenses, invoices, clients, workers) syncs across devices via iCloud
 - Uses SwiftData's built-in CloudKit integration (`cloudKitDatabase: .automatic`)
 - All model attributes have CloudKit-compatible default values; all relationships are optional
+- `receiptImageData` stored as a `CKAsset` via `@Attribute(.externalStorage)` to comply with CloudKit record size limits
+- **Live sync refresh** — the app listens for `NSPersistentStoreRemoteChange` and immediately refreshes all `@Query` views without requiring an app restart; deletions on one device are reflected instantly on another via `ModelContext.rollback()`
+- **Manual sync button** in Settings triggers `modelContext.save()` and shows visual confirmation (`Done` / `Failed`)
 - Graceful fallback to local-only storage if CloudKit is unavailable
 - Requires iCloud account with iCloud Drive enabled on each device
+
+### Invoice & Receipt Scanning (OCR)
+- Scan invoices and receipts using the camera or import from the Photos library
+- **`InvoiceOCRService`** uses Apple Vision (`VNRecognizeTextRequest`) for on-device OCR — no network calls
+- Supports **English, Hebrew, and Russian** invoices with language-specific keyword extraction
+- 5-strategy amount extraction waterfall: keyword + same-line → keyword + lookahead → currency symbol → largest decimal → last-resort integer
+- Automatically extracts: total amount, invoice date (12 date formats), and best-match description
+- Review screen allows editing all extracted fields before saving as an expense
+- All scan UI strings are fully localized (EN / HE / RU)
 
 ### In-App Subscriptions (StoreKit 2)
 - **Free tier** — 1 project, 1 expense, 1 invoice, 1 worker
@@ -177,6 +189,7 @@ Every major list view supports search:
 | State Management | `@Observable` (Observation framework) |
 | Notifications | `UNUserNotificationCenter` |
 | In-App Purchases | StoreKit 2 (auto-renewable subscriptions) |
+| OCR | Vision framework (`VNRecognizeTextRequest`) |
 | Localization | `Localizable.xcstrings` + type-safe `LocalizationKey` enums |
 
 ### Patterns
@@ -244,13 +257,16 @@ ContractorCashFlow/
 ├── Models/
 │   ├── AppState.swift                    # Observable app state + AppTab enum
 │   ├── ModelsProject.swift               # Project model with computed financials
-│   ├── ModelsExpense.swift               # Expense model + ExpenseCategory enum
+│   ├── ModelsExpense.swift               # Expense model + ExpenseCategory enum; receiptImageData as CKAsset
 │   └── ModelsInvoice.swift               # Invoice model
 │
 ├── Views/
 │   ├── ViewsRootTabView.swift            # Root 7-tab navigation
 │   ├── ViewsProjectsListView.swift       # Projects: list, detail, edit, new, charts, export
-│   ├── ViewsExpensesListView.swift       # Expenses: list, filters, new, edit
+│   ├── ViewsExpensesListView.swift       # Expenses: list, new, edit
+│   ├── ExpenseFiltersView.swift          # Date range + category filters; contiguousRange fill logic
+│   ├── ScanInvoiceView.swift             # Camera/photo OCR import entry point
+│   ├── ScannedExpenseReviewView.swift    # Review and edit OCR-extracted fields before saving
 │   ├── ViewsInvoicesListView.swift       # Invoices: list, filters, edit, new
 │   ├── ViewsClientsListView.swift        # Clients: list, detail, edit, new
 │   ├── ViewsLaborListView.swift          # Labor: list, filters, summary cards
@@ -260,6 +276,7 @@ ContractorCashFlow/
 │   ├── PreviewSampleData.swift           # Sample data for SwiftUI previews + Client model
 │   ├── ServicesNotificationService.swift # Local notification service
 │   ├── ServicesPurchaseManager.swift     # StoreKit 2 subscription manager
+│   ├── Services/InvoiceOCRService.swift  # Vision-based OCR; 5-strategy amount extraction
 │   │
 │   └── Settings/
 │       ├── SettingsView.swift            # Settings: language, currency, notifications, export
@@ -268,7 +285,7 @@ ContractorCashFlow/
 │       └── ServicesView+Notifications.swift # Notification view modifiers
 │
 ├── ContractorCashFlowTests/
-│   └── ContractorCashFlowTests.swift     # 40+ unit tests across 15 suites
+│   └── ContractorCashFlowTests.swift     # 107+ unit tests across 20 suites
 │
 └── ContractorCashFlowUITests/
     ├── ContractorCashFlowUITests.swift
@@ -302,7 +319,7 @@ The app uses Apple's modern `Localizable.xcstrings` string catalog with type-saf
 
 The project includes a comprehensive test suite using the Swift Testing framework.
 
-### Test Suites (16 suites, 60+ tests)
+### Test Suites (20 suites, 107+ tests)
 
 | Suite | Tests | What It Covers |
 |-------|-------|----------------|
@@ -322,6 +339,10 @@ The project includes a comprehensive test suite using the Swift Testing framewor
 | IntegrationTests | 2 | Full project lifecycle, multi-project client |
 | PerformanceTests | 2 | 1000-expense calculation, 100-invoice filtering |
 | LaborDetailsModelTests | 23 | Worker init, hourly/daily/contract rates, dual-rate support, `laborTypeSnapshot`, `totalCost` calculations, unit names |
+| InvoiceOCRServiceTests | 27 | `extractAmount` (decimal, currency, requireDecimal, bounds), `extractTotalAmount` (all 5 strategies, EN/HE/RU keywords), `extractDate` (4 formats), `isNumericLine`, `bestDescription`, end-to-end `parse` |
+| DateFilterLogicTests | 6 | `contiguousRange`: gap filling, single/empty → nil, month boundary, adjacent dates, already-contiguous passthrough |
+| LaborExpenseLogicTests | 9 | `daysCount` decimal-pad parsing fix, empty/non-numeric strings, effective amount fallback chain, hourly and daily rate calculations |
+| ExpenseReceiptDataTests | 5 | Default nil, store/retrieve, clear, `ScannedInvoiceData` init with and without optional fields |
 
 ### Running Tests
 
