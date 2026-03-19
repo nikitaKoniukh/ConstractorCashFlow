@@ -131,6 +131,7 @@ enum LocalizationKey {
         static let paidLabel = String(localized: "Paid")
         static let unpaidLabel = String(localized: "Unpaid")
         static let overdueLabel = String(localized: "Overdue")
+        static let pendingLabel = String(localized: "invoice.status.pending")
     }
     
     // MARK: - Clients
@@ -345,6 +346,20 @@ enum LocalizationKey {
         static let chartProject = LocalizedStringKey("analytics.chart.project")
         static let chartType = LocalizedStringKey("analytics.chart.type")
         
+        // New card headings
+        static let monthlyTrend = LocalizedStringKey("analytics.monthlyTrend")
+        static let invoiceStatus = LocalizedStringKey("analytics.invoiceStatus")
+        static let topProjects = LocalizedStringKey("analytics.topProjects")
+
+        // Empty states
+        static let noTrendData = LocalizedStringKey("analytics.noTrendData")
+        static let noInvoices = LocalizedStringKey("analytics.noInvoices")
+
+        // Budget utilization legend
+        static let budgetUnder80 = LocalizedStringKey("analytics.budget.under80")
+        static let budgetRange80to100 = LocalizedStringKey("analytics.budget.range80to100")
+        static let budgetOver100 = LocalizedStringKey("analytics.budget.over100")
+
         // String variants for Charts API (requires String, not LocalizedStringKey)
         static let spentString = String(localized: "analytics.spent")
         static let remainingString = String(localized: "analytics.remaining")
@@ -352,6 +367,9 @@ enum LocalizationKey {
         static let chartCategoryString = String(localized: "analytics.chart.category")
         static let chartProjectString = String(localized: "analytics.chart.project")
         static let chartTypeString = String(localized: "analytics.chart.type")
+        static let chartIncomeString = String(localized: "analytics.chart.income")
+        static let chartExpensesString = String(localized: "analytics.chart.expenses")
+        static let chartMonthString = String(localized: "analytics.chart.month")
     }
     
     // MARK: - Subscription

@@ -26,6 +26,9 @@
     "%@%% of budget" : {
 
     },
+    "%lld" : {
+
+    },
     "%lld %@" : {
       "localizations" : {
         "en" : {
@@ -594,6 +597,72 @@
         }
       }
     },
+    "analytics.budget.over100" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "> 100%"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "> 100%"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "> 100%"
+          }
+        }
+      }
+    },
+    "analytics.budget.range80to100" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "80–100%"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "80–100%"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "80–100%"
+          }
+        }
+      }
+    },
+    "analytics.budget.under80" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "< 80%"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "< 80%"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "< 80%"
+          }
+        }
+      }
+    },
     "analytics.budgetUtilization" : {
       "localizations" : {
         "en" : {
@@ -656,6 +725,72 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Категория"
+          }
+        }
+      }
+    },
+    "analytics.chart.expenses" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Expenses"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "הוצאות"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Расходы"
+          }
+        }
+      }
+    },
+    "analytics.chart.income" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Income"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "הכנסות"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Доходы"
+          }
+        }
+      }
+    },
+    "analytics.chart.month" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Month"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "חודש"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Месяц"
           }
         }
       }
@@ -792,6 +927,50 @@
         }
       }
     },
+    "analytics.invoiceStatus" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invoice Status"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "סטטוס חשבוניות"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Статус счетов"
+          }
+        }
+      }
+    },
+    "analytics.monthlyTrend" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Monthly Trend"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "מגמה חודשית"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ежемесячная динамика"
+          }
+        }
+      }
+    },
     "analytics.netBalance" : {
       "localizations" : {
         "en" : {
@@ -858,6 +1037,28 @@
         }
       }
     },
+    "analytics.noInvoices" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No invoices"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "אין חשבוניות"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Нет счетов"
+          }
+        }
+      }
+    },
     "analytics.noProjectData" : {
       "localizations" : {
         "en" : {
@@ -876,6 +1077,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Нет данных о проектах"
+          }
+        }
+      }
+    },
+    "analytics.noTrendData" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No trend data"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "אין נתוני מגמה"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Нет данных о динамике"
           }
         }
       }
@@ -942,6 +1165,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Аналитика"
+          }
+        }
+      }
+    },
+    "analytics.topProjects" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Top Projects"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "פרויקטים מובילים"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Топ проектов"
           }
         }
       }
@@ -4560,16 +4805,6 @@
         }
       }
     },
-    "labor.ratesHeader" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Rates"
-          }
-        }
-      }
-    },
     "labor.ratePerHour" : {
       "localizations" : {
         "en" : {
@@ -4588,6 +4823,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ставка за час"
+          }
+        }
+      }
+    },
+    "labor.ratesHeader" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rates"
           }
         }
       }
