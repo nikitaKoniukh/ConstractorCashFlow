@@ -19,6 +19,11 @@ struct SettingsView: View {
     @State private var exportDocument: JSONExportDocument?
     @State private var isExporting = false
     @State private var isShowingPaywall = false
+    @State private var iCloudSyncState: ICloudSyncState = .idle
+
+    private enum ICloudSyncState {
+        case idle, syncing, done, failed
+    }
 
     @Environment(AppState.self) private var appState
     @Environment(PurchaseManager.self) private var purchaseManager
@@ -133,6 +138,31 @@ struct SettingsView: View {
 
                 Section {
                     Button {
+                        syncWithICloud()
+                    } label: {
+                        HStack {
+                            switch iCloudSyncState {
+                            case .idle:
+                                Label("Sync with iCloud", systemImage: "arrow.triangle.2.circlepath.icloud")
+                            case .syncing:
+                                Label {
+                                    Text("Syncing…")
+                                } icon: {
+                                    ProgressView()
+                                        .controlSize(.small)
+                                }
+                            case .done:
+                                Label("Synced", systemImage: "checkmark.icloud")
+                                    .foregroundStyle(.green)
+                            case .failed:
+                                Label("Sync Failed", systemImage: "xmark.icloud")
+                                    .foregroundStyle(.red)
+                            }
+                        }
+                    }
+                    .disabled(iCloudSyncState == .syncing)
+
+                    Button {
                         exportData()
                     } label: {
                         Label(LocalizationKey.Settings.exportData, systemImage: "square.and.arrow.up")
@@ -224,6 +254,25 @@ struct SettingsView: View {
         isExporting = true
     }
     
+    // MARK: - iCloud Sync
+
+    private func syncWithICloud() {
+        iCloudSyncState = .syncing
+        Task {
+            do {
+                // Save any pending changes — SwiftData + CloudKit will then
+                // automatically push those changes to iCloud on its next cycle.
+                try modelContext.save()
+                await MainActor.run { iCloudSyncState = .done }
+            } catch {
+                await MainActor.run { iCloudSyncState = .failed }
+            }
+            // Reset back to idle after a short delay so the user sees feedback
+            try? await Task.sleep(for: .seconds(2))
+            await MainActor.run { iCloudSyncState = .idle }
+        }
+    }
+
     // MARK: - Notification Settings Handlers
     
     private func handleNotificationSettingsChange() {

@@ -52,8 +52,11 @@ final class Expense {
     // Labor type at the time this expense was created (preserved even if worker type changes later)
     var laborTypeSnapshot: LaborType?
 
-    // Scanned receipt/invoice image stored as JPEG data
-    var receiptImageData: Data?
+    // Scanned receipt/invoice image stored as JPEG data.
+    // @Attribute(.externalStorage) makes SwiftData save large blobs as a
+    // CKAsset instead of an inline record field, which is required for
+    // CloudKit sync to work correctly with binary data.
+    @Attribute(.externalStorage) var receiptImageData: Data?
 
     init(
         id: UUID = UUID(),

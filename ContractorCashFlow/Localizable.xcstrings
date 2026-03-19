@@ -8055,6 +8055,18 @@
         }
       }
     },
+    "Sync Failed" : {
+
+    },
+    "Sync with iCloud" : {
+
+    },
+    "Synced" : {
+
+    },
+    "Syncing…" : {
+
+    },
     "tab.analytics" : {
       "localizations" : {
         "en" : {
