@@ -9,6 +9,7 @@ import SwiftUI
 
 /// Observable class for managing shared application state
 @Observable
+@MainActor
 final class AppState {
     /// Currently selected tab in the main tab view
     var selectedTab: AppTab = .projects

@@ -8,6 +8,7 @@
 import SwiftUI
 import SwiftData
 import CoreData
+import Combine
 
 @main
 struct ContractorCashFlowApp: App {
@@ -93,7 +94,7 @@ struct ContractorCashFlowApp: App {
                 //    descriptor against the now-clean context, picking up the store changes.
                 .onReceive(NotificationCenter.default.publisher(
                     for: .NSPersistentStoreRemoteChange
-                )) { _ in
+                ).receive(on: DispatchQueue.main)) { _ in
                     let ctx = sharedModelContainer.mainContext
                     ctx.rollback()
                     NotificationCenter.default.post(

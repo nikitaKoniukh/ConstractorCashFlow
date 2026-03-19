@@ -9,6 +9,7 @@ import SwiftUI
 
 /// Manages application language preferences and runtime language switching
 @Observable
+@MainActor
 final class LanguageManager {
     /// Shared singleton instance
     static let shared = LanguageManager()

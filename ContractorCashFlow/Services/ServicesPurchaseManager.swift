@@ -60,7 +60,7 @@ final class PurchaseManager {
     
     private init() {
         transactionListener = listenForTransactions()
-        Task {
+        Task { @MainActor in
             await checkCurrentEntitlements()
             await loadProducts()
         }
@@ -154,7 +154,7 @@ final class PurchaseManager {
             for await result in Transaction.updates {
                 guard let self else { return }
                 do {
-                    let transaction = try await self.checkVerified(result)
+                    let transaction = try self.checkVerified(result)
                     await transaction.finish()
                     await self.checkCurrentEntitlements()
                 } catch {
@@ -166,7 +166,7 @@ final class PurchaseManager {
     
     // MARK: - Verification
     
-    private func checkVerified<T>(_ result: VerificationResult<T>) throws -> T {
+    nonisolated private func checkVerified<T>(_ result: VerificationResult<T>) throws -> T {
         switch result {
         case .unverified(_, let error):
             throw error
