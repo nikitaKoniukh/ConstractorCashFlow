@@ -39,6 +39,9 @@
         }
       }
     },
+    "%lld days selected" : {
+
+    },
     "%lld/%lld paid" : {
       "localizations" : {
         "en" : {
@@ -6842,6 +6845,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Поиск счетов"
+          }
+        }
+      }
+    },
+    "Select %lld more day%@ (%lld/%lld)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Select %1$lld more day%2$@ (%3$lld/%4$lld)"
           }
         }
       }

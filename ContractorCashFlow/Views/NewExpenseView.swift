@@ -22,15 +22,32 @@ struct NewExpenseView: View {
     @State private var date: Date = Date()
     @State private var selectedProject: Project?
     @State private var isSaving: Bool = false
-    
+
     // Labor-specific fields
     @State private var selectedWorker: LaborDetails?
     @State private var selectedLaborType: LaborType = .hourly
     @State private var unitsWorked: String = ""
     @FocusState private var isAmountFieldFocused: Bool
-    
+
+    // Multi-day date selection (daily labor with >1 day)
+    @State private var selectedDates: Set<DateComponents> = []
+
+    /// Number of days entered (integer) when daily labor is chosen
+    private var daysCount: Int {
+        Int(unitsWorked) ?? 0
+    }
+
+    /// True when the multi-date picker should appear
+    private var useMultiDatePicker: Bool {
+        category == .labor && selectedLaborType == .daily && daysCount >= 2
+    }
+
     private var isValid: Bool {
-        !descriptionText.isEmpty && (amount ?? 0) > 0
+        guard !descriptionText.isEmpty && (amount ?? 0) > 0 else { return false }
+        if useMultiDatePicker {
+            return selectedDates.count == daysCount
+        }
+        return true
     }
     
     /// Auto-calculated amount from worker rate * units
@@ -85,6 +102,7 @@ struct NewExpenseView: View {
                                 .onChange(of: selectedLaborType) {
                                     unitsWorked = ""
                                     amount = nil
+                                    selectedDates = []
                                 }
                             }
                             
@@ -101,6 +119,8 @@ struct NewExpenseView: View {
                                             if let calc = calculatedAmount {
                                                 amount = calc
                                             }
+                                            // Reset multi-day selection when count changes
+                                            selectedDates = []
                                         }
                                 }
                                 
@@ -133,10 +153,33 @@ struct NewExpenseView: View {
                     }
                     
                     CurrencyTextField(LocalizationKey.Expense.amount, value: $amount, currencyCode: currencyCode)
-                    
+
                     TextField(LocalizationKey.Expense.description, text: $descriptionText)
-                    
-                    DatePicker(LocalizationKey.Expense.date, selection: $date, displayedComponents: .date)
+
+                    if useMultiDatePicker {
+                        // Show how many days are still needed
+                        let remaining = daysCount - selectedDates.count
+                        if remaining > 0 {
+                            HStack {
+                                Image(systemName: "info.circle")
+                                    .foregroundStyle(.orange)
+                                Text("Select \(remaining) more day\(remaining == 1 ? "" : "s") (\(selectedDates.count)/\(daysCount))")
+                                    .font(.subheadline)
+                                    .foregroundStyle(.orange)
+                            }
+                        } else {
+                            HStack {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .foregroundStyle(.green)
+                                Text("\(daysCount) days selected")
+                                    .font(.subheadline)
+                                    .foregroundStyle(.green)
+                            }
+                        }
+                        MultiDatePicker(LocalizationKey.Expense.date, selection: $selectedDates)
+                    } else {
+                        DatePicker(LocalizationKey.Expense.date, selection: $date, displayedComponents: .date)
+                    }
                 } header: {
                     Text(LocalizationKey.Expense.details)
                 }
@@ -201,31 +244,49 @@ struct NewExpenseView: View {
     
     private func saveExpense() {
         isSaving = true
-        
-        let units = Double(unitsWorked)
-        
-        let expense = Expense(
-            category: category,
-            amount: amount ?? 0,
-            descriptionText: descriptionText,
-            date: date,
-            project: selectedProject,
-            worker: category == .labor ? selectedWorker : nil,
-            unitsWorked: category == .labor ? units : nil,
-            laborTypeSnapshot: category == .labor ? selectedLaborType : nil
-        )
-        
+
         do {
-            modelContext.insert(expense)
+            if useMultiDatePicker && !selectedDates.isEmpty {
+                // Create one expense per selected day
+                let dailyRate = (amount ?? 0) / Double(daysCount)
+                let cal = Calendar.current
+                for components in selectedDates {
+                    let day = cal.date(from: components) ?? date
+                    let expense = Expense(
+                        category: category,
+                        amount: dailyRate,
+                        descriptionText: descriptionText,
+                        date: day,
+                        project: selectedProject,
+                        worker: selectedWorker,
+                        unitsWorked: 1,
+                        laborTypeSnapshot: selectedLaborType
+                    )
+                    modelContext.insert(expense)
+                }
+            } else {
+                let units = Double(unitsWorked)
+                let expense = Expense(
+                    category: category,
+                    amount: amount ?? 0,
+                    descriptionText: descriptionText,
+                    date: date,
+                    project: selectedProject,
+                    worker: category == .labor ? selectedWorker : nil,
+                    unitsWorked: category == .labor ? units : nil,
+                    laborTypeSnapshot: category == .labor ? selectedLaborType : nil
+                )
+                modelContext.insert(expense)
+            }
+
             try modelContext.save()
-            
-            // Check budget notifications if associated with a project
+
             if let project = selectedProject {
                 Task {
                     await NotificationService.shared.checkBudgetAndScheduleNotifications(for: project)
                 }
             }
-            
+
             dismiss()
         } catch {
             appState.showError("Failed to save expense: \(error.localizedDescription)")
