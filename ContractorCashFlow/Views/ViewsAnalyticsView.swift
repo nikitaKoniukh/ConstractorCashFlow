@@ -431,7 +431,6 @@ extension ExpenseCategory {
         case .materials: return .blue
         case .labor: return .orange
         case .equipment: return .gray
-        case .subcontractor: return .teal
         case .misc: return .purple
         }
     }
