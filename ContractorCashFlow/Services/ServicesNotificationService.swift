@@ -18,6 +18,9 @@ final class NotificationService: NSObject, UNUserNotificationCenterDelegate {
     static let shared = NotificationService()
     
     private let notificationCenter = UNUserNotificationCenter.current()
+
+    /// Set by the app so the notification tap handler can trigger navigation
+    weak var appState: AppState?
     
     // MARK: - UNUserNotificationCenterDelegate
     
@@ -28,6 +31,31 @@ final class NotificationService: NSObject, UNUserNotificationCenterDelegate {
         withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
     ) {
         completionHandler([.banner, .sound, .badge])
+    }
+
+    /// Handle notification tap — navigate to the relevant project or invoice
+    nonisolated func userNotificationCenter(
+        _ center: UNUserNotificationCenter,
+        didReceive response: UNNotificationResponse,
+        withCompletionHandler completionHandler: @escaping () -> Void
+    ) {
+        let userInfo = response.notification.request.content.userInfo
+        let type = userInfo["type"] as? String
+
+        if type == "budget",
+           let projectIDString = userInfo["projectID"] as? String,
+           let projectID = UUID(uuidString: projectIDString) {
+            Task { @MainActor in
+                appState?.pendingProjectID = projectID
+            }
+        } else if type == "overdue" || type == "upcoming",
+                  let invoiceIDString = userInfo["invoiceID"] as? String,
+                  let invoiceID = UUID(uuidString: invoiceIDString) {
+            Task { @MainActor in
+                appState?.pendingInvoiceID = invoiceID
+            }
+        }
+        completionHandler()
     }
     
     // MARK: - UserDefaults Keys
@@ -131,7 +159,7 @@ final class NotificationService: NSObject, UNUserNotificationCenterDelegate {
     // MARK: - Invoice Notifications
     
     /// Schedule all relevant notifications for an invoice
-    func scheduleNotifications(for invoice: Invoice) async {
+    func scheduleNotifications(for invoice: Invoice, immediateDelay: TimeInterval = 2) async {
         // Don't schedule if invoice is already paid
         guard !invoice.isPaid else {
             await cancelNotifications(for: invoice)
@@ -146,9 +174,9 @@ final class NotificationService: NSObject, UNUserNotificationCenterDelegate {
             await scheduleUpcomingReminder(for: invoice)
         }
         
-        // Schedule overdue alert (1 day after due date)
+        // Schedule overdue alert (1 day after due date, or immediately if already overdue)
         if UserDefaults.standard.bool(forKey: SettingsKey.overdueAlerts) {
-            await scheduleOverdueAlert(for: invoice)
+            await scheduleOverdueAlert(for: invoice, immediateDelay: immediateDelay)
         }
     }
     
@@ -183,13 +211,9 @@ final class NotificationService: NSObject, UNUserNotificationCenterDelegate {
         }
     }
     
-    /// Schedule an alert 1 day after invoice is overdue
-    private func scheduleOverdueAlert(for invoice: Invoice) async {
-        let overdueDate = Calendar.current.date(byAdding: .day, value: 1, to: invoice.dueDate)
-        
-        // Only schedule if the overdue date is in the future
-        guard let overdueDate = overdueDate, overdueDate > Date() else { return }
-        
+    /// Schedule an alert when invoice is overdue.
+    /// If the due date has already passed, fires after `immediateDelay` seconds.
+    private func scheduleOverdueAlert(for invoice: Invoice, immediateDelay: TimeInterval = 2) async {
         let content = UNMutableNotificationContent()
         content.title = "Invoice Overdue"
         content.body = "Invoice for \(invoice.clientName) ($\(String(format: "%.2f", invoice.amount))) is now overdue"
@@ -200,10 +224,20 @@ final class NotificationService: NSObject, UNUserNotificationCenterDelegate {
             "type": "overdue"
         ]
         
-        let triggerDate = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: overdueDate)
-        let trigger = UNCalendarNotificationTrigger(dateMatching: triggerDate, repeats: false)
-        
         let identifier = NotificationIdentifier.invoiceOverdue(invoiceID: invoice.id)
+        
+        let overdueDate = Calendar.current.date(byAdding: .day, value: 1, to: invoice.dueDate)
+        let trigger: UNNotificationTrigger
+        
+        if let overdueDate = overdueDate, overdueDate > Date() {
+            // Due date is in the future — schedule for 1 day after due date
+            let triggerDate = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: overdueDate)
+            trigger = UNCalendarNotificationTrigger(dateMatching: triggerDate, repeats: false)
+        } else {
+            // Already overdue — fire after staggered delay (iOS requires > 0)
+            trigger = UNTimeIntervalNotificationTrigger(timeInterval: immediateDelay, repeats: false)
+        }
+        
         let request = UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)
         
         do {
@@ -224,7 +258,7 @@ final class NotificationService: NSObject, UNUserNotificationCenterDelegate {
     // MARK: - Budget Notifications
     
     /// Check and schedule budget warnings for a project
-    func checkBudgetAndScheduleNotifications(for project: Project) async {
+    func checkBudgetAndScheduleNotifications(for project: Project, immediateDelay: TimeInterval = 1) async {
         guard UserDefaults.standard.bool(forKey: SettingsKey.budgetWarnings) else {
             await cancelBudgetNotifications(for: project)
             return
@@ -236,29 +270,25 @@ final class NotificationService: NSObject, UNUserNotificationCenterDelegate {
         
         // Check 80% threshold
         if utilization >= 80.0 && utilization < 100.0 {
-            await scheduleBudgetWarning(for: project, threshold: .eighty)
+            await scheduleBudgetWarning(for: project, threshold: .eighty, immediateDelay: immediateDelay)
         } else {
             await cancelBudgetNotification(for: project, threshold: .eighty)
         }
         
         // Check 100% threshold
         if utilization >= 100.0 {
-            await scheduleBudgetWarning(for: project, threshold: .hundred)
+            await scheduleBudgetWarning(for: project, threshold: .hundred, immediateDelay: immediateDelay)
         } else {
             await cancelBudgetNotification(for: project, threshold: .hundred)
         }
     }
     
     /// Schedule a budget warning notification
-    private func scheduleBudgetWarning(for project: Project, threshold: BudgetThreshold) async {
+    private func scheduleBudgetWarning(for project: Project, threshold: BudgetThreshold, immediateDelay: TimeInterval = 1) async {
         let identifier = NotificationIdentifier.budgetWarning(projectID: project.id, threshold: threshold)
         
-        // Check if this notification already exists
-        let pendingRequests = await notificationCenter.pendingNotificationRequests()
-        if pendingRequests.contains(where: { $0.identifier == identifier }) {
-            // Already scheduled, don't duplicate
-            return
-        }
+        // Remove any existing pending request so the new one replaces it
+        notificationCenter.removePendingNotificationRequests(withIdentifiers: [identifier])
         
         let content = UNMutableNotificationContent()
         
@@ -281,8 +311,8 @@ final class NotificationService: NSObject, UNUserNotificationCenterDelegate {
             "type": "budget"
         ]
         
-        // Trigger immediately for budget warnings
-        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
+        // Trigger immediately for budget warnings (delay set by caller for staggering)
+        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: immediateDelay, repeats: false)
         
         let request = UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)
         
@@ -320,8 +350,14 @@ final class NotificationService: NSObject, UNUserNotificationCenterDelegate {
             return
         }
         
+        // Stagger immediate-fire notifications by 2 seconds each so iOS
+        // delivers them as separate banners instead of collapsing them
+        var immediateIndex = 0
         for invoice in unpaidInvoices {
-            await scheduleNotifications(for: invoice)
+            let isAlreadyOverdue = invoice.dueDate < Date()
+            let delay: TimeInterval = isAlreadyOverdue ? TimeInterval(2 + immediateIndex * 3) : 2
+            if isAlreadyOverdue { immediateIndex += 1 }
+            await scheduleNotifications(for: invoice, immediateDelay: delay)
         }
         
         print("✅ Rescheduled notifications for \(unpaidInvoices.count) invoices")
@@ -338,8 +374,10 @@ final class NotificationService: NSObject, UNUserNotificationCenterDelegate {
             return
         }
         
-        for project in activeProjects {
-            await checkBudgetAndScheduleNotifications(for: project)
+        // Stagger by 3 seconds each so each project's warning appears as a separate banner
+        for (index, project) in activeProjects.enumerated() {
+            let delay = TimeInterval(1 + index * 3)
+            await checkBudgetAndScheduleNotifications(for: project, immediateDelay: delay)
         }
         
         print("✅ Rescheduled budget notifications for \(activeProjects.count) projects")

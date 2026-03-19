@@ -68,8 +68,21 @@ struct ContractorCashFlowApp: App {
                 .environment(\.layoutDirection, languageManager.layoutDirection)
                 .id(languageManager.currentLanguage.rawValue) // Force view recreation on language change
                 .task {
+                    // Wire appState so notification taps can trigger navigation
+                    NotificationService.shared.appState = appState
                     // Request notification permission on first launch
                     await NotificationService.shared.requestPermissionIfNeeded()
+                }
+                .task {
+                    // Reschedule notifications on every launch so overdue invoices
+                    // that were created while the app was closed still fire
+                    await NotificationService.shared.rescheduleAllInvoiceNotifications(
+                        from: sharedModelContainer.mainContext
+                    )
+                    // Check budget thresholds on every launch
+                    await NotificationService.shared.rescheduleAllBudgetNotifications(
+                        from: sharedModelContainer.mainContext
+                    )
                 }
         }
         .modelContainer(sharedModelContainer)

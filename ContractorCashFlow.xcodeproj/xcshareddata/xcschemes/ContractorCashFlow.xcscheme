@@ -75,6 +75,12 @@
             ReferencedContainer = "container:ContractorCashFlow.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
+      <CommandLineArguments>
+         <CommandLineArgument
+            argument = "-UIConstraintBasedLayoutLogUnsatisfiable NO"
+            isEnabled = "YES">
+         </CommandLineArgument>
+      </CommandLineArguments>
       <StoreKitConfigurationFileReference
          identifier = "../../ContractorCashFlow/Products.storekit">
       </StoreKitConfigurationFileReference>

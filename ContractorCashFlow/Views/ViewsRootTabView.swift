@@ -11,7 +11,9 @@ import SwiftData
 struct RootTabView: View {
     @Environment(AppState.self) private var appState
     @Environment(\.modelContext) private var modelContext
-    
+    @Query private var projects: [Project]
+    @Query private var invoices: [Invoice]
+
     var body: some View {
         TabView(selection: Binding(
             get: { appState.selectedTab },
@@ -66,6 +68,30 @@ struct RootTabView: View {
                 }
                 .tag(AppTab.settings)
         }
+        .onChange(of: appState.pendingProjectID) { _, projectID in
+            navigateToProject(id: projectID)
+        }
+        .onChange(of: projects) { _, _ in
+            // Projects just loaded — handle any pending navigation from a cold launch tap
+            if let projectID = appState.pendingProjectID {
+                navigateToProject(id: projectID)
+            }
+        }
+        .sheet(item: Binding(
+            get: { invoices.first(where: { $0.id == appState.pendingInvoiceID }) },
+            set: { if $0 == nil { appState.pendingInvoiceID = nil } }
+        )) { invoice in
+            EditInvoiceView(invoice: invoice)
+        }
+    }
+
+    private func navigateToProject(id projectID: UUID?) {
+        guard let projectID,
+              let project = projects.first(where: { $0.id == projectID }) else { return }
+        appState.selectedTab = .projects
+        appState.popToRoot(tab: .projects)
+        appState.navigationPaths[.projects] = NavigationPath([project])
+        appState.pendingProjectID = nil
     }
 }
 

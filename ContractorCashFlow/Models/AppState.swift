@@ -64,6 +64,12 @@ final class AppState {
         isShowingError = true
     }
     
+    /// Project ID to navigate to (set when tapping a budget warning notification)
+    var pendingProjectID: UUID?
+
+    /// Invoice ID to open (set when tapping an overdue/upcoming notification)
+    var pendingInvoiceID: UUID?
+
     init() {}
 }
 
