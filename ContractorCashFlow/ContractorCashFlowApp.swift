@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftData
+import CoreData
 
 @main
 struct ContractorCashFlowApp: App {
@@ -82,6 +83,22 @@ struct ContractorCashFlowApp: App {
                     // Check budget thresholds on every launch
                     await NotificationService.shared.rescheduleAllBudgetNotifications(
                         from: sharedModelContainer.mainContext
+                    )
+                }
+                // When CloudKit imports remote changes (including deletions from another
+                // device), force all @Query views to reflect the updated store:
+                // 1. rollback() discards the context's in-memory identity map so stale
+                //    and deleted objects are evicted.
+                // 2. Posting ModelContext.didSave triggers @Query to re-run its fetch
+                //    descriptor against the now-clean context, picking up the store changes.
+                .onReceive(NotificationCenter.default.publisher(
+                    for: .NSPersistentStoreRemoteChange
+                )) { _ in
+                    let ctx = sharedModelContainer.mainContext
+                    ctx.rollback()
+                    NotificationCenter.default.post(
+                        name: ModelContext.didSave,
+                        object: ctx
                     )
                 }
         }
