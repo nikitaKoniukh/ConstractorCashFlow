@@ -23,6 +23,16 @@
     "%" : {
 
     },
+    "%@ – %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ – %2$@"
+          }
+        }
+      }
+    },
     "%@%% of budget" : {
 
     },
@@ -35,6 +45,16 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "%1$lld %2$@"
+          }
+        }
+      }
+    },
+    "%lld day%@ selected" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld day%2$@ selected"
           }
         }
       }
@@ -6902,6 +6922,9 @@
           }
         }
       }
+    },
+    "Select Days" : {
+
     },
     "Select Existing" : {
       "localizations" : {
