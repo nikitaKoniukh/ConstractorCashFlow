@@ -92,53 +92,53 @@ private struct ExpensesListContent: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(AppState.self) private var appState
     @Environment(PurchaseManager.self) private var purchaseManager
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @Query(sort: \Expense.date, order: .reverse) private var allExpenses: [Expense]
-    
+
     let searchText: String
     let selectedCategory: ExpenseCategory?
     let startDate: Date?
     let endDate: Date?
-    
+
     @State private var expenseToEdit: Expense?
     @State private var isShowingPaywall = false
-    
+
+    private var isIPad: Bool { horizontalSizeClass == .regular }
+
     private var filteredExpenses: [Expense] {
         var result = allExpenses
-        
+
         if !searchText.isEmpty {
             result = result.filter {
                 $0.descriptionText.localizedStandardContains(searchText)
             }
         }
-        
+
         if let category = selectedCategory {
             result = result.filter { $0.category == category }
         }
-        
+
         if let start = startDate {
             let startOfDay = Calendar.current.startOfDay(for: start)
             result = result.filter { $0.date >= startOfDay }
         }
-        
+
         if let end = endDate {
             if let endOfDay = Calendar.current.date(byAdding: DateComponents(day: 1, second: -1), to: Calendar.current.startOfDay(for: end)) {
                 result = result.filter { $0.date <= endOfDay }
             }
         }
-        
+
         return result
     }
-    
+
     var body: some View {
-        List {
-            ForEach(filteredExpenses) { expense in
-                ExpenseRowView(expense: expense)
-                    .contentShape(Rectangle())
-                    .onTapGesture {
-                        expenseToEdit = expense
-                    }
+        Group {
+            if isIPad {
+                iPadGrid
+            } else {
+                iPhoneList
             }
-            .onDelete(perform: deleteExpenses)
         }
         .sheet(item: $expenseToEdit) { expense in
             EditExpenseView(expense: expense)
@@ -171,14 +171,128 @@ private struct ExpensesListContent: View {
             PaywallView(limitReachedMessage: LocalizationKey.Subscription.expenseLimitReached)
         }
     }
-    
+
+    // MARK: iPhone – plain list
+    private var iPhoneList: some View {
+        List {
+            ForEach(filteredExpenses) { expense in
+                ExpenseRowView(expense: expense)
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        expenseToEdit = expense
+                    }
+            }
+            .onDelete(perform: deleteExpenses)
+        }
+    }
+
+    // MARK: iPad – card grid
+    private var iPadGrid: some View {
+        ScrollView {
+            LazyVGrid(
+                columns: [GridItem(.adaptive(minimum: 340, maximum: 480), spacing: 16)],
+                spacing: 16
+            ) {
+                ForEach(filteredExpenses) { expense in
+                    ExpenseCardView(expense: expense)
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            expenseToEdit = expense
+                        }
+                        .contextMenu {
+                            Button(role: .destructive) {
+                                deleteExpense(expense)
+                            } label: {
+                                Label(LocalizationKey.General.delete, systemImage: "trash")
+                            }
+                        }
+                }
+            }
+            .padding()
+        }
+        .background(Color(.systemGroupedBackground))
+    }
+
     private func deleteExpenses(offsets: IndexSet) {
         withAnimation {
             for index in offsets {
-                let expense = filteredExpenses[index]
-                modelContext.delete(expense)
+                modelContext.delete(filteredExpenses[index])
             }
             try? modelContext.save()
         }
     }
+
+    private func deleteExpense(_ expense: Expense) {
+        modelContext.delete(expense)
+        try? modelContext.save()
+    }
 }
+// MARK: - iPad Expense Card
+private struct ExpenseCardView: View {
+    let expense: Expense
+    @AppStorage(StorageKey.selectedCurrencyCode) private var currencyCode = StorageKey.defaultCurrencyCode
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            // Header
+            HStack(spacing: 12) {
+                Image(systemName: expense.category.iconName)
+                    .font(.title2)
+                    .foregroundStyle(expense.category.chartColor)
+                    .frame(width: 40, height: 40)
+                    .background(expense.category.chartColor.opacity(0.12))
+                    .clipShape(RoundedRectangle(cornerRadius: 10))
+
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(expense.descriptionText)
+                        .font(.headline)
+                        .lineLimit(2)
+                    if let project = expense.project {
+                        Label(project.name, systemImage: "folder")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                    }
+                }
+
+                Spacer()
+
+                Text(expense.amount, format: .currency(code: currencyCode))
+                    .font(.title3)
+                    .fontWeight(.bold)
+                    .foregroundStyle(.red)
+            }
+            .padding()
+
+            Divider()
+
+            // Footer
+            HStack {
+                Label(expense.category.displayName, systemImage: expense.category.iconName)
+                    .font(.caption)
+                    .fontWeight(.medium)
+                    .foregroundStyle(expense.category.chartColor)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 4)
+                    .background(expense.category.chartColor.opacity(0.12))
+                    .clipShape(Capsule())
+
+                Spacer()
+
+                Label {
+                    Text(expense.date, format: .dateTime.month(.abbreviated).day().year())
+                } icon: {
+                    Image(systemName: "calendar")
+                }
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            }
+            .padding(.horizontal)
+            .padding(.vertical, 10)
+        }
+        .background(Color(.systemBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 14))
+        .shadow(color: .black.opacity(0.06), radius: 8, y: 2)
+    }
+}
+
