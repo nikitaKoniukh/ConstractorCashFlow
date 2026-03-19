@@ -42,10 +42,10 @@ struct ScannedExpenseReviewView: View {
                                 .foregroundStyle(.blue)
                                 .font(.title3)
                             VStack(alignment: .leading, spacing: 2) {
-                                Text("Invoice scanned")
+                                Text(LocalizationKey.Scan.invoiceScanned)
                                     .font(.subheadline)
                                     .fontWeight(.medium)
-                                Text("Review and correct the fields below before saving.")
+                                Text(LocalizationKey.Scan.reviewHint)
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                             }
@@ -74,10 +74,10 @@ struct ScannedExpenseReviewView: View {
                                 .foregroundStyle(.blue)
                                 .font(.title3)
                             VStack(alignment: .leading, spacing: 2) {
-                                Text("Invoice scanned")
+                                Text(LocalizationKey.Scan.invoiceScanned)
                                     .font(.subheadline)
                                     .fontWeight(.medium)
-                                Text("Review and correct the fields below before saving.")
+                                Text(LocalizationKey.Scan.reviewHint)
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                             }
@@ -86,52 +86,52 @@ struct ScannedExpenseReviewView: View {
                     }
                 }
 
-                Section("Amount") {
-                    CurrencyTextField("Amount", value: $amount, currencyCode: currencyCode)
+                Section(LocalizationKey.Expense.amount) {
+                    CurrencyTextField(LocalizationKey.Expense.amount, value: $amount, currencyCode: currencyCode)
                         .focused($amountFocused)
                 }
 
-                Section("Description") {
-                    TextField("Description", text: $descriptionText)
+                Section(LocalizationKey.Expense.description) {
+                    TextField(LocalizationKey.Expense.description, text: $descriptionText)
                 }
 
-                Section("Date") {
-                    DatePicker("Date", selection: $date, displayedComponents: .date)
+                Section(LocalizationKey.Expense.date) {
+                    DatePicker(LocalizationKey.Expense.date, selection: $date, displayedComponents: .date)
                 }
 
-                Section("Category") {
-                    Picker("Category", selection: $category) {
+                Section(LocalizationKey.Expense.category) {
+                    Picker(LocalizationKey.Expense.category, selection: $category) {
                         ForEach(ExpenseCategory.allCases, id: \.self) { cat in
-                            Text(cat.displayName).tag(cat)
+                            Text(cat.localizedDisplayName).tag(cat)
                         }
                     }
                     .pickerStyle(.segmented)
                     .labelsHidden()
                 }
 
-                Section("Project (optional)") {
-                    Picker("Project", selection: $selectedProject) {
-                        Text("None").tag(nil as Project?)
+                Section(LocalizationKey.Expense.projectOptional) {
+                    Picker(LocalizationKey.Expense.project, selection: $selectedProject) {
+                        Text(LocalizationKey.Expense.none).tag(nil as Project?)
                         ForEach(projects) { project in
                             Text(project.name).tag(project as Project?)
                         }
                     }
                 }
             }
-            .navigationTitle("Review Expense")
+            .navigationTitle(LocalizationKey.Scan.reviewTitle)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { onSaved() }
+                    Button(LocalizationKey.Action.cancel) { onSaved() }
                         .disabled(isSaving)
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Save") { save() }
+                    Button(LocalizationKey.Action.save) { save() }
                         .disabled(!isValid || isSaving)
                 }
                 ToolbarItemGroup(placement: .keyboard) {
                     Spacer()
-                    Button("Done") { amountFocused = false }
+                    Button(LocalizationKey.Action.done) { amountFocused = false }
                 }
             }
             .onAppear {
@@ -219,11 +219,11 @@ struct ReceiptFullScreenView: View {
                         )
                 }
             }
-            .navigationTitle("Receipt")
+            .navigationTitle(LocalizationKey.Scan.receiptTitle)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Done") { dismiss() }
+                    Button(LocalizationKey.Action.done) { dismiss() }
                 }
             }
         }

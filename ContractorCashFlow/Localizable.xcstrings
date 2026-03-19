@@ -595,9 +595,6 @@
         }
       }
     },
-    "Amount" : {
-
-    },
     "An error occurred" : {
 
     },
@@ -1430,9 +1427,6 @@
         }
       }
     },
-    "Choose from Photos" : {
-
-    },
     "Clear All Filters" : {
       "localizations" : {
         "en" : {
@@ -2013,9 +2007,6 @@
         }
       }
     },
-    "Date" : {
-
-    },
     "Date Range" : {
       "localizations" : {
         "en" : {
@@ -2081,12 +2072,6 @@
           }
         }
       }
-    },
-    "Description" : {
-
-    },
-    "Done" : {
-
     },
     "Due %@" : {
       "localizations" : {
@@ -2993,9 +2978,6 @@
         }
       }
     },
-    "Import Invoice or Receipt" : {
-
-    },
     "Inactive" : {
       "localizations" : {
         "en" : {
@@ -3178,9 +3160,6 @@
           }
         }
       }
-    },
-    "Invoice scanned" : {
-
     },
     "Invoice to %@" : {
       "localizations" : {
@@ -6069,9 +6048,6 @@
         }
       }
     },
-    "None" : {
-
-    },
     "Notification Status" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -6324,9 +6300,6 @@
         }
       }
     },
-    "Project" : {
-
-    },
     "Project '%@' has exceeded budget! Spent $%@ of $%@" : {
       "localizations" : {
         "en" : {
@@ -6346,9 +6319,6 @@
           }
         }
       }
-    },
-    "Project (optional)" : {
-
     },
     "Project Information" : {
       "localizations" : {
@@ -6795,12 +6765,6 @@
         }
       }
     },
-    "Review and correct the fields below before saving." : {
-
-    },
-    "Review Expense" : {
-
-    },
     "Save" : {
       "localizations" : {
         "en" : {
@@ -6823,14 +6787,250 @@
         }
       }
     },
-    "Scan Document (Camera)" : {
-
-    },
     "Scan Invoice" : {
 
     },
-    "Scanning invoice…" : {
-
+    "scan.addManually" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add Manually"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "הוספה ידנית"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Добавить вручную"
+          }
+        }
+      }
+    },
+    "scan.chooseFromPhotos" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose from Photos"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "בחר מהגלריה"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Выбрать из галереи"
+          }
+        }
+      }
+    },
+    "scan.importFooter" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The app will scan the document and automatically fill in the amount, date, and description."
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "האפליקציה תסרוק את המסמך ותמלא אוטומטית את הסכום, התאריך והתיאור."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Приложение отсканирует документ и автоматически заполнит сумму, дату и описание."
+          }
+        }
+      }
+    },
+    "scan.importHeader" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Import Invoice or Receipt"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ייבוא חשבונית או קבלה"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Импорт счёта или квитанции"
+          }
+        }
+      }
+    },
+    "scan.invoiceScanned" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invoice scanned"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "החשבונית נסרקה"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Счёт отсканирован"
+          }
+        }
+      }
+    },
+    "scan.processingTitle" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scanning invoice…"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "סורק חשבונית…"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сканирование счёта…"
+          }
+        }
+      }
+    },
+    "scan.receiptTitle" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Receipt"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "קבלה"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Квитанция"
+          }
+        }
+      }
+    },
+    "scan.reviewHint" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Review and correct the fields below before saving."
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "בדוק ותקן את השדות לפני השמירה."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Проверьте и исправьте поля перед сохранением."
+          }
+        }
+      }
+    },
+    "scan.reviewTitle" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Review Expense"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "בדיקת הוצאה"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Проверка расхода"
+          }
+        }
+      }
+    },
+    "scan.scanDocument" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scan Document (Camera)"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "סריקת מסמך (מצלמה)"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сканировать документ (камера)"
+          }
+        }
+      }
+    },
+    "scan.title" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scan Invoice"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "סריקת חשבונית"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сканировать счёт"
+          }
+        }
+      }
     },
     "Search by name or client" : {
       "localizations" : {
@@ -8269,9 +8469,6 @@
           }
         }
       }
-    },
-    "The app will scan the document and automatically fill in the amount, date, and description." : {
-
     },
     "This worker has %lld linked expense(s). The expenses will remain but won't be linked to a worker." : {
       "localizations" : {

@@ -415,6 +415,21 @@ enum LocalizationKey {
         static let budgetWarning100Body = String(localized: "Project '%@' has exceeded budget! Spent $%@ of $%@")
     }
     
+    // MARK: - Scan Invoice
+    enum Scan {
+        static let title = LocalizedStringKey("scan.title")
+        static let importHeader = LocalizedStringKey("scan.importHeader")
+        static let importFooter = LocalizedStringKey("scan.importFooter")
+        static let scanDocument = LocalizedStringKey("scan.scanDocument")
+        static let chooseFromPhotos = LocalizedStringKey("scan.chooseFromPhotos")
+        static let processingTitle = LocalizedStringKey("scan.processingTitle")
+        static let reviewTitle = LocalizedStringKey("scan.reviewTitle")
+        static let invoiceScanned = LocalizedStringKey("scan.invoiceScanned")
+        static let reviewHint = LocalizedStringKey("scan.reviewHint")
+        static let addManually = LocalizedStringKey("scan.addManually")
+        static let receiptTitle = LocalizedStringKey("scan.receiptTitle")
+    }
+
     // MARK: - Content
     enum Content {
         static let itemAt = String(localized: "Item at %@")

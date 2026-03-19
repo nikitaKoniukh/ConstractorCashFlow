@@ -53,7 +53,7 @@ struct ScanInvoiceView: View {
                     Button {
                         showDocumentScanner = true
                     } label: {
-                        Label("Scan Document (Camera)", systemImage: "doc.viewfinder")
+                        Label(LocalizationKey.Scan.scanDocument, systemImage: "doc.viewfinder")
                             .font(.body)
                             .foregroundStyle(.primary)
                     }
@@ -63,22 +63,22 @@ struct ScanInvoiceView: View {
                             sourceType = .photoLibrary
                             showImagePicker = true
                         } label: {
-                            Label("Choose from Photos", systemImage: "photo.on.rectangle")
+                            Label(LocalizationKey.Scan.chooseFromPhotos, systemImage: "photo.on.rectangle")
                                 .font(.body)
                                 .foregroundStyle(.primary)
                         }
                     }
                 } header: {
-                    Text("Import Invoice or Receipt")
+                    Text(LocalizationKey.Scan.importHeader)
                 } footer: {
-                    Text("The app will scan the document and automatically fill in the amount, date, and description.")
+                    Text(LocalizationKey.Scan.importFooter)
                 }
             }
-            .navigationTitle("Scan Invoice")
+            .navigationTitle(LocalizationKey.Scan.title)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
+                    Button(LocalizationKey.Action.cancel) { dismiss() }
                 }
             }
         }
@@ -90,7 +90,7 @@ struct ScanInvoiceView: View {
         VStack(spacing: 20) {
             ProgressView()
                 .scaleEffect(1.5)
-            Text("Scanning invoice…")
+            Text(LocalizationKey.Scan.processingTitle)
                 .font(.headline)
                 .foregroundStyle(.secondary)
         }
