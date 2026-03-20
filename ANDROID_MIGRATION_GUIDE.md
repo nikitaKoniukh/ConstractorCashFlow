@@ -1779,3 +1779,846 @@ Test suites:
 
 Run all tests and verify they pass.
 ```
+
+---
+
+## Appendix D: Design System (Colors, Typography, Shapes)
+
+This appendix documents all visual design tokens from the iOS app so they can be replicated exactly in Compose Material 3.
+
+### D.1 Color Palette
+
+Map iOS system colors to Compose equivalents. Use `MaterialTheme.colorScheme` where possible and define custom colors for semantic use.
+
+```kotlin
+// ui/theme/Color.kt
+import androidx.compose.ui.graphics.Color
+
+// Semantic colors (same across light/dark, adapt as needed)
+val IncomeGreen       = Color(0xFF34C759)   // iOS .green
+val ExpenseRed        = Color(0xFFFF3B30)   // iOS .red
+val PendingOrange     = Color(0xFFFF9500)   // iOS .orange
+val HourlyTeal        = Color(0xFF30B0C7)   // iOS .teal
+val WorkerPurple      = Color(0xFFAF52DE)   // iOS .purple
+val BudgetBlue        = Color(0xFF007AFF)   // iOS .blue
+val InactiveGray      = Color(0xFF8E8E93)   // iOS .gray
+
+// Category chart colors
+val MaterialsBlue     = Color(0xFF007AFF)
+val LaborOrange       = Color(0xFFFF9500)
+val EquipmentGray     = Color(0xFF8E8E93)
+val SubcontractorTeal = Color(0xFF30B0C7)
+val MiscPurple        = Color(0xFFAF52DE)
+
+// Background surface colors (use with MaterialTheme in light/dark)
+// iOS Color(.systemBackground)          → MaterialTheme.colorScheme.surface
+// iOS Color(.secondarySystemGroupedBackground) → MaterialTheme.colorScheme.surfaceVariant
+// iOS Color(.systemGroupedBackground)   → MaterialTheme.colorScheme.background
+// iOS Color(.separator)                 → MaterialTheme.colorScheme.outlineVariant
+
+// Opacity variants used in iOS (replicate with .copy(alpha = ...)):
+// avatar/badge background: WorkerPurple.copy(alpha = 0.12f)
+// active status pill bg:   IncomeGreen.copy(alpha = 0.15f)
+// inactive status pill bg: InactiveGray.copy(alpha = 0.15f)
+// stat pill backgrounds:   color.copy(alpha = 0.10f)
+// shadow:                  Color.Black.copy(alpha = 0.05f)
+// income area fill:        IncomeGreen.copy(alpha = 0.15f)
+// expense area fill:       ExpenseRed.copy(alpha = 0.15f)
+// dividers:                outlineVariant.copy(alpha = 0.5f)
+```
+
+### D.2 Typography
+
+```kotlin
+// ui/theme/Type.kt
+// Map iOS font specs to Compose TextStyle
+
+// iOS .system(size: 34, weight: .bold, design: .rounded)
+// → large balance/KPI number
+val BalanceTextStyle = TextStyle(
+    fontSize = 34.sp,
+    fontWeight = FontWeight.Bold,
+    fontFamily = FontFamily.Default  // use Rounded font if available
+)
+
+// iOS .title3 + .fontWeight(.bold)  → KPI card values
+val KpiValueStyle = TextStyle(fontSize = 20.sp, fontWeight = FontWeight.Bold)
+
+// iOS .title3 + .fontWeight(.semibold) → secondary KPI values
+val KpiValueSemibold = TextStyle(fontSize = 20.sp, fontWeight = FontWeight.SemiBold)
+
+// iOS .headline → worker name, card titles, page headings
+// → MaterialTheme.typography.titleMedium (16sp SemiBold)
+
+// iOS .subheadline → secondary titles, period filter labels
+// → MaterialTheme.typography.bodyMedium (14sp)
+
+// iOS .caption + .fontWeight(.semibold) → stat pill values
+val PillValueStyle = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+
+// iOS .caption → stat pill labels, secondary text
+// → MaterialTheme.typography.labelSmall (11sp)
+
+// iOS .caption2 + .fontWeight(.semibold) → worker rate, status badge text
+val BadgeTextStyle = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Medium)
+
+// iOS .caption + .fontWeight(.medium) + .textCase(.uppercase) → section headers
+val SectionHeaderStyle = TextStyle(
+    fontSize = 12.sp,
+    fontWeight = FontWeight.Medium,
+    letterSpacing = 0.5.sp
+    // apply .uppercase() in Compose with text.uppercase()
+)
+```
+
+### D.3 Shapes & Corner Radii
+
+```kotlin
+// ui/theme/Shape.kt
+// iOS → Compose mapping
+
+// Card (analytics, KPI, labor):   cornerRadius = 12  → RoundedCornerShape(12.dp)
+// StatCard (labor summary stat):  cornerRadius = 10  → RoundedCornerShape(10.dp)
+// Period filter selected state:   cornerRadius = 8   → RoundedCornerShape(8.dp)
+// Period filter container:        cornerRadius = 12  → RoundedCornerShape(12.dp)
+// Invoice/budget bar segment:     cornerRadius = 4   → RoundedCornerShape(4.dp)
+// Bar container:                  cornerRadius = 6   → RoundedCornerShape(6.dp)
+// Status badges, stat pills:      Capsule            → CircleShape / RoundedCornerShape(50)
+// Worker avatar:                  Circle             → CircleShape
+
+val Shapes = Shapes(
+    extraSmall = RoundedCornerShape(4.dp),
+    small      = RoundedCornerShape(8.dp),
+    medium     = RoundedCornerShape(10.dp),
+    large      = RoundedCornerShape(12.dp),
+    extraLarge = RoundedCornerShape(16.dp)
+)
+```
+
+### D.4 Elevation & Shadows
+
+```kotlin
+// iOS shadow: .shadow(color: .black.opacity(0.05), radius: 8, y: 2)
+// In Compose use Card elevation or custom shadow modifier:
+
+// For cards use:
+Card(
+    modifier = Modifier.shadow(
+        elevation = 2.dp,
+        shape = RoundedCornerShape(12.dp),
+        ambientColor = Color.Black.copy(alpha = 0.05f),
+        spotColor = Color.Black.copy(alpha = 0.05f)
+    )
+)
+// Or simply: Card(elevation = CardDefaults.cardElevation(defaultElevation = 2.dp))
+```
+
+### D.5 Spacing Constants
+
+```kotlin
+object Spacing {
+    val xs  = 4.dp    // tight vertical padding in badges
+    val sm  = 8.dp    // badge padding, stat pill vertical
+    val md  = 10.dp   // stat pill horizontal, stats section
+    val lg  = 12.dp   // labor card header spacing, analytics cards inner
+    val xl  = 16.dp   // standard card padding, section spacing
+    val xxl = 20.dp   // page-level section gaps
+}
+
+// HStack/VStack spacing → Arrangement.spacedBy() / Column spacing:
+// spacing 2  → Arrangement.spacedBy(2.dp)
+// spacing 4  → Arrangement.spacedBy(4.dp)
+// spacing 5  → Arrangement.spacedBy(5.dp)  (icon + text in pills)
+// spacing 8  → Arrangement.spacedBy(8.dp)  (pill row, general)
+// spacing 10 → Arrangement.spacedBy(10.dp) (labor summary stat cards)
+// spacing 12 → Arrangement.spacedBy(12.dp) (labor card sections)
+// spacing 16 → Arrangement.spacedBy(16.dp) (financial row)
+// spacing 32 → Arrangement.spacedBy(32.dp) (income/expenses columns)
+```
+
+### D.6 Reusable Component Patterns
+
+#### Status Badge (Active / Inactive / Invoice status)
+```kotlin
+@Composable
+fun StatusBadge(label: String, color: Color) {
+    Text(
+        text = label.uppercase(),
+        style = BadgeTextStyle,
+        color = color,
+        modifier = Modifier
+            .background(color.copy(alpha = 0.15f), shape = CircleShape)
+            .padding(horizontal = 8.dp, vertical = 3.dp)
+    )
+}
+// Usage:
+StatusBadge("Active", IncomeGreen)
+StatusBadge("Overdue", ExpenseRed)
+StatusBadge("Pending", PendingOrange)
+```
+
+#### Stat Pill (hours/days worked)
+```kotlin
+@Composable
+fun StatPill(value: String, label: String, icon: ImageVector, color: Color) {
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(5.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .background(color.copy(alpha = 0.10f), shape = CircleShape)
+            .padding(horizontal = 10.dp, vertical = 5.dp)
+    ) {
+        Icon(icon, contentDescription = null,
+            tint = color, modifier = Modifier.size(12.dp))
+        Text(value, style = PillValueStyle)
+        Text(label, style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant)
+    }
+}
+// Usage: StatPill("8", "hours", Icons.Default.Schedule, HourlyTeal)
+//        StatPill("3", "days",  Icons.Default.CalendarToday, PendingOrange)
+```
+
+#### Worker Avatar Circle
+```kotlin
+@Composable
+fun WorkerAvatar(name: String, size: Dp = 42.dp) {
+    val initials = name.split(" ")
+        .take(2).mapNotNull { it.firstOrNull()?.uppercaseChar() }
+        .joinToString("")
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier
+            .size(size)
+            .background(WorkerPurple.copy(alpha = 0.12f), CircleShape)
+    ) {
+        Text(initials, style = MaterialTheme.typography.titleMedium,
+            color = WorkerPurple)
+    }
+}
+```
+
+#### Analytics Card
+```kotlin
+@Composable
+fun AnalyticsCard(title: String, content: @Composable () -> Unit) {
+    Card(
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Text(title, style = MaterialTheme.typography.titleMedium)
+            content()
+        }
+    }
+}
+```
+
+#### Period Filter Bar
+```kotlin
+@Composable
+fun PeriodFilterBar(selected: AnalyticsPeriod, onSelect: (AnalyticsPeriod) -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(12.dp))
+            .padding(4.dp)
+            .shadow(elevation = 2.dp, shape = RoundedCornerShape(12.dp)),
+        horizontalArrangement = Arrangement.SpaceEvenly
+    ) {
+        AnalyticsPeriod.entries.forEach { period ->
+            val isSelected = period == selected
+            Text(
+                text = period.label,
+                style = if (isSelected) MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold)
+                        else MaterialTheme.typography.labelMedium,
+                color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier
+                    .weight(1f)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent)
+                    .clickable { onSelect(period) }
+                    .padding(vertical = 8.dp),
+                textAlign = TextAlign.Center
+            )
+        }
+    }
+}
+
+enum class AnalyticsPeriod(val label: String, val days: Int?) {
+    WEEK("7D", 7), MONTH("30D", 30), QUARTER("90D", 90),
+    YEAR("1Y", 365), ALL("All", null)
+}
+```
+
+---
+
+## Appendix E: Missing Features Not in Original Guide
+
+The following iOS features were not covered in the original guide phases. Each must be implemented in Android.
+
+### E.1 Dual Worker Rates (Labor Model)
+
+The iOS `LaborDetails` model supports **two simultaneous rates** — a worker can have both an hourly rate and a daily rate at the same time. This is different from what Phase 1 described (single `rate` field).
+
+**Correct entity:**
+```kotlin
+@Entity(tableName = "labor_details")
+data class LaborDetailsEntity(
+    @PrimaryKey val id: String = UUID.randomUUID().toString(),
+    val workerName: String = "",
+    val laborType: String = LaborType.HOURLY.name,  // default type
+    val hourlyRate: Double? = null,   // rate per hour (independent of dailyRate)
+    val dailyRate: Double? = null,    // rate per day (independent of hourlyRate)
+    val contractPrice: Double? = null, // for CONTRACT and SUBCONTRACTOR types
+    val notes: String? = null,
+    val createdDate: Long = System.currentTimeMillis()
+)
+```
+
+**Effective rate logic** — used when auto-calculating expense amount:
+```kotlin
+fun LaborDetailsEntity.effectiveRate(forType: LaborType): Double? = when (forType) {
+    LaborType.HOURLY       -> hourlyRate
+    LaborType.DAILY        -> dailyRate
+    LaborType.CONTRACT,
+    LaborType.SUBCONTRACTOR -> contractPrice
+}
+```
+
+**In AddLaborScreen and EditLaborScreen:**
+- Show separate "Rate per Hour" and "Rate per Day" fields simultaneously (both optional)
+- Show "Contract Price" field for CONTRACT / SUBCONTRACTOR types
+- Worker type picker selects the **default** billing mode; the dual rates allow the same worker to be billed either way on different expenses
+
+### E.2 laborTypeSnapshot on Expense
+
+Every `ExpenseEntity` must store a **snapshot of the labor type at the time the expense was created**. This preserves the pay-type context even if the worker's type changes later.
+
+```kotlin
+@Entity(tableName = "expenses", ...)
+data class ExpenseEntity(
+    // ... existing fields ...
+    val laborTypeSnapshot: String? = null  // LaborType.name, only for Labor category
+)
+```
+
+When creating a Labor expense with a worker selected:
+- Set `laborTypeSnapshot = selectedBillingType.name` (the hourly/daily/contract mode chosen for this expense, not necessarily the worker's default)
+
+When displaying expenses in EditLaborScreen stats or LaborCardRow:
+- Use `laborTypeSnapshot` to determine whether to show hours or days icon/label per expense
+
+### E.3 Receipt Image Scanning (OCR)
+
+The iOS app includes full document/receipt scanning using the camera or photo library. This was not covered in the original guide.
+
+**Android equivalent: ML Kit Document Scanner or CameraX + ML Kit Text Recognition**
+
+Add dependencies:
+```kotlin
+// ML Kit Text Recognition (on-device, no network)
+implementation("com.google.mlkit:text-recognition:16.0.1")
+implementation("com.google.mlkit:text-recognition-hebrew:16.0.0")
+
+// Document Scanner (Google Play Services)
+implementation("com.google.android.gms:play-services-mlkit-document-scanner:16.0.0-beta1")
+
+// Camera (for live camera feed alternative)
+implementation("androidx.camera:camera-camera2:1.3.4")
+implementation("androidx.camera:camera-lifecycle:1.3.4")
+implementation("androidx.camera:camera-view:1.3.4")
+```
+
+**Add to ExpenseEntity:**
+```kotlin
+val receiptImageUri: String? = null  // URI to image stored in app's files dir
+// Store as a file in Context.filesDir, save the URI path
+// (Android equivalent of iOS @Attribute(.externalStorage))
+```
+
+**OcrService.kt:**
+```kotlin
+object OcrService {
+    data class ScannedInvoiceData(
+        val amount: Double?,
+        val date: Date?,
+        val description: String
+    )
+
+    suspend fun parse(bitmap: Bitmap, languageCode: String): ScannedInvoiceData {
+        val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
+        val image = InputImage.fromBitmap(bitmap, 0)
+        val result = recognizer.process(image).await()
+        val lines = result.textBlocks.flatMap { it.lines }.map { it.text }
+        return ScannedInvoiceData(
+            amount = extractTotalAmount(lines),
+            date = extractDate(lines),
+            description = bestDescription(lines)
+        )
+    }
+
+    // 5-strategy amount extraction (mirror iOS waterfall):
+    // 1. Total keyword + decimal on same line
+    // 2. Total keyword line, look ahead 1-3 lines for decimal
+    // 3. Currency symbol (₪ $ € £ ₽) + decimal
+    // 4. Any X.XX decimal pattern
+    // 5. Last resort: integer < 10,000
+    private fun extractTotalAmount(lines: List<String>): Double? { ... }
+
+    // Total keywords per language:
+    // EN: "total due", "amount due", "total to pay", "balance due", "grand total", "total", "amount payable"
+    // HE: "סה״כ לתשלום", "לתשלום", "סכום לתשלום", "סה״כ"
+    // RU: "итого к оплате", "итого", "к оплате", "сумма"
+    private val totalKeywords = listOf(
+        "total due", "amount due", "total to pay", "balance due",
+        "grand total", "total", "amount payable",
+        "סה\u05F4כ לתשלום", "לתשלום", "סכום לתשלום", "סה\u05F4כ",
+        "итого к оплате", "итого", "к оплате", "сумма"
+    )
+
+    // Date formats to try (12 formats):
+    // MM/dd/yyyy, dd/MM/yyyy, yyyy-MM-dd, MMM dd yyyy, dd MMM yyyy,
+    // MMMM dd yyyy, MM-dd-yyyy, dd-MM-yyyy, d/M/yyyy, M/d/yyyy,
+    // dd.MM.yyyy, d.M.yyyy
+    private fun extractDate(lines: List<String>): Date? { ... }
+
+    // Best description: longest non-numeric line under 60 chars
+    private fun bestDescription(lines: List<String>): String { ... }
+}
+```
+
+**ScanExpenseScreen.kt** — two entry points:
+```kotlin
+// 1. Document scanner (uses GMS Document Scanner API)
+val scannerLauncher = rememberLauncherForActivityResult(
+    ActivityResultContracts.StartIntentSenderForResult()
+) { result -> /* get bitmap from result */ }
+
+// 2. Photo picker (Android 13+ PhotoPicker or legacy gallery intent)
+val photoPickerLauncher = rememberLauncherForActivityResult(
+    ActivityResultContracts.PickVisualMedia()
+) { uri -> /* load bitmap from uri */ }
+
+// Show two buttons:
+// "Scan Document" (camera icon) → launches document scanner
+// "Choose from Photos" (gallery icon) → launches photo picker
+```
+
+**ScannedExpenseReviewScreen.kt** — editable review before saving:
+- Receipt image thumbnail (52.dp × 52.dp), tappable for full-screen view
+- `CurrencyTextField` for amount (pre-filled from OCR)
+- Text field for description (pre-filled from OCR)
+- `DatePicker` for date (pre-filled from OCR)
+- Category picker (auto-suggested from description keywords):
+  - Labor: description contains "labor", "worker", "wages"
+  - Materials: contains "material", "lumber", "supply", "supplies"
+  - Equipment: contains "equipment", "rental", "tool"
+  - Default: Miscellaneous
+- Project picker (optional)
+- On save: compress image to JPEG (70% quality), store URI, create Expense record
+
+**Add to package structure:**
+```
+ui/scan/
+├── ScanExpenseScreen.kt
+├── ScannedExpenseReviewScreen.kt
+└── OcrService.kt
+```
+
+### E.4 In-App Purchases / Paywall
+
+The iOS app uses StoreKit 2 with a free tier and two subscription plans. The Android equivalent uses Google Play Billing.
+
+**Add dependency:**
+```kotlin
+implementation("com.android.billingclient:billing-ktx:7.0.0")
+```
+
+**Free tier limits (enforce at every creation point):**
+```kotlin
+object FreeTierLimit {
+    const val MAX_PROJECTS = 1
+    const val MAX_EXPENSES = 1
+    const val MAX_INVOICES = 1
+    const val MAX_WORKERS  = 1
+}
+```
+
+**Product IDs (create in Google Play Console):**
+```kotlin
+object BillingProduct {
+    const val PRO_MONTHLY = "com.yetzira.contractorcashflow.pro.monthly"
+    const val PRO_YEARLY  = "com.yetzira.contractorcashflow.pro.yearly"
+    // Pricing mirrors iOS: Monthly ~$19.99, Yearly ~$199.99
+}
+```
+
+**PurchaseManager.kt:**
+```kotlin
+@Singleton
+class PurchaseManager @Inject constructor(private val context: Context) {
+    var isProUser: Boolean by mutableStateOf(false)
+        private set
+    var subscriptionStatusText: String by mutableStateOf("Free")
+        private set
+    var expirationDate: Date? by mutableStateOf(null)
+        private set
+
+    private val billingClient = BillingClient.newBuilder(context)
+        .setListener { billingResult, purchases -> handlePurchases(purchases) }
+        .enablePendingPurchases()
+        .build()
+
+    fun canCreateProject(currentCount: Int) = isProUser || currentCount < FreeTierLimit.MAX_PROJECTS
+    fun canCreateExpense(currentCount: Int) = isProUser || currentCount < FreeTierLimit.MAX_EXPENSES
+    fun canCreateInvoice(currentCount: Int) = isProUser || currentCount < FreeTierLimit.MAX_INVOICES
+    fun canCreateWorker(currentCount: Int)  = isProUser || currentCount < FreeTierLimit.MAX_WORKERS
+
+    suspend fun purchase(productId: String, activity: Activity): BillingResult { ... }
+    suspend fun restorePurchases() { ... }
+    private fun handlePurchases(purchases: List<Purchase>?) { ... }
+}
+```
+
+**PaywallScreen.kt:**
+- Feature comparison table (Free vs Pro)
+- Monthly and Yearly plan cards with price
+- "Restore Purchases" text button
+- On close: navigates back
+- Triggered from any screen where the free tier limit is reached
+
+**Add to SettingsScreen:**
+- Subscription section at top:
+  - If Pro: show plan name + crown icon, renewal date, "Manage Subscription" button (opens Play Store)
+  - If Free: show "Free Plan" + "Upgrade to Pro" button (opens PaywallScreen)
+
+### E.5 Analytics — Missing Charts & Period Filter
+
+The original guide (Phase 8) documented only 3 charts. The actual iOS analytics screen has **7 components**. Add the missing 4:
+
+#### KPI Row (2 cards)
+```kotlin
+// Positioned above all charts
+Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+    KpiCard(
+        title = stringResource(R.string.analytics_net_balance),
+        value = formatCurrency(netBalance),
+        valueColor = if (netBalance >= 0) IncomeGreen else ExpenseRed,
+        modifier = Modifier.weight(1f)
+    )
+    KpiCard(
+        title = stringResource(R.string.analytics_overdue),
+        value = formatCurrency(overdueAmount),
+        valueColor = if (overdueAmount > 0) ExpenseRed else IncomeGreen,
+        modifier = Modifier.weight(1f)
+    )
+}
+
+@Composable
+fun KpiCard(title: String, value: String, valueColor: Color, modifier: Modifier) {
+    Card(shape = RoundedCornerShape(12.dp), modifier = modifier) {
+        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(title, style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(value, style = KpiValueStyle, color = valueColor)
+        }
+    }
+}
+```
+
+#### Monthly Trend Chart (hidden for 7D period)
+```kotlin
+// Multi-series line + area chart using Vico
+// X-axis: months (abbreviated + 2-digit year, e.g. "Jan 26")
+// Y-axis: currency amounts
+// Income series: IncomeGreen line + IncomeGreen.copy(alpha=0.15f) area fill
+// Expense series: ExpenseRed line + ExpenseRed.copy(alpha=0.15f) area fill
+// Interpolation: Catmull-Rom (smooth curves)
+// Hidden entirely when selectedPeriod == AnalyticsPeriod.WEEK
+
+// Build monthly buckets:
+data class MonthlyDataPoint(val monthLabel: String, val income: Double, val expenses: Double)
+```
+
+#### Invoice Status Chart (stacked bar)
+```kotlin
+// Single horizontal bar divided into 3 proportional segments:
+// [Paid (green)] [Pending (orange)] [Overdue (red)]
+// Below bar: legend with label + amount + percentage for each segment
+// Height: ~12.dp for the bar itself
+// Segments: use Box with weight() for proportional widths
+// Corner radii: first segment cornerRadius(start=6), last cornerRadius(end=6), middle none
+
+@Composable
+fun InvoiceStatusBar(paid: Double, pending: Double, overdue: Double) {
+    val total = paid + pending + overdue
+    if (total == 0.0) { /* empty state */ return }
+    Row(modifier = Modifier.fillMaxWidth().height(12.dp).clip(RoundedCornerShape(6.dp))) {
+        if (paid > 0)    Box(Modifier.weight((paid/total).toFloat()).fillMaxHeight().background(IncomeGreen))
+        if (pending > 0) Box(Modifier.weight((pending/total).toFloat()).fillMaxHeight().background(PendingOrange))
+        if (overdue > 0) Box(Modifier.weight((overdue/total).toFloat()).fillMaxHeight().background(ExpenseRed))
+    }
+    // Legend row below
+}
+```
+
+#### Top Projects List
+```kotlin
+// Ranked list of top 5 projects by total income (paid invoices)
+// Each row: rank number + project name + client name + income (green) + balance delta
+
+@Composable
+fun TopProjectsCard(projects: List<ProjectSummary>) {
+    AnalyticsCard(title = stringResource(R.string.analytics_top_projects)) {
+        projects.take(5).forEachIndexed { index, project ->
+            Row(verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()) {
+                Text("${index + 1}", style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.width(24.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(project.name, style = MaterialTheme.typography.bodyMedium)
+                    Text(project.clientName, style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                Column(horizontalAlignment = Alignment.End) {
+                    Text(formatCurrency(project.income), color = IncomeGreen,
+                        style = MaterialTheme.typography.bodyMedium)
+                    Text(formatCurrency(project.balance),
+                        color = if (project.balance >= 0) IncomeGreen else ExpenseRed,
+                        style = MaterialTheme.typography.labelSmall)
+                }
+            }
+            if (index < projects.lastIndex) HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+        }
+    }
+}
+```
+
+#### Period Filter — date range calculation
+```kotlin
+fun AnalyticsPeriod.dateRange(): Pair<Long, Long>? {
+    val now = System.currentTimeMillis()
+    val days = this.days ?: return null  // ALL → return null (no filter)
+    val start = now - days * 24 * 60 * 60 * 1000L
+    return Pair(start, now)
+}
+// Apply to all chart data queries: filter expenses/invoices by date within range
+// Monthly trend chart: hidden when period == WEEK (7D)
+```
+
+**Add missing localization strings:**
+```xml
+<string name="analytics_kpi_row">Key Metrics</string>
+<string name="analytics_overdue">Overdue</string>
+<string name="analytics_monthly_trend">Monthly Trend</string>
+<string name="analytics_invoice_status">Invoice Status</string>
+<string name="analytics_top_projects">Top Projects</string>
+<string name="analytics_period_7d">7D</string>
+<string name="analytics_period_30d">30D</string>
+<string name="analytics_period_90d">90D</string>
+<string name="analytics_period_1y">1Y</string>
+<string name="analytics_period_all">All</string>
+```
+
+### E.6 iCloud Sync → Firebase Manual Sync Button
+
+The iOS app has a manual "Sync with iCloud" button in Settings with 4 states: idle, syncing, done, failed.
+
+Add to SettingsScreen (Firebase equivalent):
+```kotlin
+var syncState by remember { mutableStateOf(SyncState.IDLE) }
+
+enum class SyncState { IDLE, SYNCING, DONE, FAILED }
+
+// In settings list:
+ListItem(
+    headlineContent = {
+        when (syncState) {
+            SyncState.IDLE    -> Text(stringResource(R.string.settings_sync_now))
+            SyncState.SYNCING -> Text(stringResource(R.string.settings_syncing))
+            SyncState.DONE    -> Text(stringResource(R.string.settings_sync_done))
+            SyncState.FAILED  -> Text(stringResource(R.string.settings_sync_failed))
+        }
+    },
+    leadingContent = {
+        when (syncState) {
+            SyncState.IDLE    -> Icon(Icons.Default.CloudSync, null)
+            SyncState.SYNCING -> CircularProgressIndicator(modifier = Modifier.size(24.dp))
+            SyncState.DONE    -> Icon(Icons.Default.CloudDone, null, tint = IncomeGreen)
+            SyncState.FAILED  -> Icon(Icons.Default.CloudOff, null, tint = ExpenseRed)
+        }
+    },
+    modifier = Modifier.clickable {
+        coroutineScope.launch {
+            syncState = SyncState.SYNCING
+            syncState = try {
+                firestoreSyncService.pullAllData()
+                SyncState.DONE
+            } catch (e: Exception) {
+                SyncState.FAILED
+            }
+        }
+    }
+)
+```
+
+**Add localization strings:**
+```xml
+<string name="settings_sync_now">Sync with Cloud</string>
+<string name="settings_syncing">Syncing…</string>
+<string name="settings_sync_done">Synced</string>
+<string name="settings_sync_failed">Sync Failed</string>
+```
+
+### E.7 Project-Level Report Export
+
+Each project has an individual "Export & Share" action (separate from the full JSON export in Settings). This generates a formatted plain-text report for a single project.
+
+```kotlin
+// ProjectExportService.kt
+fun generateProjectReport(
+    project: ProjectEntity,
+    expenses: List<ExpenseEntity>,
+    invoices: List<InvoiceEntity>,
+    includeExpenses: Boolean,
+    includeInvoices: Boolean,
+    currencyCode: String
+): String {
+    val sb = StringBuilder()
+    sb.appendLine("=== ${project.name} ===")
+    sb.appendLine("Client: ${project.clientName}")
+    sb.appendLine("Budget: ${formatCurrency(project.budget, currencyCode)}")
+    sb.appendLine("Status: ${if (project.isActive) "Active" else "Inactive"}")
+    sb.appendLine()
+    sb.appendLine("--- Financial Summary ---")
+    val totalExpenses = expenses.sumOf { it.amount }
+    val totalIncome   = invoices.filter { it.isPaid }.sumOf { it.amount }
+    sb.appendLine("Income:   ${formatCurrency(totalIncome, currencyCode)}")
+    sb.appendLine("Expenses: ${formatCurrency(totalExpenses, currencyCode)}")
+    sb.appendLine("Balance:  ${formatCurrency(totalIncome - totalExpenses, currencyCode)}")
+    if (includeExpenses && expenses.isNotEmpty()) {
+        sb.appendLine()
+        sb.appendLine("--- Expenses ---")
+        expenses.forEach { e ->
+            sb.appendLine("${e.date.toDisplayDate()} | ${e.category} | ${e.descriptionText} | ${formatCurrency(e.amount, currencyCode)}")
+        }
+    }
+    if (includeInvoices && invoices.isNotEmpty()) {
+        sb.appendLine()
+        sb.appendLine("--- Invoices ---")
+        invoices.forEach { i ->
+            val status = when {
+                i.isPaid -> "Paid"
+                i.dueDate < System.currentTimeMillis() -> "Overdue"
+                else -> "Pending"
+            }
+            sb.appendLine("${i.clientName} | ${formatCurrency(i.amount, currencyCode)} | $status | Due: ${i.dueDate.toDisplayDate()}")
+        }
+    }
+    return sb.toString()
+}
+```
+
+**In ProjectDetailScreen toolbar:**
+- "Export" menu item → shows bottom sheet with two toggles (include expenses, include invoices) + Share button
+- Share via `Intent.ACTION_SEND` with `type = "text/plain"`
+
+**Add to ProjectsListScreen toolbar too** (overflow menu on each row).
+
+### E.8 ExpenseCategory — Correct Count
+
+The original guide listed 5 categories (`SUBCONTRACTOR` was included). The iOS app has **4 categories** only:
+
+```kotlin
+enum class ExpenseCategory(val displayName: String) {
+    MATERIALS("Materials"),
+    LABOR("Labor"),
+    EQUIPMENT("Equipment"),
+    MISC("Miscellaneous")
+    // SUBCONTRACTOR does NOT exist as an expense category
+    // (Subcontractor is a LaborType, not an ExpenseCategory)
+}
+```
+
+Remove `SUBCONTRACTOR` from `ExpenseCategory` everywhere in the codebase. `LaborType.SUBCONTRACTOR` is separate and correct.
+
+### E.9 Updated Package Structure
+
+Add the missing packages to the structure from Section 2.3:
+
+```
+ui/
+├── scan/
+│   ├── ScanExpenseScreen.kt          ← NEW (OCR entry)
+│   └── ScannedExpenseReviewScreen.kt ← NEW (OCR review)
+├── paywall/
+│   └── PaywallScreen.kt              ← NEW (subscription)
+├── components/
+│   ├── StatusBadge.kt                ← NEW
+│   ├── StatPill.kt                   ← NEW
+│   ├── WorkerAvatar.kt               ← NEW
+│   ├── AnalyticsCard.kt              ← NEW
+│   ├── PeriodFilterBar.kt            ← NEW
+│   ├── KpiCard.kt                    ← NEW
+│   └── ... (existing)
+│
+services/
+└── OcrService.kt                     ← NEW (ML Kit OCR)
+
+billing/
+└── PurchaseManager.kt                ← NEW (Google Play Billing)
+
+export/
+├── DataExportService.kt              ← existing (full JSON)
+└── ProjectExportService.kt          ← NEW (per-project text report)
+```
+
+### E.10 Updated Dependencies
+
+Add to `build.gradle.kts` beyond what Section 2.2 listed:
+
+```kotlin
+// Google Play Billing (in-app subscriptions)
+implementation("com.android.billingclient:billing-ktx:7.0.0")
+
+// ML Kit Text Recognition (on-device OCR, no network)
+implementation("com.google.mlkit:text-recognition:16.0.1")
+implementation("com.google.mlkit:text-recognition-hebrew:16.0.0")
+implementation("com.google.mlkit:text-recognition-chinese:16.0.0") // optional
+
+// GMS Document Scanner
+implementation("com.google.android.gms:play-services-mlkit-document-scanner:16.0.0-beta1")
+
+// CameraX (for photo capture)
+val cameraxVersion = "1.3.4"
+implementation("androidx.camera:camera-camera2:$cameraxVersion")
+implementation("androidx.camera:camera-lifecycle:$cameraxVersion")
+implementation("androidx.camera:camera-view:$cameraxVersion")
+
+// Coroutine adapter for ML Kit Tasks
+implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.8.1")
+
+// Coil (image loading for receipt thumbnails)
+implementation("io.coil-kt:coil-compose:2.7.0")
+```
+
+### E.11 Updated Tech Stack Mapping
+
+Add these missing mappings to Section 1:
+
+| iOS (Current) | Android (Target) |
+|---|---|
+| Vision (`VNRecognizeTextRequest`) | ML Kit Text Recognition (on-device) |
+| `VNDocumentCameraViewController` | GMS Document Scanner |
+| `UIImagePickerController` | `ActivityResultContracts.PickVisualMedia()` |
+| StoreKit 2 (auto-renewable subscriptions) | Google Play Billing 7 (subscriptions) |
+| `@Attribute(.externalStorage)` for receipt images | Store JPEG file in `Context.filesDir`, save URI in Room |
+| `AppStore.sync()` restore purchases | `BillingClient.queryPurchasesAsync()` |
+| `AppStore.showManageSubscriptions()` | `Intent(Intent.ACTION_VIEW, "https://play.google.com/store/account/subscriptions".toUri())` |
+| `UIActivityViewController` (text share) | `Intent.ACTION_SEND` with `type = "text/plain"` |
