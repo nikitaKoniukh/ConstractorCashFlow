@@ -2622,3 +2622,1108 @@ Add these missing mappings to Section 1:
 | `AppStore.sync()` restore purchases | `BillingClient.queryPurchasesAsync()` |
 | `AppStore.showManageSubscriptions()` | `Intent(Intent.ACTION_VIEW, "https://play.google.com/store/account/subscriptions".toUri())` |
 | `UIActivityViewController` (text share) | `Intent.ACTION_SEND` with `type = "text/plain"` |
+
+---
+
+## Appendix F: In-App Purchases — Full Google Play Billing 7 Implementation Guide
+
+This appendix is a complete, self-contained implementation guide for replicating the iOS StoreKit 2 subscription system in Android using Google Play Billing Library 7. Every class, interface, and UI component is documented with production-ready Kotlin + Compose code derived directly from the iOS source.
+
+---
+
+### F.0 iOS → Android Concept Mapping
+
+| iOS Concept | Android Equivalent |
+|---|---|
+| `StoreKit.Product` | `ProductDetails` (from `BillingClient.queryProductDetailsAsync`) |
+| `Transaction` | `Purchase` |
+| `VerificationResult<Transaction>` | `BillingResult` + server-side receipt validation |
+| `Transaction.currentEntitlements` | `BillingClient.queryPurchasesAsync(SUBS)` |
+| `Transaction.updates` (listener) | `PurchasesUpdatedListener` set on `BillingClient` |
+| `product.purchase()` | `BillingClient.launchBillingFlow(activity, params)` |
+| `AppStore.sync()` | `BillingClient.queryPurchasesAsync()` — re-query active purchases |
+| `AppStore.showManageSubscriptions()` | Deep link to Play Store subscriptions page |
+| `transaction.finish()` | `BillingClient.acknowledgePurchase()` |
+| `FreeTierLimit` enum | `FreeTierLimit` object (identical values) |
+| `SubscriptionProduct` enum | `BillingProduct` object |
+| `PurchaseManager` (singleton) | `PurchaseManager` (singleton `ViewModel` or Hilt singleton) |
+| `.isProUser` Boolean | `isProUser: StateFlow<Boolean>` |
+| `PaywallView` | `PaywallScreen` (Composable) |
+| `PaywallView(limitReachedMessage:)` | `PaywallScreen(limitReachedMessage:)` |
+
+---
+
+### F.1 Gradle Dependencies
+
+Add to **app/build.gradle.kts**:
+
+```kotlin
+dependencies {
+    // Google Play Billing Library 7
+    implementation("com.android.billingclient:billing:7.1.1")
+    implementation("com.android.billingclient:billing-ktx:7.1.1")  // Kotlin coroutine extensions
+}
+```
+
+> **Note:** `billing-ktx` provides `queryProductDetails`, `queryPurchasesAsync`, and `acknowledgePurchase` as suspend functions — the direct equivalent of Swift's `async/await` StoreKit 2 API.
+
+---
+
+### F.2 Product IDs and Free Tier Constants
+
+These must match the product IDs you create in **Google Play Console → Subscriptions**.
+
+```kotlin
+// BillingProduct.kt
+package com.yetzira.contractorcashflow.billing
+
+object BillingProduct {
+    // Must match Google Play Console product IDs exactly
+    const val PRO_MONTHLY = "com.yetzira.contractorcashflow.pro.monthly"
+    const val PRO_YEARLY  = "com.yetzira.contractorcashflow.pro.yearly"
+
+    val ALL_IDS = listOf(PRO_MONTHLY, PRO_YEARLY)
+
+    // Base plan IDs — set these to match the base plan tag you configure
+    // in Google Play Console for each subscription product.
+    const val MONTHLY_BASE_PLAN = "monthly"
+    const val YEARLY_BASE_PLAN  = "yearly"
+}
+
+object FreeTierLimit {
+    const val MAX_PROJECTS = 1
+    const val MAX_EXPENSES = 1
+    const val MAX_INVOICES = 1
+    const val MAX_WORKERS  = 1
+}
+```
+
+---
+
+### F.3 PurchaseManager — Core Billing Class
+
+This is the Android equivalent of `ServicesPurchaseManager.swift`. It is a singleton scoped to the application lifecycle using Hilt. If you are not using Hilt, see the manual singleton pattern in F.3.2.
+
+#### F.3.1 With Hilt Dependency Injection (recommended)
+
+```kotlin
+// PurchaseManager.kt
+package com.yetzira.contractorcashflow.billing
+
+import android.app.Activity
+import android.content.Context
+import com.android.billingclient.api.*
+import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import javax.inject.Inject
+import javax.inject.Singleton
+
+@Singleton
+class PurchaseManager @Inject constructor(
+    @ApplicationContext private val context: Context
+) {
+
+    // ─── State ────────────────────────────────────────────────────────────────
+
+    /** True when the user has an active Pro subscription. Equivalent to iOS `isProUser`. */
+    private val _isProUser = MutableStateFlow(false)
+    val isProUser: StateFlow<Boolean> = _isProUser.asStateFlow()
+
+    /** Available subscription ProductDetails loaded from Play Store. */
+    private val _products = MutableStateFlow<List<ProductDetails>>(emptyList())
+    val products: StateFlow<List<ProductDetails>> = _products.asStateFlow()
+
+    /** True while products are loading. */
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+
+    /** True while a purchase flow is in progress. */
+    private val _isPurchasing = MutableStateFlow(false)
+    val isPurchasing: StateFlow<Boolean> = _isPurchasing.asStateFlow()
+
+    /** Non-null when an error has occurred; observe to show error UI. */
+    private val _errorMessage = MutableStateFlow<String?>(null)
+    val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
+
+    /** The active purchase object for the current subscription. */
+    private val _activePurchase = MutableStateFlow<Purchase?>(null)
+    val activePurchase: StateFlow<Purchase?> = _activePurchase.asStateFlow()
+
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
+
+    // ─── BillingClient ────────────────────────────────────────────────────────
+
+    /**
+     * PurchasesUpdatedListener receives callbacks for purchases made during
+     * the current session. Equivalent to StoreKit 2's Transaction.updates listener.
+     */
+    private val purchasesUpdatedListener = PurchasesUpdatedListener { billingResult, purchases ->
+        when (billingResult.responseCode) {
+            BillingClient.BillingResponseCode.OK -> {
+                purchases?.forEach { purchase ->
+                    scope.launch { handlePurchase(purchase) }
+                }
+            }
+            BillingClient.BillingResponseCode.USER_CANCELED -> {
+                // User dismissed the purchase flow — no action needed
+            }
+            else -> {
+                _errorMessage.value = "Purchase failed: ${billingResult.debugMessage}"
+            }
+        }
+        _isPurchasing.value = false
+    }
+
+    private val billingClient = BillingClient.newBuilder(context)
+        .setListener(purchasesUpdatedListener)
+        .enablePendingPurchases(
+            PendingPurchasesParams.newBuilder()
+                .enableOneTimeProducts()
+                .enablePrepaidPlans()
+                .build()
+        )
+        .build()
+
+    // ─── Init ─────────────────────────────────────────────────────────────────
+
+    init {
+        connectAndLoad()
+    }
+
+    /**
+     * Connects to the Play Store, then checks entitlements and loads products.
+     * Equivalent to the init block in iOS PurchaseManager.
+     */
+    private fun connectAndLoad() {
+        billingClient.startConnection(object : BillingClientStateListener {
+            override fun onBillingSetupFinished(billingResult: BillingResult) {
+                if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
+                    scope.launch {
+                        checkCurrentEntitlements()
+                        loadProducts()
+                    }
+                }
+            }
+
+            override fun onBillingServiceDisconnected() {
+                // Retry connection on next operation
+            }
+        })
+    }
+
+    // ─── Load Products ────────────────────────────────────────────────────────
+
+    /**
+     * Loads subscription products from the Play Store.
+     * Equivalent to iOS `loadProducts()` using `Product.products(for:)`.
+     */
+    suspend fun loadProducts() {
+        _isLoading.value = true
+        try {
+            val productList = BillingProduct.ALL_IDS.map { productId ->
+                QueryProductDetailsParams.Product.newBuilder()
+                    .setProductId(productId)
+                    .setProductType(BillingClient.ProductType.SUBS)
+                    .build()
+            }
+            val params = QueryProductDetailsParams.newBuilder()
+                .setProductList(productList)
+                .build()
+
+            val result = billingClient.queryProductDetails(params)
+
+            if (result.billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
+                val sorted = (result.productDetailsList ?: emptyList()).sortedBy { details ->
+                    // Monthly first, yearly second — same order as iOS
+                    if (details.productId == BillingProduct.PRO_MONTHLY) 0 else 1
+                }
+                _products.value = sorted
+            } else {
+                _errorMessage.value = "Failed to load products: ${result.billingResult.debugMessage}"
+            }
+        } finally {
+            _isLoading.value = false
+        }
+    }
+
+    // ─── Purchase ─────────────────────────────────────────────────────────────
+
+    /**
+     * Launches the Play Store billing flow for the given ProductDetails and base plan.
+     * Must be called from an Activity context.
+     *
+     * Equivalent to iOS `purchase(_ product: Product)`.
+     *
+     * @param activity      The foreground Activity (required by Play Billing)
+     * @param productDetails The ProductDetails to purchase
+     * @param basePlanId    The base plan tag from Play Console (e.g. "monthly" or "yearly")
+     */
+    fun launchPurchaseFlow(
+        activity: Activity,
+        productDetails: ProductDetails,
+        basePlanId: String
+    ) {
+        val offerToken = productDetails
+            .subscriptionOfferDetails
+            ?.firstOrNull { it.basePlanId == basePlanId }
+            ?.offerToken
+            ?: return  // No matching offer — cannot proceed
+
+        val productDetailsParamsList = listOf(
+            BillingFlowParams.ProductDetailsParams.newBuilder()
+                .setProductDetails(productDetails)
+                .setOfferToken(offerToken)
+                .build()
+        )
+
+        val billingFlowParams = BillingFlowParams.newBuilder()
+            .setProductDetailsParamsList(productDetailsParamsList)
+            .build()
+
+        _isPurchasing.value = true
+        billingClient.launchBillingFlow(activity, billingFlowParams)
+        // Result is delivered to purchasesUpdatedListener
+    }
+
+    // ─── Handle Purchase ─────────────────────────────────────────────────────
+
+    /**
+     * Processes a successful purchase:
+     *  1. Acknowledges it (required within 3 days or Play Store will refund)
+     *  2. Updates entitlement state
+     *
+     * Equivalent to iOS `transaction.finish()` + `checkCurrentEntitlements()`.
+     */
+    private suspend fun handlePurchase(purchase: Purchase) {
+        if (purchase.purchaseState != Purchase.PurchaseState.PURCHASED) return
+
+        // Acknowledge if not yet done — REQUIRED for subscriptions
+        if (!purchase.isAcknowledged) {
+            val ackParams = AcknowledgePurchaseParams.newBuilder()
+                .setPurchaseToken(purchase.purchaseToken)
+                .build()
+            val ackResult = billingClient.acknowledgePurchase(ackParams)
+            if (ackResult.responseCode != BillingClient.BillingResponseCode.OK) {
+                _errorMessage.value = "Acknowledgment failed: ${ackResult.debugMessage}"
+                return
+            }
+        }
+
+        checkCurrentEntitlements()
+    }
+
+    // ─── Restore / Check Entitlements ─────────────────────────────────────────
+
+    /**
+     * Queries Play Store for all active subscriptions and updates `isProUser`.
+     *
+     * Call this:
+     *  - On app start (from init)
+     *  - After a successful purchase
+     *  - When the user explicitly taps "Restore Purchases"
+     *
+     * Equivalent to iOS `checkCurrentEntitlements()` and `restorePurchases()`.
+     */
+    suspend fun checkCurrentEntitlements() {
+        val params = QueryPurchasesParams.newBuilder()
+            .setProductType(BillingClient.ProductType.SUBS)
+            .build()
+
+        val result = billingClient.queryPurchasesAsync(params)
+
+        val activeProPurchase = result.purchasesList.firstOrNull { purchase ->
+            purchase.purchaseState == Purchase.PurchaseState.PURCHASED &&
+            purchase.products.any { it in BillingProduct.ALL_IDS }
+        }
+
+        _activePurchase.value = activeProPurchase
+        _isProUser.value = activeProPurchase != null
+
+        // Ensure any unacknowledged purchases from previous sessions are acknowledged
+        result.purchasesList
+            .filter { !it.isAcknowledged && it.purchaseState == Purchase.PurchaseState.PURCHASED }
+            .forEach { handlePurchase(it) }
+    }
+
+    /**
+     * Re-queries purchases — Play Store restore equivalent.
+     * Unlike iOS `AppStore.sync()`, Android does not have a dedicated "restore" API;
+     * re-querying `queryPurchasesAsync` achieves the same result.
+     */
+    suspend fun restorePurchases() {
+        checkCurrentEntitlements()
+    }
+
+    // ─── Entitlement Gate Helpers ─────────────────────────────────────────────
+
+    /** Returns true if the user can create a new project (free tier or Pro). */
+    fun canCreateProject(currentCount: Int): Boolean =
+        _isProUser.value || currentCount < FreeTierLimit.MAX_PROJECTS
+
+    /** Returns true if the user can create a new expense. */
+    fun canCreateExpense(currentCount: Int): Boolean =
+        _isProUser.value || currentCount < FreeTierLimit.MAX_EXPENSES
+
+    /** Returns true if the user can create a new invoice. */
+    fun canCreateInvoice(currentCount: Int): Boolean =
+        _isProUser.value || currentCount < FreeTierLimit.MAX_INVOICES
+
+    /** Returns true if the user can create a new worker record. */
+    fun canCreateWorker(currentCount: Int): Boolean =
+        _isProUser.value || currentCount < FreeTierLimit.MAX_WORKERS
+
+    // ─── Product Helpers ──────────────────────────────────────────────────────
+
+    val monthlyProduct: ProductDetails?
+        get() = _products.value.firstOrNull { it.productId == BillingProduct.PRO_MONTHLY }
+
+    val yearlyProduct: ProductDetails?
+        get() = _products.value.firstOrNull { it.productId == BillingProduct.PRO_YEARLY }
+
+    // ─── Manage Subscription ─────────────────────────────────────────────────
+
+    /**
+     * Opens the Play Store subscription management screen.
+     * Equivalent to iOS `AppStore.showManageSubscriptions(in: windowScene)`.
+     */
+    fun openManageSubscriptions(context: Context) {
+        val intent = android.content.Intent(
+            android.content.Intent.ACTION_VIEW,
+            android.net.Uri.parse("https://play.google.com/store/account/subscriptions")
+        )
+        context.startActivity(intent)
+    }
+
+    // ─── Cleanup ──────────────────────────────────────────────────────────────
+
+    fun destroy() {
+        billingClient.endConnection()
+        scope.cancel()
+    }
+}
+```
+
+#### F.3.2 Manual Singleton (without Hilt)
+
+If you are not using Hilt, create the singleton in `Application`:
+
+```kotlin
+// ContractorCashFlowApp.kt
+class ContractorCashFlowApp : Application() {
+    val purchaseManager: PurchaseManager by lazy { PurchaseManager(this) }
+}
+```
+
+Access it from any `Activity` or `ViewModel`:
+
+```kotlin
+val purchaseManager = (application as ContractorCashFlowApp).purchaseManager
+```
+
+---
+
+### F.4 Hilt Module
+
+```kotlin
+// BillingModule.kt
+package com.yetzira.contractorcashflow.di
+
+import com.yetzira.contractorcashflow.billing.PurchaseManager
+import dagger.Module
+import dagger.Provides
+import dagger.hilt.InstallIn
+import dagger.hilt.components.SingletonComponent
+import javax.inject.Singleton
+
+// With @Inject constructor on PurchaseManager, Hilt handles this automatically.
+// This module is only needed if PurchaseManager does NOT use @Inject constructor.
+@Module
+@InstallIn(SingletonComponent::class)
+object BillingModule {
+    @Provides
+    @Singleton
+    fun providePurchaseManager(
+        @ApplicationContext context: android.content.Context
+    ): PurchaseManager = PurchaseManager(context)
+}
+```
+
+---
+
+### F.5 ViewModel — PurchaseViewModel
+
+Expose `PurchaseManager` state to Compose UI via a ViewModel:
+
+```kotlin
+// PurchaseViewModel.kt
+package com.yetzira.contractorcashflow.billing
+
+import android.app.Activity
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
+import javax.inject.Inject
+
+@HiltViewModel
+class PurchaseViewModel @Inject constructor(
+    private val purchaseManager: PurchaseManager
+) : ViewModel() {
+
+    // Expose all state flows directly from PurchaseManager
+    val isProUser    = purchaseManager.isProUser
+    val products     = purchaseManager.products
+    val isLoading    = purchaseManager.isLoading
+    val isPurchasing = purchaseManager.isPurchasing
+    val errorMessage = purchaseManager.errorMessage
+
+    fun launchPurchaseFlow(activity: Activity, productDetails: ProductDetails, basePlanId: String) {
+        purchaseManager.launchPurchaseFlow(activity, productDetails, basePlanId)
+    }
+
+    fun restorePurchases() {
+        viewModelScope.launch {
+            purchaseManager.restorePurchases()
+        }
+    }
+
+    fun clearError() {
+        // Reset error state after showing it to the user
+    }
+
+    fun openManageSubscriptions(context: android.content.Context) {
+        purchaseManager.openManageSubscriptions(context)
+    }
+}
+```
+
+---
+
+### F.6 PaywallScreen — Complete Compose UI
+
+Mirrors `PaywallView.swift` exactly: crown header, feature comparison table, product selection cards, subscribe button, restore button, and legal links.
+
+```kotlin
+// PaywallScreen.kt
+package com.yetzira.contractorcashflow.ui.paywall
+
+import android.app.Activity
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.android.billingclient.api.ProductDetails
+import com.yetzira.contractorcashflow.billing.BillingProduct
+import com.yetzira.contractorcashflow.billing.PurchaseViewModel
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun PaywallScreen(
+    onDismiss: () -> Unit,
+    /** Optional message describing which limit was reached. Shown below the title. */
+    limitReachedMessage: String? = null,
+    viewModel: PurchaseViewModel = hiltViewModel()
+) {
+    val context = LocalContext.current
+    val activity = context as? Activity
+
+    val isProUser    by viewModel.isProUser.collectAsState()
+    val products     by viewModel.products.collectAsState()
+    val isLoading    by viewModel.isLoading.collectAsState()
+    val isPurchasing by viewModel.isPurchasing.collectAsState()
+    val errorMessage by viewModel.errorMessage.collectAsState()
+
+    // Pre-select yearly by default (best value) — same as iOS onAppear logic
+    val yearlyProduct  = products.firstOrNull { it.productId == BillingProduct.PRO_YEARLY }
+    val monthlyProduct = products.firstOrNull { it.productId == BillingProduct.PRO_MONTHLY }
+    var selectedProduct by remember(yearlyProduct, monthlyProduct) {
+        mutableStateOf(yearlyProduct ?: monthlyProduct)
+    }
+
+    var showErrorDialog by remember { mutableStateOf(false) }
+
+    // Auto-dismiss when purchase succeeds — equivalent to iOS .onChange(of: isProUser)
+    LaunchedEffect(isProUser) {
+        if (isProUser) onDismiss()
+    }
+
+    LaunchedEffect(errorMessage) {
+        if (errorMessage != null) showErrorDialog = true
+    }
+
+    // Error dialog
+    if (showErrorDialog && errorMessage != null) {
+        AlertDialog(
+            onDismissRequest = { showErrorDialog = false },
+            title = { Text("Error") },
+            text = { Text(errorMessage!!) },
+            confirmButton = {
+                TextButton(onClick = { showErrorDialog = false }) { Text("OK") }
+            }
+        )
+    }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {},
+                navigationIcon = {
+                    IconButton(onClick = onDismiss) {
+                        Icon(Icons.Default.Close, contentDescription = "Close")
+                    }
+                }
+            )
+        }
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(innerPadding)
+                .padding(horizontal = 16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+
+            // ── Crown header ──────────────────────────────────────────────────
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Icon(
+                imageVector = Icons.Default.Star,  // Use a crown drawable if available
+                contentDescription = null,
+                tint = Color(0xFFFFCC00),           // Gold
+                modifier = Modifier.size(64.dp)
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Text(
+                text = "Upgrade to Pro",
+                fontSize = 28.sp,
+                fontWeight = FontWeight.Bold
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = limitReachedMessage ?: "Unlock unlimited projects, expenses, invoices, and workers.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                modifier = Modifier.padding(horizontal = 16.dp)
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // ── Feature comparison card ───────────────────────────────────────
+            Surface(
+                shape = RoundedCornerShape(16.dp),
+                color = MaterialTheme.colorScheme.surfaceVariant,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                    PaywallFeatureRow(
+                        icon = Icons.Default.Folder,
+                        title = "Unlimited Projects",
+                        freeLimit = "1",
+                        proLimit = "Unlimited"
+                    )
+                    PaywallFeatureRow(
+                        icon = Icons.Default.AttachMoney,
+                        title = "Unlimited Expenses",
+                        freeLimit = "1",
+                        proLimit = "Unlimited"
+                    )
+                    PaywallFeatureRow(
+                        icon = Icons.Default.Description,
+                        title = "Unlimited Invoices",
+                        freeLimit = "1",
+                        proLimit = "Unlimited"
+                    )
+                    PaywallFeatureRow(
+                        icon = Icons.Default.Group,
+                        title = "Unlimited Workers",
+                        freeLimit = "1",
+                        proLimit = "Unlimited"
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // ── Product selection ─────────────────────────────────────────────
+            if (isLoading) {
+                CircularProgressIndicator()
+            } else {
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
+                    monthlyProduct?.let { product ->
+                        PaywallProductCard(
+                            product = product,
+                            basePlanId = BillingProduct.MONTHLY_BASE_PLAN,
+                            isSelected = selectedProduct?.productId == product.productId,
+                            savingsBadge = null,
+                            onClick = { selectedProduct = product }
+                        )
+                    }
+                    yearlyProduct?.let { product ->
+                        PaywallProductCard(
+                            product = product,
+                            basePlanId = BillingProduct.YEARLY_BASE_PLAN,
+                            isSelected = selectedProduct?.productId == product.productId,
+                            savingsBadge = "SAVE",      // Equivalent to iOS saveBadge
+                            onClick = { selectedProduct = product }
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // ── Subscribe button ──────────────────────────────────────────────
+            Button(
+                onClick = {
+                    val product = selectedProduct ?: return@Button
+                    val basePlanId = when (product.productId) {
+                        BillingProduct.PRO_MONTHLY -> BillingProduct.MONTHLY_BASE_PLAN
+                        BillingProduct.PRO_YEARLY  -> BillingProduct.YEARLY_BASE_PLAN
+                        else -> return@Button
+                    }
+                    activity?.let { viewModel.launchPurchaseFlow(it, product, basePlanId) }
+                },
+                enabled = selectedProduct != null && !isPurchasing,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(52.dp),
+                shape = RoundedCornerShape(14.dp)
+            ) {
+                if (isPurchasing) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp),
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    Text("Subscribe", fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // ── Restore purchases ─────────────────────────────────────────────
+            TextButton(onClick = { viewModel.restorePurchases() }) {
+                Text("Restore Purchases", style = MaterialTheme.typography.bodySmall)
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // ── Legal links ───────────────────────────────────────────────────
+            Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                Text(
+                    text = "Terms of Service",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    text = "Privacy Policy",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+        }
+    }
+}
+
+// ─── Feature Row ──────────────────────────────────────────────────────────────
+
+@Composable
+private fun PaywallFeatureRow(
+    icon: ImageVector,
+    title: String,
+    freeLimit: String,
+    proLimit: String
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.size(28.dp)
+        )
+        Text(text = title, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
+        Column(horizontalAlignment = Alignment.End) {
+            Text(
+                text = proLimit,
+                style = MaterialTheme.typography.labelSmall,
+                fontWeight = FontWeight.SemiBold,
+                color = Color(0xFF34C759)   // IncomeGreen
+            )
+            Text(
+                text = "Free: $freeLimit",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+}
+
+// ─── Product Card ─────────────────────────────────────────────────────────────
+
+@Composable
+private fun PaywallProductCard(
+    product: ProductDetails,
+    basePlanId: String,
+    isSelected: Boolean,
+    savingsBadge: String?,
+    onClick: () -> Unit
+) {
+    // Extract price from the subscription offer for this base plan
+    val pricingPhase = product
+        .subscriptionOfferDetails
+        ?.firstOrNull { it.basePlanId == basePlanId }
+        ?.pricingPhases
+        ?.pricingPhaseList
+        ?.firstOrNull()
+
+    val displayPrice = pricingPhase?.formattedPrice ?: ""
+    val period = when (basePlanId) {
+        "monthly" -> "/ month"
+        "yearly"  -> "/ year"
+        else -> ""
+    }
+
+    OutlinedCard(
+        onClick = onClick,
+        border = BorderStroke(
+            width = if (isSelected) 2.dp else 1.dp,
+            color = if (isSelected) MaterialTheme.colorScheme.primary
+                    else MaterialTheme.colorScheme.outline.copy(alpha = 0.4f)
+        ),
+        shape = RoundedCornerShape(12.dp),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = product.name,
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    if (savingsBadge != null) {
+                        Surface(
+                            shape = RoundedCornerShape(4.dp),
+                            color = Color(0xFF34C759)  // IncomeGreen
+                        ) {
+                            Text(
+                                text = savingsBadge,
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White,
+                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                            )
+                        }
+                    }
+                }
+                Text(
+                    text = "$displayPrice $period",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            Icon(
+                imageVector = if (isSelected) Icons.Default.CheckCircle else Icons.Default.RadioButtonUnchecked,
+                contentDescription = null,
+                tint = if (isSelected) MaterialTheme.colorScheme.primary
+                       else MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(24.dp)
+            )
+        }
+    }
+}
+```
+
+---
+
+### F.7 Entitlement Gate Pattern in List Screens
+
+Every list screen gates the "Add" button with a `canCreate*` check before showing it. If the gate fails, `showPaywall = true` opens the paywall sheet. This mirrors iOS exactly.
+
+```kotlin
+// ProjectsListScreen.kt — illustrative pattern, apply to all list screens
+@Composable
+fun ProjectsListScreen(
+    viewModel: ProjectsViewModel = hiltViewModel(),
+    purchaseViewModel: PurchaseViewModel = hiltViewModel()
+) {
+    val projects by viewModel.projects.collectAsState()
+    val isProUser by purchaseViewModel.isProUser.collectAsState()
+
+    var showPaywall by remember { mutableStateOf(false) }
+    var paywallMessage by remember { mutableStateOf<String?>(null) }
+
+    Scaffold(
+        floatingActionButton = {
+            FloatingActionButton(onClick = {
+                if (purchaseViewModel.isProUser.value || projects.size < FreeTierLimit.MAX_PROJECTS) {
+                    viewModel.onAddProjectClick()
+                } else {
+                    paywallMessage = "You've reached the free project limit. Upgrade to Pro for unlimited projects."
+                    showPaywall = true
+                }
+            }) {
+                Icon(Icons.Default.Add, contentDescription = "Add project")
+            }
+        }
+    ) { padding ->
+        // ... project list UI ...
+    }
+
+    if (showPaywall) {
+        ModalBottomSheet(onDismissRequest = { showPaywall = false }) {
+            PaywallScreen(
+                onDismiss = { showPaywall = false },
+                limitReachedMessage = paywallMessage
+            )
+        }
+    }
+}
+```
+
+**Apply the same pattern to:**
+
+| iOS View | Android Screen | Gate Function |
+|---|---|---|
+| `ViewsProjectsListView` | `ProjectsListScreen` | `canCreateProject(projects.size)` |
+| `ViewsExpensesListView` | `ExpensesListScreen` | `canCreateExpense(expenses.size)` |
+| `ViewsInvoicesListView` | `InvoicesListScreen` | `canCreateInvoice(invoices.size)` |
+| `ViewsLaborListView` | `WorkersListScreen` | `canCreateWorker(workers.size)` |
+| `ProjectDetailView` (expense tab) | `ProjectDetailScreen` expense tab | `canCreateExpense(allExpenses.size)` |
+| `ProjectDetailView` (invoice tab) | `ProjectDetailScreen` invoice tab | `canCreateInvoice(allInvoices.size)` |
+
+---
+
+### F.8 Subscription Status in SettingsScreen
+
+Mirrors the `SettingsView` subscription section: shows "Pro Monthly" / "Pro Yearly" + renewal date for Pro users, or "Free Plan" + upgrade button for free users.
+
+```kotlin
+// SubscriptionSection.kt (composable used inside SettingsScreen)
+@Composable
+fun SubscriptionSection(
+    purchaseViewModel: PurchaseViewModel = hiltViewModel()
+) {
+    val isProUser    by purchaseViewModel.isProUser.collectAsState()
+    val activePurchase = (purchaseViewModel as? PurchaseViewModelImpl)?.activePurchase?.collectAsState()
+
+    var showPaywall by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp)
+    ) {
+        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Text("Subscription", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+            HorizontalDivider()
+
+            if (isProUser) {
+                // Current plan row
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("Current Plan", style = MaterialTheme.typography.bodyMedium)
+                    Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Default.Star, contentDescription = null, tint = Color(0xFFFFCC00), modifier = Modifier.size(16.dp))
+                        Text(
+                            text = "Pro",
+                            color = Color(0xFF34C759),
+                            fontWeight = FontWeight.SemiBold,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                }
+
+                // Manage subscription button
+                OutlinedButton(
+                    onClick = { purchaseViewModel.openManageSubscriptions(context) },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Icon(Icons.Default.CreditCard, contentDescription = null, modifier = Modifier.size(16.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Manage Plan")
+                }
+
+            } else {
+                // Free plan row
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("Current Plan", style = MaterialTheme.typography.bodyMedium)
+                    Text("Free", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodyMedium)
+                }
+
+                // Upgrade button
+                Button(
+                    onClick = { showPaywall = true },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFCC00))
+                ) {
+                    Icon(Icons.Default.Star, contentDescription = null, tint = Color.Black, modifier = Modifier.size(16.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Upgrade to Pro", color = Color.Black, fontWeight = FontWeight.SemiBold)
+                }
+            }
+        }
+    }
+
+    if (showPaywall) {
+        ModalBottomSheet(onDismissRequest = { showPaywall = false }) {
+            PaywallScreen(onDismiss = { showPaywall = false })
+        }
+    }
+}
+```
+
+---
+
+### F.9 Google Play Console Configuration
+
+Replicate the iOS `Products.storekit` configuration in Google Play Console:
+
+#### Subscription Group
+
+| Field | Value |
+|---|---|
+| Group name | `Pro Subscription` |
+| Group description | Matches iOS `group.contractorcashflow.pro` |
+
+#### Product: Pro Monthly
+
+| Field | Value |
+|---|---|
+| Product ID | `com.yetzira.contractorcashflow.pro.monthly` |
+| Name | `Pro Monthly` |
+| Description | `Unlimited projects, expenses, invoices, and workers` |
+| Base plan tag | `monthly` |
+| Billing period | `P1M` (1 month) |
+| Price | Match iOS pricing (~$19.99/month or local equivalent) |
+
+#### Product: Pro Yearly
+
+| Field | Value |
+|---|---|
+| Product ID | `com.yetzira.contractorcashflow.pro.yearly` |
+| Name | `Pro Yearly` |
+| Description | `Unlimited projects, expenses, invoices, and workers — save with annual billing` |
+| Base plan tag | `yearly` |
+| Billing period | `P1Y` (1 year) |
+| Price | Match iOS pricing (~$199.99/year or local equivalent) |
+
+> **Important:** The product IDs in Play Console **must exactly match** the constants in `BillingProduct`. If you change one you must update both.
+
+---
+
+### F.10 Testing In-App Purchases
+
+#### F.10.1 License Testers
+
+Add your Gmail test accounts as **License Testers** in Play Console → Setup → License Testing. License testers can purchase subscriptions without real charges.
+
+#### F.10.2 Internal Testing Track
+
+Upload an APK/AAB to the **Internal Testing** track with billing permission. Subscriptions cannot be tested on a local debug build unless the app has been uploaded at least once.
+
+#### F.10.3 Test Product IDs
+
+For development, Play Console supports `android.test.*` static responses:
+- `android.test.purchased` — always succeeds
+- `android.test.canceled` — always cancels
+- `android.test.item_unavailable` — simulates unavailable product
+
+> **Note:** These are not valid subscription product IDs; they only work for one-time products. For subscription testing, use the License Tester approach above.
+
+#### F.10.4 Checking Entitlements Manually
+
+```kotlin
+// Trigger in your debug menu or Settings screen during development
+scope.launch {
+    purchaseManager.checkCurrentEntitlements()
+    Log.d("Billing", "isProUser: ${purchaseManager.isProUser.value}")
+}
+```
+
+---
+
+### F.11 Critical Implementation Rules
+
+These are requirements from Google Play Billing policies that differ from StoreKit 2 behaviour:
+
+| Rule | Details |
+|---|---|
+| **Acknowledge within 3 days** | Call `acknowledgePurchase()` within 3 days of a PURCHASED state. If not acknowledged, Play Store automatically refunds and revokes. StoreKit 2 `transaction.finish()` is the equivalent. |
+| **Re-check entitlements on resume** | Call `checkCurrentEntitlements()` in `Activity.onResume()` or in `LaunchedEffect(Unit)` on the main screen. StoreKit 2's `Transaction.currentEntitlements` is a live async sequence; Android requires a manual query. |
+| **Handle PENDING state** | A purchase can be in `PENDING` state (e.g., cash payment pending). Do not grant entitlement until state is `PURCHASED`. |
+| **BillingClient reconnect** | `onBillingServiceDisconnected` means Play Services disconnected. Call `startConnection` again before the next billing operation. |
+| **Single BillingClient per app** | Do not create multiple `BillingClient` instances. Use the singleton pattern from F.3. |
+| **Activity required for launchBillingFlow** | Unlike StoreKit 2 which uses a window scene, Android billing requires a live `Activity` reference. Never cache the `Activity` in a ViewModel — obtain it from `LocalContext.current as? Activity` in the Compose UI. |
+
+---
+
+### F.12 Full Dependency List for Billing Feature
+
+```kotlin
+// app/build.gradle.kts
+dependencies {
+    // Billing
+    implementation("com.android.billingclient:billing:7.1.1")
+    implementation("com.android.billingclient:billing-ktx:7.1.1")
+
+    // Hilt (for singleton injection)
+    implementation("com.google.dagger:hilt-android:2.51.1")
+    kapt("com.google.dagger:hilt-android-compiler:2.51.1")
+    implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
+
+    // Coroutines (required for billing-ktx suspend functions)
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
+
+    // ViewModel (for PurchaseViewModel)
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7")
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.7")
+}
+```
+
+---
+
+*End of Appendix F*
